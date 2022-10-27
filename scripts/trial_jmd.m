@@ -64,7 +64,7 @@ partnerDecidesJ_1 = 'Now observe your partner';
 partnerDecidesJ_2 = 'who takes the JOINT decision.';
 
 % Prepare the recorded voice file
-loadsound('guarda.wav', 1) %Puts sound in buffer 1.
+loadsound('tone.wav', 1) %Puts sound in buffer 1.
 
 %% ------------------------------------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%%%% GENERATE GABOR PATCHES %%%%%%%%%%%%%%%%%%%%%%%%%%%

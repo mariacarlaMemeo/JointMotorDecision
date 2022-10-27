@@ -2,8 +2,6 @@
 % Original script based on: Bang et al. (2017). Confidence matching in
 % group decision-making. Nature Human Behaviour, 1(6), 1-7.
 
-% current script version: v5 (MainExp, display_gratings, init)
-
 clear; close all; clc; % clean up
 
 try
@@ -233,8 +231,7 @@ try
     
     % stop Cogent and save results   
     stop_cogent;
-    save(resultFileName,'data'); % save results
-    %save(fullfile(save_dir,resultFileName),'data');
+    save(fullfile(save_dir,resultFileName),'data');
     
 catch me
     stop_cogent;

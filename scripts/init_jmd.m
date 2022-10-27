@@ -15,22 +15,16 @@ while 1
     end
 end
 
-% LAURA: HOW TO NUMBER SUBJECT IDS? use 1 and 2 (subj. identifier 101-1)?
-% data.Agent1.subject =  input ('Agent1 Subject ID = '); % Subject's ID starting with 1
-% data.Agent1.name    =  input ('Agent1 Name: ','s'); % Subject's initials e.g. NK
-% data.Agent1.gender  =  input ('Agent1 Gender = ','s');
-% data.Agent1.age     =  input ('Agent1 Age = ');
+data.Agent1.name    =  input ('Agent1 Name: ','s'); % Subject's initials e.g. NK
+data.Agent1.gender  =  input ('Agent1 Biological sex = ','s');
+data.Agent1.age     =  input ('Agent1 Age = ');
 
-% data.Agent2.subject =  input ('Agent2 Subject ID = ');
-% data.Agent2.name    =  input ('Agent2 Name: ','s');
-% data.Agent2.gender  =  input ('Agent2 Gender = ','s');
-% data.Agent2.age     =  input ('Agent2 Age = ');
+data.Agent2.name    =  input ('Agent2 Name: ','s');
+data.Agent2.gender  =  input ('Agent2 Biological sex = ','s');
+data.Agent2.age     =  input ('Agent2 Age = ');
 
 % Practice (run 0) or proper Experiment (run 1)
 data.isExperiment      =  input ('Practice (0) or Experiment (1) = '); %
-
-% % Don't need this because agents take turn on a trial-by-trial basis
-% data.collective.agent  = input ('Who takes collective decision: '); % Insert 1 or 2
 
 %--------------------------------------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%%%% Create results file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -40,7 +34,7 @@ data.isExperiment      =  input ('Practice (0) or Experiment (1) = '); %
 resultFileName      =  ['gID', int2str(data.group.id) '_run' int2str(data.isExperiment) , '_jomode.mat' ];
 
 % directory where data should be saved
-save_dir = 'C:\Users\OTB\Documents\exp_jomode\data\';
+save_dir = fullfile(pwd,'data\');
 
 % If file with same gID exists, prompt to choose a different file name.
 if exist(resultFileName,'file')
