@@ -1,4 +1,4 @@
-function stimuli = trial_jmd(stimuli,mWidth,trial,add,cogent,a2homebutton,pure_tone_1)
+function stimuli = trial_jmd(stimuli,mWidth,trial,add,cogent,a2homebutton)
 
 
 % ---------------- first define some more variables --------------------- %
@@ -40,7 +40,7 @@ confirmA2Key    = 80; % Agent2 5 -> confirm
 
 % JITTER BEFORE STIMULUS PRESENTATION
 jitterTimeMin   = 500;
-jitterTimeAdded = 500;
+jitterTimeAdded = 1000;%500;
 
 % SCREEN DIMENSIONS FOR SPRITES
 spriteWidth     = 1280/2; % half of the full screen for each agent
@@ -62,16 +62,9 @@ observePartner  = 'Please observe your partner.';
 decisionPromptJ = 'Please take the JOINT decision now.';
 partnerDecidesJ_1 = 'Now observe your partner';
 partnerDecidesJ_2 = 'who takes the JOINT decision.';
-voice_b4_2ndDecision = 'guarda';
-% nextA1          = 'Next trial. Blue participant starts.';
-% nextA2          = 'Next trial. Yellow participant starts.';
 
-% % Decision keys for A1 and A2 (for keyboard version w/o Vicon)
-% A1firstIntKey  = 1;  % A = 1st interval
-% A1secondIntKey = 4;  % D = 2nd interval
-% A2firstIntKey  = 6;  % F = 1st interval
-% A2secondIntKey = 8;  % H = 2nd interval
-
+% Prepare the recorded voice file
+loadsound('guarda.wav', 1) %Puts sound in buffer 1.
 
 %% ------------------------------------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%%%% GENERATE GABOR PATCHES %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -244,7 +237,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     cgtext('+',0+(stimuli.A1.side*spriteWidth/2),0);
     cgtext(wait4partner,mWidth,0);
     cgflip(background(1),background(2),background(3));
-    wait(jitterTimeMin+rand*jitterTimeAdded); %500 + (0-500)
+    wait(jitterTimeMin+rand*jitterTimeAdded); %500 + [0-1000]
     
     % STIMULUS INTERVAL 1
     % prepare stimulus
@@ -424,7 +417,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     
     % A2 is next; tell A1 to observe A2's movement
     % ADD VOICE HERE: ITS YOUR TURN (A2) and PLEASE OBSERVE (A1)
-    Speak(voice_b4_2ndDecision);
+    playsound(1);
     cgtext(observePartner,-mWidth,0);
     cgtext(getReady,mWidth,0);
     cgflip(background(1),background(2),background(3));
@@ -503,8 +496,6 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         cgsetsprite(0);
         cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
         cgtext(observePartner,-mWidth,0);
-        % here a sound is played, as a signal that 2nd decision starts
-%         playsound(pure_tone_1(3));
         t0_a2 = cgflip(background(1),background(2),background(3)).*1000;
         %                 start Vicon recording (once home button is released)
         io64(cogent.io.ioObj,add.out_address,2);
@@ -876,7 +867,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     
     % A1 is next; tell A2 to observe A1's movement
     % ADD VOICE HERE: ITS YOUR TURN (A1) and PLEASE OBSERVE (A2)
-    Speak(voice_b4_2ndDecision);
+    playsound(1);
     cgtext(observePartner,mWidth,0);
     cgtext(getReady,-mWidth,0);
     cgflip(background(1),background(2),background(3));
@@ -955,8 +946,6 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         cgsetsprite(0);
         cgtext(decisionPrompt,0+(stimuli.A1.side*spriteWidth/2),0);
         cgtext(observePartner,mWidth,0);
-        % here a sound is played, as a signal that 2nd decision starts
-%         playsound(pure_tone_1(3));
         % t0 = time when decision prompt appears (i.e., screen flips)
         t0 = cgflip(background(1),background(2),background(3)).*1000;
                 % start Vicon recording (once home button is released)
@@ -1161,8 +1150,6 @@ if mod(trial,2) == 1
         cgtext(decisionPrompt,0+(stimuli.A1.side*spriteWidth/2),0);
         cgtext(partnerDecidesJ_1,mWidth,50);
         cgtext(partnerDecidesJ_2,mWidth,-50);
-        % here a sound is played, as a signal that joint decision starts
-%         playsound(pure_tone_1(3));
         % t0 = time when decision prompt appears (i.e., screen flips)
         t0_coll = cgflip(background(1),background(2),background(3)).*1000;
         % start Vicon recording (once home button is released)
@@ -1350,8 +1337,6 @@ elseif mod(trial,2) == 0
         cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
         cgtext(partnerDecidesJ_1,-mWidth,50);
         cgtext(partnerDecidesJ_2,-mWidth,-50);
-        % here a sound is played, as a signal that joint decision starts
-%         playsound(pure_tone_1(3));
         % t0 = time when decision prompt appears (i.e., screen flips)
         t0_coll = cgflip(background(1),background(2),background(3)).*1000;
                 % start Vicon recording (once home button is released)

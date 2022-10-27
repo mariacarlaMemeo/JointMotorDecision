@@ -188,7 +188,6 @@ exp_instr_3     = 'For the 1st interval, press the left button.';
 exp_instr_4     = 'For the 2nd interval, press the right button.';
 exp_instr_5     = 'Keep your finger on the start position until you decide.';
 exp_instr_end   = 'This is the end of the experiment. Thank you!';
-pure_tone_1     = [1000 50 1]; 
 
 
 %--------------------------------------------------------------------------

@@ -117,9 +117,7 @@ try
             counter_a1 = 0;
             counter_a2 = 0;
             for trial = 1 : trialsInBlock*2
-                
-                preparepuretone(pure_tone_1(1),pure_tone_1(2),pure_tone_1(3)); %Fills buffer 1 with a 500 Hz sine wave sound lasting 1000 milliseconds.
-                
+                                
                 if mod(trial,2) == 1 % A1 starts in all odd trials
                     counter_a1 = counter_a1+1;
                     stimuli.deltaCon         = conds_a1(counter_a1,2); % current contrast
@@ -162,7 +160,7 @@ try
                 %----------------------------------------------------------
                 % call function (pass on stimuli params defined above)
                 % -> trial procedure happens inside function
-                stimuli = trial_jmd(stimuli,mWidth,trial,add,cogent,a2homebutton,pure_tone_1);
+                stimuli = trial_jmd(stimuli,mWidth,trial,add,cogent,a2homebutton);
                 %----------------------------------------------------------
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
