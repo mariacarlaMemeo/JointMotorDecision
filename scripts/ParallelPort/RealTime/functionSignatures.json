@@ -1,0 +1,130 @@
+{
+"daq.createSession":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type":"choices={daq.getVendors().ID}"}
+    ]
+},
+
+"daq.Session.addAnalogInputChannel":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"deviceIDParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findDeviceContainingSubsystem(sessionParameter.Vendor.ID,'AnalogInput')" },
+        {"name":"channelIDParameter", "kind":"required", "type":[["double"], ["char", "choices=daq.internal.TabCompletionHelper.findChannelsInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'AnalogInput')"]] },
+        {"name":"measurementTypeParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findMeasurementTypesInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'AnalogInput')" }
+    ]
+},
+
+"daq.Session.addAnalogOutputChannel":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"deviceIDParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findDeviceContainingSubsystem(sessionParameter.Vendor.ID,'AnalogOutput')" },
+        {"name":"channelIDParameter", "kind":"required", "type":[["double"],["char","choices=daq.internal.TabCompletionHelper.findChannelsInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'AnalogOutput')"]] },
+        {"name":"measurementTypeParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findMeasurementTypesInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'AnalogOutput')" }
+    ]
+},
+
+"daq.Session.addDigitalChannel":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"deviceIDParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findDeviceContainingSubsystem(sessionParameter.Vendor.ID,'DigitalIO')" },
+        {"name":"channelIDParameter", "kind":"required", "type":[["double"],["char","choices=daq.internal.TabCompletionHelper.findChannelsInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'DigitalIO')"], ["@(x) ~isempty(regexp(x, '^port[0-9]+/line[0-9]+(:[0-9]+)?$'))"]] },
+        {"name":"directionalityParameter", "kind":"optional", "type":"choices=daq.internal.TabCompletionHelper.findMeasurementTypesInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'DigitalIO')" }
+    ]
+},
+
+"daq.Session.addAudioInputChannel":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type":"daq.audio.Session"},
+        {"name":"deviceIDParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findDeviceContainingSubsystem(sessionParameter.Vendor.ID,'AudioInput')" },
+        {"name":"channelIDParameter", "kind":"required", "type":[["double"],["char","choices=daq.internal.TabCompletionHelper.findChannelsInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'AudioInput')"]] },
+        {"name":"measurementTypeParameter", "kind":"optional", "type":"choices=daq.internal.TabCompletionHelper.findMeasurementTypesInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'AudioInput')" }
+    ]
+},
+
+"daq.Session.addAudioOutputChannel":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type":"daq.audio.Session"},
+        {"name":"deviceIDParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findDeviceContainingSubsystem(sessionParameter.Vendor.ID,'AudioOutput')" },
+        {"name":"channelIDParameter", "kind":"required", "type":[["double"],["char","choices=daq.internal.TabCompletionHelper.findChannelsInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'AudioOutput')"]] },
+        {"name":"measurementTypeParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findMeasurementTypesInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'AudioOutput')" }
+    ]
+},
+
+"daq.Session.addCounterInputChannel":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"deviceIDParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findDeviceContainingSubsystem(sessionParameter.Vendor.ID,'CounterInput')" },
+        {"name":"channelIDParameter", "kind":"required", "type":[["double"],["char","choices=daq.internal.TabCompletionHelper.findChannelsInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'CounterInput')"]] },
+        {"name":"measurementTypeParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findMeasurementTypesInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'CounterInput')" }
+    ]
+},
+
+"daq.Session.addCounterOutputChannel":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"deviceIDParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findDeviceContainingSubsystem(sessionParameter.Vendor.ID,'CounterOutput')" },
+        {"name":"channelIDParameter", "kind":"required", "type":[["double"],["char","choices=daq.internal.TabCompletionHelper.findChannelsInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'CounterOutput')"]] },
+        {"name":"measurementTypeParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findMeasurementTypesInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'CounterOutput')" }
+    ]
+},
+
+"daq.Session.addFunctionGeneratorChannel":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"deviceIDParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findDeviceContainingSubsystem(sessionParameter.Vendor.ID,'FunctionGenerator')" },
+        {"name":"channelIDParameter", "kind":"required", "type":[["double"],["char","choices=daq.internal.TabCompletionHelper.findChannelsInSubsystem(sessionParameter.Vendor.ID,deviceIDParameter,'FunctionGenerator')"]] },
+        {"name":"waveformType", "kind":"required", "type":"choices=cellstr(enumeration('daq.internal.WaveformType'))" }
+    ]
+},
+
+"daq.Session.addClockConnection":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"sourceParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findTerminalsForDevicesOnSession(sessionParameter)" },
+        {"name":"destinationParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findTerminalsForDevicesOnSession(sessionParameter)" },
+        {"name":"connectionTypeParameter", "kind":"required", "type":"choices=cellstr(enumeration(['daq.' sessionParameter.Vendor.ID '.ClockConnectionType']))" }
+    ]
+},
+
+"daq.Session.addTriggerConnection":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"sourceParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findTerminalsForDevicesOnSession(sessionParameter)" },
+        {"name":"destinationParameter", "kind":"required", "type":"choices=daq.internal.TabCompletionHelper.findTerminalsForDevicesOnSession(sessionParameter)" },
+        {"name":"connectionTypeParameter", "kind":"required", "type":"choices=cellstr(enumeration(['daq.' sessionParameter.Vendor.ID '.TriggerConnectionType']))" }
+    ]
+},
+
+"daq.Session.addlistener":
+{
+    "inputs":
+    [
+        {"name":"sessionParameter", "kind":"required","type": "daq.Session"},
+        {"name":"eventParameter", "kind":"required", "type":"choices={'DataAvailable','DataRequired','ErrorOccurred'}" },
+        {"name":"callbackParameter", "kind":"required", "type":"function_handle" }
+    ]
+}
+
+}
