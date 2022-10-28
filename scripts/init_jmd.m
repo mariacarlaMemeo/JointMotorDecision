@@ -15,16 +15,18 @@ while 1
     end
 end
 
-data.Agent1.name    =  input ('Agent1 Name: ','s'); % Subject's initials e.g. NK
-data.Agent1.gender  =  input ('Agent1 Biological sex = ','s');
-data.Agent1.age     =  input ('Agent1 Age = ');
-
-data.Agent2.name    =  input ('Agent2 Name: ','s');
-data.Agent2.gender  =  input ('Agent2 Biological sex = ','s');
-data.Agent2.age     =  input ('Agent2 Age = ');
-
 % Practice (run 0) or proper Experiment (run 1)
 data.isExperiment      =  input ('Practice (0) or Experiment (1) = '); %
+
+if (data.isExperiment)
+    data.Agent1.name    =  input ('Agent1 Name: ','s'); % Subject's initials e.g. NK
+    data.Agent1.gender  =  input ('Agent1 Biological sex = ','s');
+    data.Agent1.age     =  input ('Agent1 Age = ');
+    
+    data.Agent2.name    =  input ('Agent2 Name: ','s');
+    data.Agent2.gender  =  input ('Agent2 Biological sex = ','s');
+    data.Agent2.age     =  input ('Agent2 Age = ');
+end
 
 %--------------------------------------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%%%% Create results file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,6 +80,7 @@ fontsizebig = 30;
 fontsizesmall = 20;
 fix_size = 15;
 imSize = 50;
+
 
 %--------------------------------------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%%%% Parallel port config %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -139,14 +142,18 @@ end
 %--------------------------------------------------------------------------
 
 % Important: trialsInBlock must be a multiple of 8
-% 'trialsInBlock' is the no. of trials PER agent
-% total trial no. = 'trialsInBlock' * 2
+% 'trialsInBlock' is the no. of trials PER agent per block
+% total trial no. per block = 'trialsInBlock' * 2
+% NOTE: rationale for trial no.: The minimum per agent is 8 (4 target
+% contrasts, appearing either in 1st or 2nd interval). Each agent needs to
+% experience each of these in the position as joint-decision-maker (and as
+% the one who does not take the joint decision).
 if data.isExperiment == 0 % practice
-    trialsInBlock = 8; % no. of trials for each agent taking first decision
+    trialsInBlock = 8*1; % no. of trials for each agent taking first decision
     blocksInRound = 1; % 1 block only
 elseif data.isExperiment == 1 % experiment
-    trialsInBlock = 24; % no. of trials for each agent taking first decision
-    blocksInRound = 4;  % 4 blocks
+    trialsInBlock = 8*5; % no. of trials for each agent taking first decision
+    blocksInRound = 2;  % 2 blocks
 else
     error('isExperiment should be 0 or 1')
 end

@@ -44,13 +44,13 @@ try
         cgtext(exp_instr_5,-mWidth,-350);
         cgflip(background(1),background(2),background(3));
         waitkeydown(inf,71); % stay on screen until space bar is pressed
-%         cgfont('Arial',fontsizebig);
-%         cgtext('Task about to begin...',mWidth,100);
-%         cgtext('Task about to begin...',-mWidth,100);
-%         cgtext('+',mWidth,0);
-%         cgtext('+',-mWidth,0);
-%         cgflip(background(1),background(2),background(3));
-%         wait(3000); % task begins automatically after 3 sec
+        %         cgfont('Arial',fontsizebig);
+        %         cgtext('Task about to begin...',mWidth,100);
+        %         cgtext('Task about to begin...',-mWidth,100);
+        %         cgtext('+',mWidth,0);
+        %         cgtext('+',-mWidth,0);
+        %         cgflip(background(1),background(2),background(3));
+        %         wait(3000); % task begins automatically after 3 sec
     end
     
     %% Start experiment loop: rounds / blocks / trials
@@ -81,14 +81,11 @@ try
                     cgtext(['Block ' num2str(block) ' of ' num2str(blocksInRound)],-mWidth,0); % create buffer with text for starting trial
                     cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
                     waitkeydown(inf,71); % start new trial with spacebar press
-                    wait(3000);
                 else
-                    % Short break [15 SECONDS] after each block
+                    % Short break after each block
                     cgfont('Arial',fontsizebig);
                     cgtext('Short break',mWidth,0);
                     cgtext('Short break',-mWidth,0);
-                    cgtext('+',mWidth,0);
-                    cgtext('+',-mWidth,0);
                     cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
                     % start new block with spacebar; then 3 sec pause
                     waitkeydown(inf,71);
@@ -96,11 +93,9 @@ try
                     cgfont('Arial',fontsizebig);
                     cgtext(['Block ' num2str(block) ' of ' num2str(blocksInRound)],mWidth,0); % create buffer with text for starting trial
                     cgtext(['Block ' num2str(block) ' of ' num2str(blocksInRound)],-mWidth,0); % create buffer with text for starting trial
-                    cgtext('+',mWidth,0);
-                    cgtext('+',-mWidth,0);
                     cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
-                    wait(3000);
                 end
+                
             end
             
             % CONTRAST RANDOMIZATION/COUNTERBALANCING
@@ -115,7 +110,17 @@ try
             counter_a1 = 0;
             counter_a2 = 0;
             for trial = 1 : trialsInBlock*2
-                                
+                
+                if trial==trialsInBlock
+                    % Short break after each block
+                    cgfont('Arial',fontsizebig);
+                    cgtext('Short break',mWidth,0);
+                    cgtext('Short break',-mWidth,0);
+                    cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
+                    % start new block with spacebar; then 3 sec pause
+                    waitkeydown(inf,71);
+                end
+                
                 if mod(trial,2) == 1 % A1 starts in all odd trials
                     counter_a1 = counter_a1+1;
                     stimuli.deltaCon         = conds_a1(counter_a1,2); % current contrast
@@ -142,7 +147,7 @@ try
                     stimuli.location(:,2)]  = setStimXY(stimuli);
                 % randomly select target location (1-6)
                 stimuli.targetLoc        = randsample(1:stimuli.setSize,1);
-                stimuli.ISI              = 1000; % inter stim. interval
+                stimuli.ISI              = 1; % inter stim. interval
                 stimuli.A1.noise         = data.noise.A1; % if any
                 stimuli.A1.side          = -1;
                 stimuli.A2.noise         = data.noise.A2; % if any
@@ -153,7 +158,7 @@ try
                 stimuli.trial            = trial;
                 
                 next_trial_jmd; % announce who starts next trial
-                                
+                
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 %----------------------------------------------------------
                 % call function (pass on stimuli params defined above)
@@ -223,13 +228,13 @@ try
     %     wait(5000);
     
     % create output table with DVs
-                    data.output_table = array2table(data.output,'VariableNames',{'StimDuration','cwCCW','baseContrast','deltaContrast',...
-                        'targetContrast','firstSecondInterval','targetLoc','A1_decision','A1_acc','A1_rt',...
-                        'A1_movtime','A1_conf','A1_confRT','A2_decision','A2_acc','A2_rt','A2_movtime',...
-                        'A2_conf','A2_confRT','Coll_decision','Coll_acc','Coll_rt','Coll_movtime',...
-                        'Coll_conf','Coll_confRT','AgentTakingFirstDecision','AgentTakingSecondDecision','AgentTakingCollDecision'});
+    data.output_table = array2table(data.output,'VariableNames',{'StimDuration','cwCCW','baseContrast','deltaContrast',...
+        'targetContrast','firstSecondInterval','targetLoc','A1_decision','A1_acc','A1_rt',...
+        'A1_movtime','A1_conf','A1_confRT','A2_decision','A2_acc','A2_rt','A2_movtime',...
+        'A2_conf','A2_confRT','Coll_decision','Coll_acc','Coll_rt','Coll_movtime',...
+        'Coll_conf','Coll_confRT','AgentTakingFirstDecision','AgentTakingSecondDecision','AgentTakingCollDecision'});
     
-    % stop Cogent and save results   
+    % stop Cogent and save results
     stop_cogent;
     save(fullfile(save_dir,resultFileName),'data');
     

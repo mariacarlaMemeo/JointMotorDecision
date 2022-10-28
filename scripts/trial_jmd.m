@@ -39,8 +39,9 @@ confirmA2Key    = 80; % Agent2 5 -> confirm
 % confirmA2Key    = 7; % Agent2 G -> confirm
 
 % JITTER BEFORE STIMULUS PRESENTATION
-jitterTimeMin   = 500;
-jitterTimeAdded = 1000;%500;
+jitterTimeMin   = 0.5;
+jitterTimeAdded = 1;
+jitterTimeMinJ  = 1;
 
 % SCREEN DIMENSIONS FOR SPRITES
 spriteWidth     = 1280/2; % half of the full screen for each agent
@@ -52,19 +53,26 @@ abortKey = 52;  % ESC
 cgfont('Arial',fontsizebig); % set font to big
 
 % instruction texts
-getReady        = 'Get ready for the next trial.';
+% getReady        = 'Get ready for the next trial.';
 PartnerGetReady = 'Your partner starts the next trial.';
 wait4partner    = 'Please turn away and wait for your partner.';
-return2start    = 'Place your finger on the start position.';
+% return2start    = 'Place your finger on the start position.';
+return2start_1  = 'Get ready for the trial';
+return2start_2  = 'and press the start button.';
+return2startJ_1 = 'Please press the start button';
+return2startJ_2 = 'and take the JOINT decision now.';
 decisionPrompt  = '1° stimolo               ?               2° stimolo';
 confidenceQ     = 'How confident are you?';
 observePartner  = 'Please observe your partner.';
-decisionPromptJ = 'Please take the JOINT decision now.';
-partnerDecidesJ_1 = 'Now observe your partner';
-partnerDecidesJ_2 = 'who takes the JOINT decision.';
+% decisionPromptJ = 'Please take the JOINT decision now.';
+partnerDecidesJ_1 = 'Your partner now takes the JOINT decision.';
+partnerDecidesJ_2 = 'Please observe your partner now.';
 
 % Prepare the recorded voice file
 loadsound('tone.wav', 1) %Puts sound in buffer 1.
+
+% display text positions
+yPos = 50;
 
 %% ------------------------------------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%%%% GENERATE GABOR PATCHES %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,15 +205,16 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     % Tell A2 to wait and A1 to get ready
     cgsetsprite(0);
     cgtext(PartnerGetReady,mWidth,0);
-    cgtext(getReady,-mWidth,0);
+    cgtext(return2start_1,-mWidth,yPos);
+    cgtext(return2start_2,-mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
-    wait(2000);
+    WaitSecs(2);
     
     % SANITY CHECK AT TRIAL START
     % Is target button stuck? If so: display message for experimenter.
     data_in=io64(cogent.io.ioObj,add.inp_address);
     while data_in == 191 || data_in == 31 || data_in == 255 || data_in == 95
-        cgtext('Check target buttons!',-mWidth,0);
+        cgtext('Check target buttons!',-mWidth,0); % should only appear in case of error!
         cgflip(background(1),background(2),background(3));
         data_in=io64(cogent.io.ioObj,add.inp_address);
     end
@@ -218,7 +227,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         % A2 might be pressing a target button at the same time (55/47)
         if data_in ~= 63 && data_in ~= 55 && data_in ~= 47
             while data_in ~= 63 && data_in ~= 55 && data_in ~= 47
-                cgtext(return2start,-mWidth,0);
+                cgtext(return2start_1,-mWidth,yPos);
+                cgtext(return2start_2,-mWidth,-yPos);
                 cgtext(wait4partner,mWidth,0);
                 cgflip(background(1),background(2),background(3));
                 data_in=io64(cogent.io.ioObj,add.inp_address);
@@ -227,7 +237,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
             % shortly pause (2s) before showing the two 2 stimulus intervals
             cgtext(wait4partner,mWidth,0);
             cgflip(background(1),background(2),background(3));
-            pause(2);
+            WaitSecs(2);
         end
     end
     
@@ -237,7 +247,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     cgtext('+',0+(stimuli.A1.side*spriteWidth/2),0);
     cgtext(wait4partner,mWidth,0);
     cgflip(background(1),background(2),background(3));
-    wait(jitterTimeMin+rand*jitterTimeAdded); %500 + [0-1000]
+    WaitSecs(jitterTimeMin+rand*jitterTimeAdded); %500 + [0-1000]
     
     % STIMULUS INTERVAL 1
     % prepare stimulus
@@ -249,7 +259,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     cgtext(wait4partner,mWidth,0);
     stimuli.firstA1.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     stimuli.firstA1.actualDuration  = stimuli.firstA1.OffsetTime - stimuli.firstA1.OnsetTime;
-    wait(stimuli.ISI); % wait 1000 ms
+    WaitSecs(stimuli.ISI); % wait 1000 ms
     
     % STIMULUS INTERVAL 2
     % prepare stimulus
@@ -261,7 +271,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     cgtext(wait4partner,mWidth,0);
     stimuli.secondA1.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     stimuli.secondA1.actualDuration  = stimuli.secondA1.OffsetTime - stimuli.secondA1.OnsetTime;
-    wait(stimuli.ISI/2); % wait 500 ms
+    WaitSecs(stimuli.ISI/2); % wait 500 ms
     
     %----------------------------------------------------------------------
     % DECISION A1
@@ -413,15 +423,16 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     cgflip(background(1),background(2),background(3));
     % record confidence for A1
     stimuli.resp.Agent1.conf = A1conf;
-    wait(stimuli.ISI/2) % wait for 500 ms
+    WaitSecs(stimuli.ISI/2) % wait for 500 ms
     
     % A2 is next; tell A1 to observe A2's movement
     % ADD VOICE HERE: ITS YOUR TURN (A2) and PLEASE OBSERVE (A1)
     playsound(1);
     cgtext(observePartner,-mWidth,0);
-    cgtext(getReady,mWidth,0);
+    cgtext(return2start_1,mWidth,yPos);
+    cgtext(return2start_2,mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
-    wait(2000);
+    WaitSecs(2);
     
     %----------------------------------------------------------------------
     % DISPLAY STIMULI FOR A2
@@ -430,13 +441,13 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         
         % Vicon ready
         io64(cogent.io.ioObj,add.out_address,3);
-        pause(0.3); % insert this pause to prevent Vicon timing issue
+        WaitSecs(0.3); % insert this pause to prevent Vicon timing issue
         
         % SANITY CHECK AT TRIAL START
         % Is target button stuck? If so: display message for experimenter.
         data_in=io64(cogent.io.ioObj,add.inp_address);
         while data_in == 111 || data_in == 119
-            cgtext('Check target buttons!',mWidth,0);
+            cgtext('Check target buttons!',mWidth,0);% should only appear in case of error!
             cgflip(background(1),background(2),background(3))
             data_in=io64(cogent.io.ioObj,add.inp_address);
         end
@@ -446,14 +457,15 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
             data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
             if data_in ~= a2homebutton
                 while data_in ~= a2homebutton
-                    cgtext(return2start,mWidth,0);
+                    cgtext(return2start_1,mWidth,yPos);
+                    cgtext(return2start_2,mWidth,-yPos);
                     cgtext(observePartner,-mWidth,0);
                     cgflip(background(1),background(2),background(3));
                     data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
                 end
                 cgtext(observePartner,-mWidth,0);
                 cgflip(background(1),background(2),background(3));
-                pause(2);
+                WaitSecs(2);
             end
         end
         
@@ -462,7 +474,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         cgtext('+',0+(stimuli.A2.side*spriteWidth/2),0);
         cgtext(observePartner,-mWidth,0);
         cgflip(background(1),background(2),background(3));
-        wait(jitterTimeMin+rand*jitterTimeAdded);
+        WaitSecs(jitterTimeMin+rand*jitterTimeAdded);
         
         % STIMULUS INTERVAL 1
         % prepare stimulus
@@ -474,7 +486,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         cgtext(observePartner,-mWidth,0);
         stimuli.firstA2.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
         stimuli.firstA2.actualDuration  = stimuli.firstA2.OffsetTime - stimuli.firstA2.OnsetTime;
-        wait(stimuli.ISI);
+        WaitSecs(stimuli.ISI);
         
         % STIMULUS INTERVAL 2
         % prepare stimulus
@@ -486,7 +498,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         cgtext(observePartner,-mWidth,0);
         stimuli.secondA2.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
         stimuli.secondA2.actualDuration  = stimuli.secondA2.OffsetTime - stimuli.secondA2.OnsetTime;
-        wait(stimuli.ISI/2);
+        WaitSecs(stimuli.ISI/2);
         
         %------------------------------------------------------------------
         % DECISION A2
@@ -518,7 +530,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         stimuli.resp.Agent2.rt = t1_a2 - t0_a2;
         
         % WAIT FOR TARGET PRESS
-        waitrespA2 = 1;
+       waitrespA2 = 1;
         while waitrespA2
             data_in=io64(cogent.io.ioObj,add.inp_address);
             switch data_in
@@ -543,7 +555,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         % record MT for A2
         stimuli.resp.Agent2.movtime = t2_a2-t1_a2;
                 
-        %------------------------------------------------------------------
+        %------------------------------------------------------------------      
         % CONFIDENCE A2
         %------------------------------------------------------------------
         
@@ -656,15 +668,16 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     % Tell A1 to wait and A2 to get ready
     cgsetsprite(0);
     cgtext(PartnerGetReady,-mWidth,0);
-    cgtext(getReady,mWidth,0);
+    cgtext(return2start_1,mWidth,yPos);
+    cgtext(return2start_2,mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
-    wait(2000);
+    WaitSecs(2);
        
     % SANITY CHECK AT TRIAL START
     % Is target button stuck? If so: display message for experimenter.
     data_in=io64(cogent.io.ioObj,add.inp_address);
     while data_in == 111 || data_in == 119
-        cgtext('Check target buttons!',mWidth,0);
+        cgtext('Check target buttons!',mWidth,0);% should only appear in case of error!
         cgflip(background(1),background(2),background(3))
         data_in=io64(cogent.io.ioObj,add.inp_address);
     end
@@ -674,14 +687,15 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
         if data_in ~= a2homebutton
             while data_in ~= a2homebutton
-                cgtext(return2start,mWidth,0);
+                cgtext(return2start_1,mWidth,yPos);
+                cgtext(return2start_2,mWidth,-yPos);
                 cgtext(wait4partner,-mWidth,0);
                 cgflip(background(1),background(2),background(3));
                 data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
             end
             cgtext(wait4partner,-mWidth,0);
             cgflip(background(1),background(2),background(3));
-            pause(2);
+            WaitSecs(2);
         end
     end
     
@@ -690,7 +704,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     cgtext('+',0+(stimuli.A2.side*spriteWidth/2),0);
     cgtext(wait4partner,-mWidth,0);
     cgflip(background(1),background(2),background(3));
-    wait(jitterTimeMin+rand*jitterTimeAdded);
+    WaitSecs(jitterTimeMin+rand*jitterTimeAdded);
     
     % STIMULUS INTERVAL 1
     % prepare stimulus
@@ -702,7 +716,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     cgtext(wait4partner,-mWidth,0);
     stimuli.firstA2.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     stimuli.firstA2.actualDuration  = stimuli.firstA2.OffsetTime - stimuli.firstA2.OnsetTime;
-    wait(stimuli.ISI);
+    WaitSecs(stimuli.ISI);
     
     % STIMULUS INTERVAL 2
     % prepare stimulus
@@ -714,7 +728,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     cgtext(wait4partner,-mWidth,0);
     stimuli.secondA2.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     stimuli.secondA2.actualDuration  = stimuli.secondA2.OffsetTime - stimuli.secondA2.OnsetTime;
-    wait(stimuli.ISI/2);
+    WaitSecs(stimuli.ISI/2);
     
     %----------------------------------------------------------------------
     % DECISION A2
@@ -863,15 +877,16 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     cgflip(background(1),background(2),background(3));
     % record confidence for A2
     stimuli.resp.Agent2.conf = A2conf;
-    wait(stimuli.ISI/2);
+    WaitSecs(stimuli.ISI/2);
     
     % A1 is next; tell A2 to observe A1's movement
     % ADD VOICE HERE: ITS YOUR TURN (A1) and PLEASE OBSERVE (A2)
     playsound(1);
     cgtext(observePartner,mWidth,0);
-    cgtext(getReady,-mWidth,0);
+    cgtext(return2start_1,-mWidth,yPos);
+    cgtext(return2start_2,-mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
-    wait(2000);
+    WaitSecs(2);
     
     %----------------------------------------------------------------------
     % DISPLAY STIMULI FOR A1
@@ -880,13 +895,13 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         
         % Vicon ready
         io64(cogent.io.ioObj,add.out_address,3);
-        pause(0.3); % insert this pause to prevent Vicon timing issue
+        WaitSecs(0.3); % insert this pause to prevent Vicon timing issue
         
         % SANITY CHECK AT TRIAL START
         % Is target button stuck? If so: display message for experimenter.
         data_in=io64(cogent.io.ioObj,add.inp_address);
         while data_in == 191 || data_in == 31 || data_in == 255 || data_in == 95
-            cgtext('Check target buttons!',-mWidth,0);
+            cgtext('Check target buttons!',-mWidth,0);% should only appear in case of error!
             cgflip(background(1),background(2),background(3))
             data_in=io64(cogent.io.ioObj,add.inp_address);
         end
@@ -896,14 +911,15 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
             data_in=io64(cogent.io.ioObj,add.inp_address);
             if data_in ~= 63 && data_in ~= 55 && data_in ~= 47
                 while data_in ~= 63 && data_in ~= 55 && data_in ~= 47
-                    cgtext(return2start,-mWidth,0);
+                    cgtext(return2start_1,-mWidth,yPos);
+                    cgtext(return2start_2,-mWidth,-yPos);
                     cgtext(observePartner,mWidth,0);
                     cgflip(background(1),background(2),background(3));
                     data_in=io64(cogent.io.ioObj,add.inp_address);
                 end
                 cgtext(observePartner,mWidth,0);
                 cgflip(background(1),background(2),background(3));
-                pause(2);
+                WaitSecs(2);
             end
         end
         
@@ -912,7 +928,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         cgtext('+',0+(stimuli.A1.side*spriteWidth/2),0);
         cgtext(observePartner,mWidth,0);
         cgflip(background(1),background(2),background(3));
-        wait(jitterTimeMin+rand*jitterTimeAdded);
+        WaitSecs(jitterTimeMin+rand*jitterTimeAdded);
         
         % STIMULUS INTERVAL 1
         % prepare stimulus
@@ -924,7 +940,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         cgtext(observePartner,mWidth,0);
         stimuli.firstA1.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
         stimuli.firstA1.actualDuration  = stimuli.firstA1.OffsetTime - stimuli.firstA1.OnsetTime;
-        wait(stimuli.ISI);
+        WaitSecs(stimuli.ISI);
         
         % STIMULUS INTERVAL 2
         % prepare stimulus
@@ -936,7 +952,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         cgtext(observePartner,mWidth,0);
         stimuli.secondA1.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
         stimuli.secondA1.actualDuration  = stimuli.secondA1.OffsetTime - stimuli.secondA1.OnsetTime;
-        wait(stimuli.ISI/2);
+        WaitSecs(stimuli.ISI/2);
         
         %------------------------------------------------------------------
         % DECISION A1
@@ -1092,8 +1108,9 @@ end % END OF INDIVIDUAL DECISION PHASE
 
 
 % DISPLAY INDIVIDUAL DECISIONS FOR BOTH AGENTS XXX
+tic
 display_decisions_jmd; % call separate script here
-
+toc
 
 %% ------------------------------------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%%% COLLECTIVE DECISION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1106,23 +1123,41 @@ if mod(trial,2) == 1
         
         % Vicon ready
         io64(cogent.io.ioObj,add.out_address,3);
-        pause(0.3);
+        WaitSecs(0.3);
         
         % SANITY CHECK AT TRIAL START
         % Is target button stuck? If so: display message for experimenter.
         data_in=io64(cogent.io.ioObj,add.inp_address);
         while data_in == 191 || data_in == 31 || data_in == 255 || data_in == 95
-            cgtext('Check target buttons!',-mWidth,0);
+            cgtext('Check target buttons!',-mWidth,0);% should only appear in case of error!
             cgflip(background(1),background(2),background(3))
             data_in=io64(cogent.io.ioObj,add.inp_address);
         end
         
         if keyversion == 0
-            cgtext(decisionPromptJ,-mWidth,0);
-            cgtext(partnerDecidesJ_1,mWidth,50);
-            cgtext(partnerDecidesJ_2,mWidth,-50);
+            % show decisions aligned horizontally (A1 - A2)
+            cgpencol(0,0,1);
+            cgtext(Agent1Decision.text,-mWidth-mWidth/2,2*yPos);
+            cgtext(Agent1Decision.text,mWidth/2,2*yPos);
+            cgpencol(1,1,0);
+            cgtext(Agent2Decision.text,-mWidth/2,2*yPos);
+            cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
             cgflip(background(1),background(2),background(3));
-            wait(2000);
+            WaitSecs(2);
+            
+            % show decisions + action prompts
+            cgpencol(0,0,1);
+            cgtext(Agent1Decision.text,-mWidth-mWidth/2,2*yPos);
+            cgtext(Agent1Decision.text,mWidth/2,2*yPos);
+            cgpencol(1,1,0);
+            cgtext(Agent2Decision.text,-mWidth/2,2*yPos);
+            cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
+            cgpencol(0,0,0); % return to black font
+            cgtext(return2startJ_1,-mWidth,-yPos);
+            cgtext(return2startJ_2,-mWidth,-2*yPos);            
+            cgtext(partnerDecidesJ_1,mWidth,-yPos);
+            cgflip(background(1),background(2),background(3));
+            WaitSecs(1);
             % CHECK IF PARTICIPANT IS READY TO START
             data_in=io64(cogent.io.ioObj,add.inp_address); % XXX
             % if A1 is not pressing home button (63), wait until button is pressed
@@ -1130,26 +1165,48 @@ if mod(trial,2) == 1
             % A2 might be pressing a target button at the same time (55/47)
             if data_in ~= 63 && data_in ~= 55 && data_in ~= 47
                 while data_in ~= 63 && data_in ~= 55 && data_in ~= 47
-                    cgtext(return2start,-mWidth,0);
-                    cgtext(partnerDecidesJ_1,mWidth,50);
-                    cgtext(partnerDecidesJ_2,mWidth,-50);
+                    cgpencol(0,0,1);
+                    cgtext(Agent1Decision.text,-mWidth-mWidth/2,2*yPos);
+                    cgtext(Agent1Decision.text,mWidth/2,2*yPos);
+                    cgpencol(1,1,0);
+                    cgtext(Agent2Decision.text,-mWidth/2,2*yPos);
+                    cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
+                    cgpencol(0,0,0); % return to black font
+                    cgtext(return2startJ_1,-mWidth,-yPos);
+                    cgtext(return2startJ_2,-mWidth,-2*yPos);
+                    cgtext(partnerDecidesJ_1,mWidth,-yPos);
                     cgflip(background(1),background(2),background(3));
                     data_in=io64(cogent.io.ioObj,add.inp_address);
                 end
-                % once button press is registered, show blank grey screen and
-                % shortly pause (1s) before showing the decision prompt
-                cgtext(partnerDecidesJ_1,mWidth,50);
-                cgtext(partnerDecidesJ_2,mWidth,-50);
-                cgflip(background(1),background(2),background(3));
-                pause(1);
+%                 % once button press is registered, show blank grey screen and
+%                 % shortly pause (1s) before showing the decision prompt
+%                 cgtext(partnerDecidesJ_1,mWidth,-yPos);
+%                 cgtext(partnerDecidesJ_2,mWidth,-2*yPos);
+%                 cgflip(background(1),background(2),background(3));
+%                 pause(1);
             end
         end
         
+        % DISPLAY Observation PROMPT
+        cgsetsprite(0); % is this really needed?
+        cgpencol(0,0,1);
+        cgtext(Agent1Decision.text,-mWidth-mWidth/2,2*yPos);
+        cgtext(Agent1Decision.text,mWidth/2,2*yPos);
+        cgpencol(1,1,0);
+        cgtext(Agent2Decision.text,-mWidth/2,2*yPos);
+        cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
+        cgpencol(0,0,0); % return to black font
+        cgtext(return2startJ_1,-mWidth,-yPos);
+        cgtext(return2startJ_2,-mWidth,-2*yPos);
+        cgtext(partnerDecidesJ_2,mWidth,-yPos); % display observation prompt
+        cgflip(background(1),background(2),background(3));
+        % add jittered delay before showing the decision prompt for joint
+        % decision
+        WaitSecs(jitterTimeMinJ+rand*jitterTimeAdded); %1000 + [0-1000]
+        
         % DISPLAY DECISION PROMPT (t = 0)
-        cgsetsprite(0);
+        cgtext(partnerDecidesJ_2,mWidth,-yPos); % display observation prompt
         cgtext(decisionPrompt,0+(stimuli.A1.side*spriteWidth/2),0);
-        cgtext(partnerDecidesJ_1,mWidth,50);
-        cgtext(partnerDecidesJ_2,mWidth,-50);
         % t0 = time when decision prompt appears (i.e., screen flips)
         t0_coll = cgflip(background(1),background(2),background(3)).*1000;
         % start Vicon recording (once home button is released)
@@ -1287,7 +1344,7 @@ if mod(trial,2) == 1
         cgflip(background(1),background(2),background(3));
         % record joint confidence
         stimuli.resp.Coll.conf = Collconf;
-        wait(stimuli.ISI/2); % wait 500 ms before feedback is displayed
+        WaitSecs(stimuli.ISI/2); % wait 500 ms before feedback is displayed
     end
     
 %--------------------------------------------------------------------------
@@ -1299,47 +1356,88 @@ elseif mod(trial,2) == 0
         
         % Vicon ready
         io64(cogent.io.ioObj,add.out_address,3);
-        pause(0.3); % insert this pause to prevent Vicon timing issue
+        WaitSecs(0.3); % insert this pause to prevent Vicon timing issue
         
         % SANITY CHECK AT TRIAL START
         % Is target button stuck? If so: display message for experimenter.
         data_in=io64(cogent.io.ioObj,add.inp_address);
         while data_in == 111 || data_in == 119
-            cgtext('Check target buttons!',mWidth,0);
+            cgtext('Check target buttons!',mWidth,0);% should only appear in case of error!
             cgflip(background(1),background(2),background(3))
             data_in=io64(cogent.io.ioObj,add.inp_address);
         end
         
         if keyversion == 0
-            cgtext(decisionPromptJ,mWidth,0);
-            cgtext(partnerDecidesJ_1,-mWidth,50);
-            cgtext(partnerDecidesJ_2,-mWidth,-50);
-            wait(2000);
+            % show decisions aligned horizontally (A1 - A2)
+            cgpencol(0,0,1);
+            cgtext(Agent1Decision.text,-mWidth-mWidth/2,2*yPos);
+            cgtext(Agent1Decision.text,mWidth/2,2*yPos);
+            cgpencol(1,1,0);
+            cgtext(Agent2Decision.text,-mWidth/2,2*yPos);
+            cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
+            cgflip(background(1),background(2),background(3));
+            WaitSecs(2);
+            
+            % show decisions + action prompts
+            cgpencol(0,0,1);
+            cgtext(Agent1Decision.text,-mWidth-mWidth/2,2*yPos);
+            cgtext(Agent1Decision.text,mWidth/2,2*yPos);
+            cgpencol(1,1,0);
+            cgtext(Agent2Decision.text,-mWidth/2,2*yPos);
+            cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
+            cgpencol(0,0,0); % return to black font
+            cgtext(return2startJ_1,mWidth,-yPos);
+            cgtext(return2startJ_2,mWidth,-2*yPos);
+            cgtext(partnerDecidesJ_1,-mWidth,-yPos);
+            cgflip(background(1),background(2),background(3));
+            WaitSecs(1);
             % CHECK IF PARTICIPANT IS READY TO START
             data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2); %XXX
             if data_in ~= a2homebutton
                 while data_in ~= a2homebutton
-                    cgtext(return2start,mWidth,0);
-                    cgtext(partnerDecidesJ_1,-mWidth,50);
-                    cgtext(partnerDecidesJ_2,-mWidth,-50);
+                    cgpencol(0,0,1);
+                    cgtext(Agent1Decision.text,-mWidth-mWidth/2,2*yPos);
+                    cgtext(Agent1Decision.text,mWidth/2,2*yPos);
+                    cgpencol(1,1,0);
+                    cgtext(Agent2Decision.text,-mWidth/2,2*yPos);
+                    cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
+                    cgpencol(0,0,0); % return to black font
+                    cgtext(return2startJ_1,mWidth,-yPos);
+                    cgtext(return2startJ_2,mWidth,-2*yPos);
+                    cgtext(partnerDecidesJ_1,-mWidth,-yPos);
                     cgflip(background(1),background(2),background(3));
                     data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
                 end
-                cgtext(partnerDecidesJ_1,-mWidth,50);
-                cgtext(partnerDecidesJ_2,-mWidth,-50);
-                cgflip(background(1),background(2),background(3));
-                pause(1); % short pause (1s) before decision prompt
+%                 cgtext(partnerDecidesJ_1,-mWidth,-yPos);
+%                 cgtext(partnerDecidesJ_2,-mWidth,-2*yPos);
+%                 cgflip(background(1),background(2),background(3));
+%                 pause(1); % short pause (1s) before decision prompt
             end
         end
         
+        % DISPLAY Observation PROMPT
+        cgsetsprite(0); % is this really needed?
+        cgpencol(0,0,1);
+        cgtext(Agent1Decision.text,-mWidth-mWidth/2,2*yPos);
+        cgtext(Agent1Decision.text,mWidth/2,2*yPos);
+        cgpencol(1,1,0);
+        cgtext(Agent2Decision.text,-mWidth/2,2*yPos);
+        cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
+        cgpencol(0,0,0); % return to black font
+        cgtext(return2startJ_1,mWidth,-yPos);
+        cgtext(return2startJ_2,mWidth,-2*yPos);
+        cgtext(partnerDecidesJ_2,-mWidth,-yPos); % display observation prompt
+        cgflip(background(1),background(2),background(3));
+        % add jittered delay before showing the decision prompt for joint
+        % decision
+        WaitSecs(jitterTimeMinJ+rand*jitterTimeAdded); %1000 + [0-1000]
+                     
         % DISPLAY DECISION PROMPT (t = 0)
-        cgsetsprite(0);
         cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
-        cgtext(partnerDecidesJ_1,-mWidth,50);
-        cgtext(partnerDecidesJ_2,-mWidth,-50);
+        cgtext(partnerDecidesJ_2,-mWidth,-yPos); % display observation prompt
         % t0 = time when decision prompt appears (i.e., screen flips)
         t0_coll = cgflip(background(1),background(2),background(3)).*1000;
-                % start Vicon recording (once home button is released)
+        % start Vicon recording (once home button is released)
         io64(cogent.io.ioObj,add.out_address,2);
         
         if keyversion == 0
@@ -1472,7 +1570,7 @@ elseif mod(trial,2) == 0
         cgflip(background(1),background(2),background(3));
         % record joint confidence
         stimuli.resp.Coll.conf = Collconf;
-        wait(stimuli.ISI/2); % wait 500 ms before feedback is displayed
+        WaitSecs(stimuli.ISI/2); % wait 500 ms before feedback is displayed
     end
     
 end % end of joint decision phase
@@ -1522,7 +1620,7 @@ if ~stimuli.ABORT
     end
     
     % show feedback aligned horizontally (A1 - joint - A2)
-    Agent1Feedback.y = 0; Agent2Feedback.y = 0; CollFeedback.y = 0;
+    Agent1Feedback.y = 0; Agent2Feedback.y = 0; CollFeedback.y = -150;
     cgpencol(0,0,1); % blue
     cgtext(Agent1Feedback.text,-mWidth-mWidth/2,Agent1Feedback.y);
     cgtext(Agent1Feedback.text,mWidth/2,Agent1Feedback.y);
@@ -1530,29 +1628,12 @@ if ~stimuli.ABORT
     cgtext(Agent2Feedback.text,-mWidth/2,Agent2Feedback.y);
     cgtext(Agent2Feedback.text,mWidth+mWidth/2,Agent2Feedback.y);
     cgpencol(1,1,1); % white
+    cgfont('Arial',50);
     cgtext(CollFeedback.text,-mWidth,CollFeedback.y);
     cgtext(CollFeedback.text,mWidth,CollFeedback.y);
     cgflip(background(1),background(2),background(3));
-    wait(2000); % display for 2 seconds, then proceed automatically
-    
-    %----------------------------------------------------------------------
-%     % ANNOUNCE NEXT TRIAL (and wait for keypress)
-%     if stimuli.trial < stimuli.trialsInBlock
-%         % announce which agent will start next trial
-%         if mod(trial,2) == 0 % if curr. trial is even, next one will be odd
-%             cgpencol(0,0,1);
-%             cgtext(nextA1,-mWidth,0);
-%             cgtext(nextA1,mWidth,0);
-%         elseif mod(trial,2) == 1 % if curr. trial is odd, next one will be even
-%             cgpencol(1,1,0);
-%             cgtext(nextA2,-mWidth,0);
-%             cgtext(nextA2,mWidth,0);
-%         end
-%         cgflip(background(1),background(2),background(3));
-%         waitkeydown(inf,71); % start new trial with spacebar press
-%     end
-%     cgflip(background(1),background(2),background(3));
-%     cgpencol(0,0,0)
+    WaitSecs(2); % display for 2 seconds, then proceed automatically
+
 else
     stimuli.ABORT = true;
 end
