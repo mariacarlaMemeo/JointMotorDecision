@@ -14,9 +14,9 @@ global fontsizebig;     % Arial 30
 % global fix_size;        % can be used for fixation cross
 
 % CONFIDENCE SCALE
-confLineLength = 144; confStepsN = 6;
+confLineLength = 96; confStepsN = 6;
 confDispStep = confLineLength/confStepsN;
-zeroLineLength = 15;
+zeroLineLength = 10;
 
 % CONFIDENCE KEYS
 % Note: for joint decision, conf. keys are adjusted as necessary in script
@@ -39,10 +39,9 @@ confirmA2Key    = 80; % Agent2 5 -> confirm
 % confirmA2Key    = 7; % Agent2 G -> confirm
 
 % JITTER BEFORE STIMULUS PRESENTATION
-jitterTimeMin    = 0.5;
-jitterTimeAdded  = 1;
-jitterTimeMinJ   = 0.75;
-jitterTimeAddedJ = 0.5;
+jitterTimeMin   = 0.5;
+jitterTimeAdded = 1;
+jitterTimeMinJ  = 1;
 
 % SCREEN DIMENSIONS FOR SPRITES
 spriteWidth     = 1280/2; % half of the full screen for each agent
@@ -63,16 +62,13 @@ return2start_2  = 'and press the start button.';
 return2startJ_1 = 'Please press the start button';
 return2startJ_2 = 'and take the JOINT decision now.';
 decisionPrompt  = '1° stimolo               ?               2° stimolo';
+confidenceQ     = 'How confident are you?';
 observePartner  = 'Please observe your partner.';
 % decisionPromptJ = 'Please take the JOINT decision now.';
 partnerDecidesJ_1 = 'Your partner now takes the JOINT decision.';
 partnerDecidesJ_2 = 'Please observe your partner now.';
 
-confidenceQ     = 'How confident are you?';
-fullyConf       = 'Fully confident';
-zeroConf        = 'Not confident';
-
-% Prepare the recorded sound file
+% Prepare the recorded voice file
 loadsound('tone.wav', 1) %Puts sound in buffer 1.
 
 % display text positions
@@ -201,7 +197,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     
     % Vicon ready
     io64(cogent.io.ioObj,add.out_address,3); % set LPT to 3
-    
+        
     %----------------------------------------------------------------------
     % DISPLAY STIMULI FOR A1
     %----------------------------------------------------------------------
@@ -306,8 +302,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     cgtext(decisionPrompt,0+(stimuli.A1.side*spriteWidth/2),0);
     t1 = cgflip(background(1),background(2),background(3)).*1000;
     % record RT for A1
-    stimuli.resp.Agent1.rt = t1 - t0;
-    
+    stimuli.resp.Agent1.rt = t1 - t0; 
+      
     % WAIT FOR TARGET PRESS
     waitrespA1 = 1;
     while waitrespA1
@@ -322,10 +318,10 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         end
     end
     
-    %     % keyboard version
-    %     cgtext('(here we will wait for the decision key to be pressed)',-mWidth,0);
-    %     cgtext('(Now press A (1st interval) or D (2nd interval))',-mWidth,-100);
-    %     cgflip(background(1),background(2),background(3));
+%     % keyboard version
+%     cgtext('(here we will wait for the decision key to be pressed)',-mWidth,0);
+%     cgtext('(Now press A (1st interval) or D (2nd interval))',-mWidth,-100);
+%     cgflip(background(1),background(2),background(3));
     
     % TARGET REACHED (t = 2)
     t2 = cgflip(background(1),background(2),background(3)).*1000;
@@ -340,15 +336,14 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     
     % DISPLAY CONFIDENCE SCALE (1-6)
     cgfont('Arial',fontsizebig);
-    cgtext(confidenceQ,-mWidth,confLineLength+200);
-    cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-    cgtext(zeroConf,-mWidth+mWidth/2,0);
+    cgtext(confidenceQ,-mWidth,300);
     % horizontal line (base)
     cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
     % vertical line (scale)
     cgdraw(0+(stimuli.A1.side*spriteWidth/2),0,0+(stimuli.A1.side*spriteWidth/2),0+confLineLength,[0 0 0]);
     % blue marker
     cgdraw(0+(stimuli.A1.side*spriteWidth/2)-(zeroLineLength/2),0,0+(stimuli.A1.side*spriteWidth/2)+(zeroLineLength/2),0,[0 0 1]);
+    
     t0confA1 = cgflip(background(1),background(2),background(3)).*1000;
     
     % set keys
@@ -371,9 +366,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                     if A1conf < 0 % marker cannot go below zero
                         A1conf = 0;
                     end
-                    cgtext(confidenceQ,-mWidth,confLineLength+200);
-                    cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                    cgtext(zeroConf,-mWidth+mWidth/2,0);
+                    cgtext(confidenceQ,-mWidth,300);
                     % horizontal line (base)
                     cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                     % vertical line (scale)
@@ -386,9 +379,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                     if A1conf > confStepsN
                         A1conf = confStepsN;
                     end
-                    cgtext(confidenceQ,-mWidth,confLineLength+200);
-                    cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                    cgtext(zeroConf,-mWidth+mWidth/2,0);
+                    cgtext(confidenceQ,-mWidth,300);
                     % horizontal line (base)
                     cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                     % vertical line (scale)
@@ -398,9 +389,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                     A1key=[]; A1t=[]; A1nresp=0;
                 case confirmA1Key
                     if A1conf == 0 % confidence cannot be zero
-                        cgtext(confidenceQ,-mWidth,confLineLength+200);
-                        cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,-mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,-mWidth,300);
                         % horizontal line (base)
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         % vertical line (scale)
@@ -421,9 +410,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                 otherwise
             end
         else
-            cgtext(confidenceQ,-mWidth,confLineLength+200);
-            cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-            cgtext(zeroConf,-mWidth+mWidth/2,0);
+            cgtext(confidenceQ,-mWidth,300);
             % horizontal line (base)
             cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
             % vertical line (scale)
@@ -538,12 +525,12 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         % MOVEMENT START (t = 1)
         cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
         t1_a2 = cgflip(background(1),background(2),background(3)).*1000;
-        
+
         % record RT for A2
         stimuli.resp.Agent2.rt = t1_a2 - t0_a2;
         
         % WAIT FOR TARGET PRESS
-        waitrespA2 = 1;
+       waitrespA2 = 1;
         while waitrespA2
             data_in=io64(cogent.io.ioObj,add.inp_address);
             switch data_in
@@ -555,28 +542,26 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                     waitrespA2 = 0;
             end
         end
-        
-        %         % keyboard version
-        %         cgtext('(here we will wait for the decision key to be pressed)',mWidth,0);
-        %         cgtext('(Now press F (1st interval) or H (2nd interval))',mWidth,-100);
-        %         cgflip(background(1),background(2),background(3));
-        
+                
+%         % keyboard version
+%         cgtext('(here we will wait for the decision key to be pressed)',mWidth,0);
+%         cgtext('(Now press F (1st interval) or H (2nd interval))',mWidth,-100);
+%         cgflip(background(1),background(2),background(3));
+                     
         % TARGET REACHED (t = 2)
         t2_a2 = cgflip(background(1),background(2),background(3)).*1000;
         % stop Vicon recording
         io64(cogent.io.ioObj,add.out_address,0);
         % record MT for A2
         stimuli.resp.Agent2.movtime = t2_a2-t1_a2;
-        
-        %------------------------------------------------------------------
+                
+        %------------------------------------------------------------------      
         % CONFIDENCE A2
         %------------------------------------------------------------------
         
         % DISPLAY CONFIDENCE SCALE (1-6)
         cgfont('Arial',fontsizebig);
-        cgtext(confidenceQ,mWidth,confLineLength+200);
-        cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-        cgtext(zeroConf,mWidth+mWidth/2,0);
+        cgtext(confidenceQ,mWidth,300);
         % horizontal line (base)
         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
         % vertical line (scale)
@@ -591,7 +576,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         A2nresp=0;
         A2respConfirmed = 0;
         A2conf = 0; % set confidence rating to zero initially
-        
+
         while ~A2respConfirmed
             readkeys;
             if A2nresp == 0
@@ -604,9 +589,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                         if A2conf < 0 % marker cannot go below zero
                             A2conf = 0;
                         end
-                        cgtext(confidenceQ,mWidth,confLineLength+200);
-                        cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,mWidth,300);
                         % horizontal line (base)
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         % vertical line (scale)
@@ -619,9 +602,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                         if A2conf > confStepsN
                             A2conf = confStepsN;
                         end
-                        cgtext(confidenceQ,mWidth,confLineLength+200);
-                        cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,mWidth,300);
                         % horizontal line (base)
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         % vertical line (scale)
@@ -631,9 +612,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                         A2key=[]; A2t=[]; A2nresp=0;
                     case confirmA2Key
                         if A2conf == 0
-                            cgtext(confidenceQ,mWidth,confLineLength+200);
-                            cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                            cgtext(zeroConf,mWidth+mWidth/2,0);
+                            cgtext(confidenceQ,mWidth,300);
                             % horizontal line (base)
                             cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                             % vertical line (scale)
@@ -654,9 +633,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
                     otherwise
                 end
             else
-                cgtext(confidenceQ,mWidth,confLineLength+200);
-                cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                cgtext(zeroConf,mWidth+mWidth/2,0);
+                cgtext(confidenceQ,mWidth,300);
                 % horizontal line (base)
                 cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                 % vertical line (scale)
@@ -671,8 +648,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         stimuli.resp.Agent2.conf = A2conf;
     end
     
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    % ORDER A2-A1 (A2 indiv. decision, A1 indiv. decision, A2 joint decision)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ORDER A2-A1 (A2 indiv. decision, A1 indiv. decision, A2 joint decision)
     
 elseif mod(trial,2) == 0 % A2 starts in all even trials
     
@@ -695,7 +672,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     cgtext(return2start_2,mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
     WaitSecs(2);
-    
+       
     % SANITY CHECK AT TRIAL START
     % Is target button stuck? If so: display message for experimenter.
     data_in=io64(cogent.io.ioObj,add.inp_address);
@@ -762,7 +739,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
     cgtext(wait4partner,-mWidth,0);
     t0_a2 = cgflip(background(1),background(2),background(3)).*1000;
-    % start Vicon recording (once home button is released)
+        % start Vicon recording (once home button is released)
     io64(cogent.io.ioObj,add.out_address,2);
     
     if keyversion == 0
@@ -779,11 +756,11 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
     
     t1_a2 = cgflip(background(1),background(2),background(3)).*1000;
-    
+
     % record RT for A2
     stimuli.resp.Agent2.rt = t1_a2 - t0_a2;
     
-    % WAIT FOR TARGET PRESS
+    % WAIT FOR TARGET PRESS   
     waitrespA2 = 1;
     while waitrespA2
         data_in=io64(cogent.io.ioObj,add.inp_address);
@@ -797,10 +774,10 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         end
     end
     
-    %     % keyboard version
-    %     cgtext('(here we will wait for the decision key to be pressed)',mWidth,0);
-    %     cgtext('(Now press F (1st interval) or H (2nd interval))',mWidth,-100);
-    %     cgflip(background(1),background(2),background(3));
+%     % keyboard version
+%     cgtext('(here we will wait for the decision key to be pressed)',mWidth,0);
+%     cgtext('(Now press F (1st interval) or H (2nd interval))',mWidth,-100);
+%     cgflip(background(1),background(2),background(3));
     
     % TARGET REACHED (t = 2)
     t2_a2 = cgflip(background(1),background(2),background(3)).*1000;
@@ -808,16 +785,14 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     io64(cogent.io.ioObj,add.out_address,0);
     % record MT for A2
     stimuli.resp.Agent2.movtime = t2_a2-t1_a2;
-    
+        
     %----------------------------------------------------------------------
     % CONFIDENCE A2
     %----------------------------------------------------------------------
     
     % DISPLAY CONFIDENCE SCALE (1-6)
     cgfont('Arial',fontsizebig);
-    cgtext(confidenceQ,mWidth,confLineLength+200);
-    cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-    cgtext(zeroConf,mWidth+mWidth/2,0);
+    cgtext(confidenceQ,mWidth,300);
     % horizontal line (base)
     cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
     % vertical line (scale)
@@ -832,7 +807,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     A2nresp=0;
     A2respConfirmed = 0;
     A2conf = 0; % set confidence rating to zero initially
-    
+       
     while ~A2respConfirmed
         readkeys;
         if A2nresp == 0
@@ -845,9 +820,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
                     if A2conf < 0 % marker cannot go below zero
                         A2conf = 0;
                     end
-                    cgtext(confidenceQ,mWidth,confLineLength+200);
-                    cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                    cgtext(zeroConf,mWidth+mWidth/2,0);
+                    cgtext(confidenceQ,mWidth,300);
                     % horizontal line (base)
                     cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                     % vertical line (scale)
@@ -860,9 +833,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
                     if A2conf > confStepsN
                         A2conf = confStepsN;
                     end
-                    cgtext(confidenceQ,mWidth,confLineLength+200);
-                    cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                    cgtext(zeroConf,mWidth+mWidth/2,0);
+                    cgtext(confidenceQ,mWidth,300);
                     % horizontal line (base)
                     cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                     % vertical line (scale)
@@ -872,9 +843,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
                     A2key=[]; A2t=[]; A2nresp=0;
                 case confirmA2Key
                     if A2conf == 0
-                        cgtext(confidenceQ,mWidth,confLineLength+200);
-                        cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,mWidth,300);
                         % horizontal line (base)
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         % vertical line (scale)
@@ -895,9 +864,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
                 otherwise
             end
         else
-            cgtext(confidenceQ,mWidth,confLineLength+200);
-            cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-            cgtext(zeroConf,mWidth+mWidth/2,0);
+            cgtext(confidenceQ,mWidth,300);
             % horizontal line (base)
             cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
             % vertical line (scale)
@@ -997,7 +964,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         cgtext(observePartner,mWidth,0);
         % t0 = time when decision prompt appears (i.e., screen flips)
         t0 = cgflip(background(1),background(2),background(3)).*1000;
-        % start Vicon recording (once home button is released)
+                % start Vicon recording (once home button is released)
         io64(cogent.io.ioObj,add.out_address,2); % set LPT to 2
         
         if keyversion == 0
@@ -1015,9 +982,9 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         % MOVEMENT START (t = 1)
         cgtext(decisionPrompt,0+(stimuli.A1.side*spriteWidth/2),0);
         t1 = cgflip(background(1),background(2),background(3)).*1000;
-        
+
         % record RT for A1
-        stimuli.resp.Agent1.rt = t1 - t0;
+        stimuli.resp.Agent1.rt = t1 - t0; 
         
         % WAIT FOR TARGET PRESS
         waitrespA1 = 1;
@@ -1044,16 +1011,14 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         io64(cogent.io.ioObj,add.out_address,0);
         % save MT for A1
         stimuli.resp.Agent1.movtime = t2-t1;
-        
+                      
         %------------------------------------------------------------------
         % CONFIDENCE A1
         %------------------------------------------------------------------
-        
+       
         % DISPLAY CONFIDENCE SCALE (1-6)
         cgfont('Arial',fontsizebig);
-        cgtext(confidenceQ,-mWidth,confLineLength+200);
-        cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-        cgtext(zeroConf,-mWidth+mWidth/2,0);
+        cgtext(confidenceQ,-mWidth,300);
         % horizontal line (base)
         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
         % vertical line (scale)
@@ -1081,9 +1046,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
                         if A1conf < 0 % marker cannot go below zero
                             A1conf = 0;
                         end
-                        cgtext(confidenceQ,-mWidth,confLineLength+200);
-                        cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,-mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,-mWidth,300);
                         % horizontal line (base)
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         % vertical line (scale)
@@ -1096,9 +1059,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
                         if A1conf > confStepsN
                             A1conf = confStepsN;
                         end
-                        cgtext(confidenceQ,-mWidth,confLineLength+200);
-                        cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,-mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,-mWidth,300);
                         % horizontal line (base)
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         % vertical line (scale)
@@ -1108,9 +1069,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
                         A1key=[]; A1t=[]; A1nresp=0;
                     case confirmA1Key
                         if A1conf == 0
-                            cgtext(confidenceQ,-mWidth,confLineLength+200);
-                            cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                            cgtext(zeroConf,-mWidth+mWidth/2,0);
+                            cgtext(confidenceQ,-mWidth,300);
                             % horizontal line (base)
                             cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                             % vertical line (scale)
@@ -1131,9 +1090,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
                     otherwise
                 end
             else
-                cgtext(confidenceQ,-mWidth,confLineLength+200);
-                cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                cgtext(zeroConf,-mWidth+mWidth/2,0);
+                cgtext(confidenceQ,-mWidth,300);
                 % horizontal line (base)
                 cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                 % vertical line (scale)
@@ -1197,7 +1154,7 @@ if mod(trial,2) == 1
             cgtext(Agent2Decision.text,mWidth+mWidth/2,2*yPos);
             cgpencol(0,0,0); % return to black font
             cgtext(return2startJ_1,-mWidth,-yPos);
-            cgtext(return2startJ_2,-mWidth,-2*yPos);
+            cgtext(return2startJ_2,-mWidth,-2*yPos);            
             cgtext(partnerDecidesJ_1,mWidth,-yPos);
             cgflip(background(1),background(2),background(3));
             WaitSecs(1);
@@ -1221,12 +1178,12 @@ if mod(trial,2) == 1
                     cgflip(background(1),background(2),background(3));
                     data_in=io64(cogent.io.ioObj,add.inp_address);
                 end
-                %                 % once button press is registered, show blank grey screen and
-                %                 % shortly pause (1s) before showing the decision prompt
-                %                 cgtext(partnerDecidesJ_1,mWidth,-yPos);
-                %                 cgtext(partnerDecidesJ_2,mWidth,-2*yPos);
-                %                 cgflip(background(1),background(2),background(3));
-                %                 pause(1);
+%                 % once button press is registered, show blank grey screen and
+%                 % shortly pause (1s) before showing the decision prompt
+%                 cgtext(partnerDecidesJ_1,mWidth,-yPos);
+%                 cgtext(partnerDecidesJ_2,mWidth,-2*yPos);
+%                 cgflip(background(1),background(2),background(3));
+%                 pause(1);
             end
         end
         
@@ -1245,7 +1202,7 @@ if mod(trial,2) == 1
         cgflip(background(1),background(2),background(3));
         % add jittered delay before showing the decision prompt for joint
         % decision
-        WaitSecs(jitterTimeMinJ+rand*jitterTimeAddedJ); %750ms + [0-500ms]
+        WaitSecs(jitterTimeMinJ+rand*jitterTimeAdded); %1000 + [0-1000]
         
         % DISPLAY DECISION PROMPT (t = 0)
         cgtext(partnerDecidesJ_2,mWidth,-yPos); % display observation prompt
@@ -1254,7 +1211,7 @@ if mod(trial,2) == 1
         t0_coll = cgflip(background(1),background(2),background(3)).*1000;
         % start Vicon recording (once home button is released)
         io64(cogent.io.ioObj,add.out_address,2); % set LPT to 2
-        
+    
         if keyversion == 0
             % WAIT FOR MOVEMENT START (i.e., home button release)
             data_in=io64(cogent.io.ioObj,add.inp_address);
@@ -1270,7 +1227,7 @@ if mod(trial,2) == 1
         % MOVEMENT START (t = 1)
         cgtext(decisionPrompt,0+(stimuli.A1.side*spriteWidth/2),0);
         t1_coll = cgflip(background(1),background(2),background(3)).*1000;
-        
+
         % record RT for A1 in joint decision
         stimuli.resp.Coll.rt = t1_coll - t0_coll;
         
@@ -1306,9 +1263,7 @@ if mod(trial,2) == 1
         
         % DISPLAY CONFIDENCE SCALE (1-6)
         cgfont('Arial',fontsizebig);
-        cgtext(confidenceQ,-mWidth,confLineLength+200);
-        cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-        cgtext(zeroConf,-mWidth+mWidth/2,0);
+        cgtext(confidenceQ,-mWidth,300);
         % horizontal line (base)
         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
         % vertical line (scale)
@@ -1344,30 +1299,24 @@ if mod(trial,2) == 1
                         if Collconf < 0 % cannot move below zero
                             Collconf = 0;
                         end
-                        cgtext(confidenceQ,-mWidth,confLineLength+200);
-                        cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,-mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,-mWidth,300);
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2),0,0+(stimuli.A1.side*spriteWidth/2),0+confLineLength,[0 0 0]);
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-(zeroLineLength/2),Collconf * confDispStep,0+(stimuli.A1.side*spriteWidth/2)+(zeroLineLength/2),Collconf * confDispStep,[1 1 1]);
-                        Collkey=[]; Collt=[]; Collnresp=0; % reset to continue checking for input
+                        Collkey=[]; Collt=[]; Collnresp=0; % reset to continue checking for input                        
                     case secondCollKey % if up-key was pressed, move up the scale
                         Collconf = Collconf+1;  % update confidence rating
                         if Collconf > confStepsN % cannot move past end of scale (6)
                             Collconf = confStepsN;
                         end
-                        cgtext(confidenceQ,-mWidth,confLineLength+200);
-                        cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,-mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,-mWidth,300);
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2),0,0+(stimuli.A1.side*spriteWidth/2),0+confLineLength,[0 0 0]);
                         cgdraw(0+(stimuli.A1.side*spriteWidth/2)-(zeroLineLength/2),Collconf * confDispStep,0+(stimuli.A1.side*spriteWidth/2)+(zeroLineLength/2),Collconf * confDispStep,[1 1 1]);
-                        Collkey=[]; Collt=[]; Collnresp=0;
+                        Collkey=[]; Collt=[]; Collnresp=0;                        
                     case confirmCollKey % if confirm-key was pressed
                         if Collconf == 0 % if zero, continue (because conf=zero is not allowed)
-                            cgtext(confidenceQ,-mWidth,confLineLength+200);
-                            cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                            cgtext(zeroConf,-mWidth+mWidth/2,0);
+                            cgtext(confidenceQ,-mWidth,300);
                             cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                             cgdraw(0+(stimuli.A1.side*spriteWidth/2),0,0+(stimuli.A1.side*spriteWidth/2),0+confLineLength,[0 0 0]);
                             cgdraw(0+(stimuli.A1.side*spriteWidth/2)-(zeroLineLength/2),Collconf * confDispStep,0+(stimuli.A1.side*spriteWidth/2)+(zeroLineLength/2),Collconf * confDispStep,[1 1 1]);
@@ -1385,9 +1334,7 @@ if mod(trial,2) == 1
                     otherwise
                 end
             else
-                cgtext(confidenceQ,-mWidth,confLineLength+200);
-                cgtext(fullyConf,-mWidth+mWidth/2,confLineLength);
-                cgtext(zeroConf,-mWidth+mWidth/2,0);
+                cgtext(confidenceQ,-mWidth,300);
                 cgdraw(0+(stimuli.A1.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A1.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                 cgdraw(0+(stimuli.A1.side*spriteWidth/2),0,0+(stimuli.A1.side*spriteWidth/2),0+confLineLength,[0 0 0]);
                 cgdraw(0+(stimuli.A1.side*spriteWidth/2)-(zeroLineLength/2),Collconf * confDispStep,0+(stimuli.A1.side*spriteWidth/2)+(zeroLineLength/2),Collconf * confDispStep,[1 1 1]);
@@ -1400,9 +1347,9 @@ if mod(trial,2) == 1
         WaitSecs(stimuli.ISI/2); % wait 500 ms before feedback is displayed
     end
     
-    %--------------------------------------------------------------------------
-    % A2 takes joint decision (in even trials)
-    
+%--------------------------------------------------------------------------
+% A2 takes joint decision (in even trials)
+
 elseif mod(trial,2) == 0
     
     if ~stimuli.ABORT
@@ -1461,10 +1408,10 @@ elseif mod(trial,2) == 0
                     cgflip(background(1),background(2),background(3));
                     data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
                 end
-                %                 cgtext(partnerDecidesJ_1,-mWidth,-yPos);
-                %                 cgtext(partnerDecidesJ_2,-mWidth,-2*yPos);
-                %                 cgflip(background(1),background(2),background(3));
-                %                 pause(1); % short pause (1s) before decision prompt
+%                 cgtext(partnerDecidesJ_1,-mWidth,-yPos);
+%                 cgtext(partnerDecidesJ_2,-mWidth,-2*yPos);
+%                 cgflip(background(1),background(2),background(3));
+%                 pause(1); % short pause (1s) before decision prompt
             end
         end
         
@@ -1483,8 +1430,8 @@ elseif mod(trial,2) == 0
         cgflip(background(1),background(2),background(3));
         % add jittered delay before showing the decision prompt for joint
         % decision
-        WaitSecs(jitterTimeMinJ+rand*jitterTimeAddedJ); %750ms + [0-500ms]
-        
+        WaitSecs(jitterTimeMinJ+rand*jitterTimeAdded); %1000 + [0-1000]
+                     
         % DISPLAY DECISION PROMPT (t = 0)
         cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
         cgtext(partnerDecidesJ_2,-mWidth,-yPos); % display observation prompt
@@ -1506,7 +1453,7 @@ elseif mod(trial,2) == 0
         % MOVEMENT START (t = 1)
         cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
         t1_coll = cgflip(background(1),background(2),background(3)).*1000;
-        
+
         % record RT for A2 in joint decision
         stimuli.resp.Coll.rt = t1_coll - t0_coll;
         
@@ -1542,9 +1489,7 @@ elseif mod(trial,2) == 0
         
         % DISPLAY CONFIDENCE SCALE (1-6)
         cgfont('Arial',fontsizebig);
-        cgtext(confidenceQ,mWidth,confLineLength+200);
-        cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-        cgtext(zeroConf,mWidth+mWidth/2,0);
+        cgtext(confidenceQ,mWidth,300);
         % horizontal line (base)
         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
         % vertical line (scale)
@@ -1580,9 +1525,7 @@ elseif mod(trial,2) == 0
                         if Collconf < 0
                             Collconf = 0;
                         end
-                        cgtext(confidenceQ,mWidth,confLineLength+200);
-                        cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,mWidth,300);
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2),0,0+(stimuli.A2.side*spriteWidth/2),0+confLineLength,[0 0 0]);
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-(zeroLineLength/2),Collconf * confDispStep,0+(stimuli.A2.side*spriteWidth/2)+(zeroLineLength/2),Collconf * confDispStep,[1 1 1]);
@@ -1592,18 +1535,14 @@ elseif mod(trial,2) == 0
                         if Collconf > confStepsN
                             Collconf = confStepsN;
                         end
-                        cgtext(confidenceQ,mWidth,confLineLength+200);
-                        cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                        cgtext(zeroConf,mWidth+mWidth/2,0);
+                        cgtext(confidenceQ,mWidth,300);
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2),0,0+(stimuli.A2.side*spriteWidth/2),0+confLineLength,[0 0 0]);
                         cgdraw(0+(stimuli.A2.side*spriteWidth/2)-(zeroLineLength/2),Collconf * confDispStep,0+(stimuli.A2.side*spriteWidth/2)+(zeroLineLength/2),Collconf * confDispStep,[1 1 1]);
                         Collkey=[]; Collt=[]; Collnresp=0;
                     case confirmCollKey
                         if Collconf == 0
-                            cgtext(confidenceQ,mWidth,confLineLength+200);
-                            cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                            cgtext(zeroConf,mWidth+mWidth/2,0);
+                            cgtext(confidenceQ,mWidth,300);
                             cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                             cgdraw(0+(stimuli.A2.side*spriteWidth/2),0,0+(stimuli.A2.side*spriteWidth/2),0+confLineLength,[0 0 0]);
                             cgdraw(0+(stimuli.A2.side*spriteWidth/2)-(zeroLineLength/2),Collconf * confDispStep,0+(stimuli.A2.side*spriteWidth/2)+(zeroLineLength/2),Collconf * confDispStep,[1 1 1]);
@@ -1621,9 +1560,7 @@ elseif mod(trial,2) == 0
                     otherwise
                 end
             else
-                cgtext(confidenceQ,mWidth,confLineLength+200);
-                cgtext(fullyConf,mWidth+mWidth/2,confLineLength);
-                cgtext(zeroConf,mWidth+mWidth/2,0);
+                cgtext(confidenceQ,mWidth,300);
                 cgdraw(0+(stimuli.A2.side*spriteWidth/2)-zeroLineLength,0,0+(stimuli.A2.side*spriteWidth/2)+zeroLineLength,0,[0 0 0]);
                 cgdraw(0+(stimuli.A2.side*spriteWidth/2),0,0+(stimuli.A2.side*spriteWidth/2),0+confLineLength,[0 0 0]);
                 cgdraw(0+(stimuli.A2.side*spriteWidth/2)-(zeroLineLength/2),Collconf * confDispStep,0+(stimuli.A2.side*spriteWidth/2)+(zeroLineLength/2),Collconf * confDispStep,[1 1 1]);
@@ -1664,8 +1601,44 @@ if ~stimuli.ABORT
     %----------------------------------------------------------------------
     % PREPARE FEEDBACK TEXT (for A1, A2, and Joint)
     %----------------------------------------------------------------------
-    display_acc_jmd;
+    if show_acc==3
+    if stimuli.resp.Agent2.acc
+        Agent2Feedback.text = 'correct';
+    else
+        Agent2Feedback.text = 'wrong';
+    end
     
+    if stimuli.resp.Agent1.acc
+        Agent1Feedback.text = 'correct';
+    else
+        Agent1Feedback.text = 'wrong';
+    end
+    
+    if stimuli.resp.Coll.acc
+        CollFeedback.text = 'correct';
+    else
+        CollFeedback.text = 'wrong';
+    end
+    elseif
+    elseif
+    end
+    
+    
+    % show feedback aligned horizontally (A1 - joint - A2)
+    Agent1Feedback.y = 0; Agent2Feedback.y = 0; CollFeedback.y = -150;
+    cgpencol(0,0,1); % blue
+    cgtext(Agent1Feedback.text,-mWidth-mWidth/2,Agent1Feedback.y);
+    cgtext(Agent1Feedback.text,mWidth/2,Agent1Feedback.y);
+    cgpencol(1,1,0); % yellow
+    cgtext(Agent2Feedback.text,-mWidth/2,Agent2Feedback.y);
+    cgtext(Agent2Feedback.text,mWidth+mWidth/2,Agent2Feedback.y);
+    cgpencol(1,1,1); % white
+    cgfont('Arial',50);
+    cgtext(CollFeedback.text,-mWidth,CollFeedback.y);
+    cgtext(CollFeedback.text,mWidth,CollFeedback.y);
+    cgflip(background(1),background(2),background(3));
+    WaitSecs(2); % display for 2 seconds, then proceed automatically
+
 else
     stimuli.ABORT = true;
 end

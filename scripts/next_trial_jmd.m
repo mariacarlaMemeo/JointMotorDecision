@@ -1,5 +1,6 @@
 %----------------------------------------------------------------------
 % ANNOUNCE NEXT TRIAL (and wait for keypress)
+cgfont('Arial',fontsizebig);
 
 nextTrialStart  = 'Trial about to begin.';
 nextA1          = 'Blue participant starts.';

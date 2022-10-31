@@ -163,7 +163,7 @@ try
                 %----------------------------------------------------------
                 % call function (pass on stimuli params defined above)
                 % -> trial procedure happens inside function
-                stimuli = trial_jmd(stimuli,mWidth,trial,add,cogent,a2homebutton);
+                stimuli = trial_jmd(stimuli,mWidth,trial,add,cogent,a2homebutton,show_acc);
                 %----------------------------------------------------------
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 
