@@ -111,7 +111,7 @@ a2homebutton=io64(cogent.io.ioObj,add.inp_address_startSubj2)-4;
 % 1 = nothing
 % 2 = only joint
 % 3 = A1, A2, joint.
-show_acc = 2;
+show_acc = 1;
 
 % NOTE: we could get rid of the round-variable; it's always 1 now
 % the only thing we vary is the number of blocks (within the "round")
