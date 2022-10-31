@@ -82,7 +82,6 @@ try
                     cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
                     waitkeydown(inf,71); % start the block with spacebar press
                 else
-
                     % Short break after first block
                     cgfont('Arial',fontsizebig);
                     cgtext('Short break',mWidth,0);
@@ -90,20 +89,20 @@ try
                     
                     cgpencol(1,1,1); % white
                     %Calculate the joint accuracy
-                    interim_acc = sum(data.output(:,21))/(trial-1);
+                    interim_acc = sum(data.output(:,21))/(trial);
                     %show interim accuracy
-                    cgtext(['Your team score is ' num2str(interim_acc*(trial-1)) ' out of ' num2str((trial-1)) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
-                    cgtext(['Your team score is ' num2str(interim_acc*(trial-1)) ' out of ' num2str((trial-1)) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);                    
+                    cgtext(['Your team score is ' num2str(interim_acc*(trial)) ' out of ' num2str((trial)) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
+                    cgtext(['Your team score is ' num2str(interim_acc*(trial)) ' out of ' num2str((trial)) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);                    
                     cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
                     % start new block with spacebar; then 3 sec pause
                     waitkeydown(inf,71);
                     
                     cgflip(background(1),background(2),background(3)); % clear background color to gray
+                    cgpencol(0,0,0); % black
                     cgfont('Arial',fontsizebig);
                     cgtext(['Block ' num2str(block) ' of ' num2str(blocksInRound)],mWidth,0); % create buffer with text for starting trial
                     cgtext(['Block ' num2str(block) ' of ' num2str(blocksInRound)],-mWidth,0); % create buffer with text for starting trial
                     cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
-                    cgpencol(0,0,0); % black
                     waitkeydown(inf,71); % start the block with spacebar press
                 end
                 
@@ -238,10 +237,10 @@ try
         % Show final accuracy
         cgpencol(1,1,1); % white
         %Calculate the joint accuracy
-        interim_acc = sum(data.output(:,21))/(trial-1);
+        interim_acc = sum(data.output(:,21))/(trial);
         %show interim accuracy
-        cgtext(['Your final team score is ' num2str(interim_acc*(trial-1)) ' out of ' num2str((trial-1)) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
-        cgtext(['Your final team score is ' num2str(interim_acc*(trial-1)) ' out of ' num2str((trial-1)) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);
+        cgtext(['Your final team score is ' num2str(interim_acc*(trial)) ' out of ' num2str((trial)) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
+        cgtext(['Your final team score is ' num2str(interim_acc*(trial)) ' out of ' num2str((trial)) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);
         cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
         waitkeydown(inf,71);
         

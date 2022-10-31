@@ -55,8 +55,9 @@ cgfont('Arial',fontsizebig); % set font to big
 
 % instruction texts
 % getReady        = 'Get ready for the next trial.';
-PartnerGetReady = 'Your partner starts the next trial.';
-wait4partner    = 'Please turn away and wait for your partner.';
+% PartnerGetReady = 'Your partner starts the next trial.';
+wait4partner_1    = 'Please turn away';
+wait4partner_2    = 'while your partner performs the task.';
 % return2start    = 'Place your finger on the start position.';
 return2start_1  = 'Get ready for the trial';
 return2start_2  = 'and press the start button.';
@@ -208,7 +209,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     
     % Tell A2 to wait and A1 to get ready
     cgsetsprite(0);
-    cgtext(PartnerGetReady,mWidth,0);
+    cgtext(wait4partner_1,mWidth,yPos);
+    cgtext(wait4partner_2,mWidth,-yPos);
     cgtext(return2start_1,-mWidth,yPos);
     cgtext(return2start_2,-mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
@@ -233,13 +235,15 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
             while data_in ~= 63 && data_in ~= 55 && data_in ~= 47
                 cgtext(return2start_1,-mWidth,yPos);
                 cgtext(return2start_2,-mWidth,-yPos);
-                cgtext(wait4partner,mWidth,0);
+                cgtext(wait4partner_1,mWidth,yPos);
+                cgtext(wait4partner_2,mWidth,-yPos);
                 cgflip(background(1),background(2),background(3));
                 data_in=io64(cogent.io.ioObj,add.inp_address);
             end
             % once button press is registered, show blank grey screen and
             % shortly pause (2s) before showing the two 2 stimulus intervals
-            cgtext(wait4partner,mWidth,0);
+            cgtext(wait4partner_1,mWidth,yPos);
+            cgtext(wait4partner_2,mWidth,-yPos);
             cgflip(background(1),background(2),background(3));
             WaitSecs(2);
         end
@@ -249,18 +253,21 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     % here one could use fixation(fix_size,'+') instead?
     cgsetsprite(0);
     cgtext('+',0+(stimuli.A1.side*spriteWidth/2),0);
-    cgtext(wait4partner,mWidth,0);
+    cgtext(wait4partner_1,mWidth,yPos);
+    cgtext(wait4partner_2,mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
     WaitSecs(jitterTimeMin+rand*jitterTimeAdded); %500 + [0-1000]
     
     % STIMULUS INTERVAL 1
     % prepare stimulus
     cgdrawsprite(firstIntSpriteA1,0+(stimuli.A1.side*spriteWidth/2),0);
-    cgtext(wait4partner,mWidth,0);
+    cgtext(wait4partner_1,mWidth,yPos);
+    cgtext(wait4partner_2,mWidth,-yPos);
     % show stimulus
     stimuli.firstA1.OnsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     waituntil(stimuli.firstA1.OnsetTime+stimuli.duration);
-    cgtext(wait4partner,mWidth,0);
+    cgtext(wait4partner_1,mWidth,yPos);
+    cgtext(wait4partner_2,mWidth,-yPos);
     stimuli.firstA1.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     stimuli.firstA1.actualDuration  = stimuli.firstA1.OffsetTime - stimuli.firstA1.OnsetTime;
     WaitSecs(stimuli.ISI); % wait 1000 ms
@@ -268,11 +275,13 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     % STIMULUS INTERVAL 2
     % prepare stimulus
     cgdrawsprite(secondIntSpriteA1,0+(stimuli.A1.side*spriteWidth/2),0);
-    cgtext(wait4partner,mWidth,0);
+    cgtext(wait4partner_1,mWidth,yPos);
+    cgtext(wait4partner_2,mWidth,-yPos);
     % show stimulus
     stimuli.secondA1.OnsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     waituntil(stimuli.secondA1.OnsetTime+stimuli.duration);
-    cgtext(wait4partner,mWidth,0);
+    cgtext(wait4partner_1,mWidth,yPos);
+    cgtext(wait4partner_2,mWidth,-yPos);
     stimuli.secondA1.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     stimuli.secondA1.actualDuration  = stimuli.secondA1.OffsetTime - stimuli.secondA1.OnsetTime;
     WaitSecs(stimuli.ISI/2); % wait 500 ms
@@ -284,7 +293,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     % DISPLAY DECISION PROMPT (t = 0)
     cgsetsprite(0);
     cgtext(decisionPrompt,0+(stimuli.A1.side*spriteWidth/2),0);
-    cgtext(wait4partner,mWidth,0);
+    cgtext(wait4partner_1,mWidth,yPos);
+    cgtext(wait4partner_2,mWidth,-yPos);
     % t0 = time when decision prompt appears (i.e., screen flips)
     t0 = cgflip(background(1),background(2),background(3)).*1000;
     % start Vicon recording (once home button is released)
@@ -690,7 +700,8 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     
     % Tell A1 to wait and A2 to get ready
     cgsetsprite(0);
-    cgtext(PartnerGetReady,-mWidth,0);
+    cgtext(wait4partner_1,-mWidth,yPos);
+    cgtext(wait4partner_2,-mWidth,-yPos);
     cgtext(return2start_1,mWidth,yPos);
     cgtext(return2start_2,mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
@@ -712,11 +723,13 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
             while data_in ~= a2homebutton
                 cgtext(return2start_1,mWidth,yPos);
                 cgtext(return2start_2,mWidth,-yPos);
-                cgtext(wait4partner,-mWidth,0);
+                cgtext(wait4partner_1,-mWidth,yPos);
+                cgtext(wait4partner_2,-mWidth,-yPos);
                 cgflip(background(1),background(2),background(3));
                 data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
             end
-            cgtext(wait4partner,-mWidth,0);
+            cgtext(wait4partner_1,-mWidth,yPos);
+            cgtext(wait4partner_2,-mWidth,-yPos);
             cgflip(background(1),background(2),background(3));
             WaitSecs(2);
         end
@@ -725,18 +738,21 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     % IF PARTICIPANT READY, SHOW FIXATION CROSS
     cgsetsprite(0);
     cgtext('+',0+(stimuli.A2.side*spriteWidth/2),0);
-    cgtext(wait4partner,-mWidth,0);
+    cgtext(wait4partner_1,-mWidth,yPos);
+    cgtext(wait4partner_2,-mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
     WaitSecs(jitterTimeMin+rand*jitterTimeAdded);
     
     % STIMULUS INTERVAL 1
     % prepare stimulus
     cgdrawsprite(firstIntSpriteA2,0+(stimuli.A2.side*spriteWidth/2),0);
-    cgtext(wait4partner,-mWidth,0);
+    cgtext(wait4partner_1,-mWidth,yPos);
+    cgtext(wait4partner_2,-mWidth,-yPos);
     % show stimulus
     stimuli.firstA2.OnsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     waituntil(stimuli.firstA2.OnsetTime+stimuli.duration);
-    cgtext(wait4partner,-mWidth,0);
+    cgtext(wait4partner_1,-mWidth,yPos);
+    cgtext(wait4partner_2,-mWidth,-yPos);
     stimuli.firstA2.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     stimuli.firstA2.actualDuration  = stimuli.firstA2.OffsetTime - stimuli.firstA2.OnsetTime;
     WaitSecs(stimuli.ISI);
@@ -744,11 +760,13 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     % STIMULUS INTERVAL 2
     % prepare stimulus
     cgdrawsprite(secondIntSpriteA2,0+(stimuli.A2.side*spriteWidth/2),0);
-    cgtext(wait4partner,-mWidth,0);
+    cgtext(wait4partner_1,-mWidth,yPos);
+    cgtext(wait4partner_2,-mWidth,-yPos);
     % show stimulus
     stimuli.secondA2.OnsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     waituntil(stimuli.secondA2.OnsetTime+stimuli.duration);
-    cgtext(wait4partner,-mWidth,0);
+    cgtext(wait4partner_1,-mWidth,yPos);
+    cgtext(wait4partner_2,-mWidth,-yPos);
     stimuli.secondA2.OffsetTime = cgflip(background(1),background(2),background(3)) .* 1000;
     stimuli.secondA2.actualDuration  = stimuli.secondA2.OffsetTime - stimuli.secondA2.OnsetTime;
     WaitSecs(stimuli.ISI/2);
@@ -760,7 +778,8 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     % DISPLAY DECISION PROMPT (t = 0)
     cgsetsprite(0);
     cgtext(decisionPrompt,0+(stimuli.A2.side*spriteWidth/2),0);
-    cgtext(wait4partner,-mWidth,0);
+    cgtext(wait4partner_1,-mWidth,yPos);
+    cgtext(wait4partner_2,-mWidth,-yPos);
     t0_a2 = cgflip(background(1),background(2),background(3)).*1000;
     % start Vicon recording (once home button is released)
     io64(cogent.io.ioObj,add.out_address,2);
