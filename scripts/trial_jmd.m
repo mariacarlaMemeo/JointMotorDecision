@@ -1345,8 +1345,8 @@ if mod(trial,2) == 1
         Collconf = 0; % set confidence rating to zero initially
         
         % confidence keys A1 (for joint decision)
-        firstCollKey      = 82; % Agent1 7 -> down
-        secondCollKey     = 76; % Agent1 1 -> up
+        firstCollKey      = 76; % Agent1 1 -> down
+        secondCollKey     = 82; % Agent1 7 -> up
         confirmCollKey    = 79; % Agent1 4 -> confirm
         
         
