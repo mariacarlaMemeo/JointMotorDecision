@@ -21,8 +21,8 @@ zeroLineLength = 15;
 % CONFIDENCE KEYS
 % Note: for joint decision, conf. keys are adjusted as necessary in script
 % confidence keys A1
-firstA1Key      = 82; % Agent1 7 -> down
-secondA1Key     = 76; % Agent1 1 -> up
+firstA1Key      = 76; % Agent1 1 -> down
+secondA1Key     = 82; % Agent1 7 -> up
 confirmA1Key    = 79; % Agent1 4 -> confirm
 % confidence keys A2
 firstA2Key      = 83; % Agent2 8 -> down

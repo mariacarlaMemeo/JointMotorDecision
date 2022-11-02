@@ -28,7 +28,7 @@ try
         fixation(fix_size,'+'); % after key press, show fixation cross only
         cgflip(background(1),background(2),background(3));
     else % 2 screens
-        cgfont('Arial',fontsizebig);
+        cgfont('Arial',fontsizebig);        
         cgtext(exp_instr_0,mWidth,200);
         cgtext(exp_instr_0,-mWidth,200);
         cgtext(exp_instr_1,mWidth,100);
