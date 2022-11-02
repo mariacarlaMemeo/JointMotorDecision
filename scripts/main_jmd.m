@@ -29,19 +29,12 @@ try
         cgflip(background(1),background(2),background(3));
     else % 2 screens
         cgfont('Arial',fontsizebig);        
-        cgtext(exp_instr_0,mWidth,200);
-        cgtext(exp_instr_0,-mWidth,200);
-        cgtext(exp_instr_1,mWidth,100);
-        cgtext(exp_instr_1,-mWidth,100);
-        cgfont('Arial',fontsizesmall);
-        cgtext(exp_instr_2,mWidth,-100);
-        cgtext(exp_instr_2,-mWidth,-100);
-        cgtext(exp_instr_3,mWidth,-200);
-        cgtext(exp_instr_3,-mWidth,-200);
-        cgtext(exp_instr_4,mWidth,-250);
-        cgtext(exp_instr_4,-mWidth,-250);
-        cgtext(exp_instr_5,mWidth,-350);
-        cgtext(exp_instr_5,-mWidth,-350);
+        cgtext(exp_instr_1_0,mWidth,200);
+        cgtext(exp_instr_1_0,-mWidth,200);
+        cgtext(exp_instr_1_1,mWidth,100);
+        cgtext(exp_instr_1_1,-mWidth,100);
+        cgtext(exp_instr_1_2,mWidth,0);
+        cgtext(exp_instr_1_2,-mWidth,0);
         cgflip(background(1),background(2),background(3));
         waitkeydown(inf,71); % stay on screen until space bar is pressed
         %         cgfont('Arial',fontsizebig);

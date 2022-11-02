@@ -339,6 +339,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     
     % TARGET REACHED (t = 2)
     t2 = cgflip(background(1),background(2),background(3)).*1000;
+    WaitSecs(0.1);
     % stop Vicon recording (once target has been pressed)
     io64(cogent.io.ioObj,add.out_address,0);
     % save MT
@@ -573,6 +574,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         
         % TARGET REACHED (t = 2)
         t2_a2 = cgflip(background(1),background(2),background(3)).*1000;
+        WaitSecs(0.1);
         % stop Vicon recording
         io64(cogent.io.ioObj,add.out_address,0);
         % record MT for A2
@@ -823,6 +825,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     
     % TARGET REACHED (t = 2)
     t2_a2 = cgflip(background(1),background(2),background(3)).*1000;
+    WaitSecs(0.1);
     % stop Vicon recording
     io64(cogent.io.ioObj,add.out_address,0);
     % record MT for A2
@@ -1059,6 +1062,7 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         
         % TARGET REACHED (t = 2)
         t2 = cgflip(background(1),background(2),background(3)).*1000;
+        WaitSecs(0.1);
         % stop Vicon recording (once target has been pressed)
         io64(cogent.io.ioObj,add.out_address,0);
         % save MT for A1
@@ -1314,6 +1318,7 @@ if mod(trial,2) == 1
         
         % TARGET REACHED (t = 2)
         t2_coll = cgflip(background(1),background(2),background(3)).*1000;
+        WaitSecs(0.1);
         % stop Vicon recording (once target has been pressed)
         io64(cogent.io.ioObj,add.out_address,0);
         % save MT for A1 in joint decision
@@ -1550,6 +1555,7 @@ elseif mod(trial,2) == 0
         
         % TARGET REACHED (t = 2)
         t2_coll = cgflip(background(1),background(2),background(3)).*1000;
+        WaitSecs(0.1);
         % stop Vicon recording
         io64(cogent.io.ioObj,add.out_address,0);
         % record MT for A2 in joint decision

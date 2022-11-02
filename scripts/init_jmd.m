@@ -187,18 +187,18 @@ start_cogent;
 %--------------------------------------------------------------------------
 %%%%%%%%%%%%%%%%%%%%%% Participant instructions %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %--------------------------------------------------------------------------
-exp_instr_0     = 'Welcome to the experiment!';
-exp_instr_1     = 'You will perform a perceptual decision-making task.';
-exp_instr_2     = 'You will see 2 stimulus intervals and decide which contained an oddball.';
-exp_instr_3     = 'For the 1st interval, press the left button.';
-exp_instr_4     = 'For the 2nd interval, press the right button.';
-exp_instr_5     = 'Keep your finger on the start position until you decide.';
-exp_instr_end   = 'This is the end of the experiment. Thank you!';
+% exp_instr_0     = 'Welcome to the experiment!';
+% exp_instr_1     = 'You will perform a perceptual decision-making task.';
+% exp_instr_2     = 'You will see 2 stimulus intervals and decide which contained an oddball.';
+% exp_instr_3     = 'For the 1st interval, press the left button.';
+% exp_instr_4     = 'For the 2nd interval, press the right button.';
+% exp_instr_5     = 'Keep your finger on the start position until you decide.';
+% exp_instr_end   = 'This is the end of the experiment. Thank you!';
 
-% exp_instr_1_0     = 'Thank you for taking part in this experiment.';
-% exp_instr_1_1     = 'Please read the following instructions carefully.';
-% exp_instr_1_2     = 'If you have any questions, please ask the experimenter.';
-% 
+exp_instr_1_0     = 'Thank you for taking part in this experiment.';
+exp_instr_1_1     = 'Please read the following instructions carefully.';
+exp_instr_1_2     = 'If you have any questions, please ask the experimenter.';
+
 % exp_instr_2_0     = 'Your task:';
 % exp_instr_2_1     = 'Thank you for taking part in this experiment.';
 % exp_instr_2_2     = 'Thank you for taking part in this experiment.';
