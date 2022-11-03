@@ -19,7 +19,8 @@ try
     %----------------------------------------------------------------------
     cgflip(background(1),background(2),background(3)); % clear background color to gray
     % Note: in the following, "screen" refers to a window on the screen,
-    % not an actual physical screen; we always use 2 (for A1 and A2)
+    % not an actual physical screen; we always use 2 (for A1 and A2) - the
+    % 1 screen option is not functional
     if data.display == 1 % 1 screen
         cgtext('Start the Experiment ',0,100); % create buffer with text for starting trial
         fixation(fix_size,'+'); % create buffer with fixation cross
@@ -28,22 +29,9 @@ try
         fixation(fix_size,'+'); % after key press, show fixation cross only
         cgflip(background(1),background(2),background(3));
     else % 2 screens
-        cgfont('Arial',fontsizebig);        
-        cgtext(exp_instr_1_0,mWidth,200);
-        cgtext(exp_instr_1_0,-mWidth,200);
-        cgtext(exp_instr_1_1,mWidth,100);
-        cgtext(exp_instr_1_1,-mWidth,100);
-        cgtext(exp_instr_1_2,mWidth,0);
-        cgtext(exp_instr_1_2,-mWidth,0);
-        cgflip(background(1),background(2),background(3));
-        waitkeydown(inf,71); % stay on screen until space bar is pressed
-        %         cgfont('Arial',fontsizebig);
-        %         cgtext('Task about to begin...',mWidth,100);
-        %         cgtext('Task about to begin...',-mWidth,100);
-        %         cgtext('+',mWidth,0);
-        %         cgtext('+',-mWidth,0);
-        %         cgflip(background(1),background(2),background(3));
-        %         wait(3000); % task begins automatically after 3 sec
+        if data.isExperiment == 0 
+            practice_instr; % show instructions during practice session
+        end
     end
     
     %% Start experiment loop: rounds / blocks / trials
@@ -82,10 +70,10 @@ try
                     
                     cgpencol(1,1,1); % white
                     %Calculate the joint accuracy
-                    interim_acc = sum(data.output(:,21))/(trial);
+                    interim_acc = sum(data.output(:,21))/length(data.output(:,21)); % no. of correct trials/total trial no.
                     %show interim accuracy
-                    cgtext(['Your team score is ' num2str(interim_acc*(trial)) ' out of ' num2str((trial)) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
-                    cgtext(['Your team score is ' num2str(interim_acc*(trial)) ' out of ' num2str((trial)) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);                    
+                    cgtext(['Your team score is ' num2str(sum(data.output(:,21))) ' out of ' num2str(length(data.output(:,21))) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
+                    cgtext(['Your team score is ' num2str(sum(data.output(:,21))) ' out of ' num2str(length(data.output(:,21))) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);                    
                     cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
                     % start new block with spacebar; then 3 sec pause
                     waitkeydown(inf,71);
@@ -114,18 +102,18 @@ try
             counter_a2 = 0;
             for trial = 1 : trialsInBlock*2
                 
-                if trial==trialsInBlock+1
+                if trial==trialsInBlock+1 % short break at halftime of block
                     
                     %Calculate the joint accuracy
-                    interim_acc = sum(data.output(:,21))/(trial-1);
+                    interim_acc = sum(data.output(:,21))/length(data.output(:,21)); % no. of correct trials/total trial no.
                     % Short break after each block
                     cgfont('Arial',fontsizebig);
                     cgtext('Short break',mWidth,0);
                     cgtext('Short break',-mWidth,0);
                     %show interim accuracy
                     cgpencol(1,1,1); % white
-                    cgtext(['Your team score is ' num2str(interim_acc*(trial-1)) ' out of ' num2str((trial-1)) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
-                    cgtext(['Your team score is ' num2str(interim_acc*(trial-1)) ' out of ' num2str((trial-1)) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);                   
+                    cgtext(['Your team score is ' num2str(sum(data.output(:,21))) ' out of ' num2str((length(data.output(:,21)))) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
+                    cgtext(['Your team score is ' num2str(sum(data.output(:,21))) ' out of ' num2str((length(data.output(:,21)))) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);                   
                     cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
                     cgpencol(0,0,0); % black
                     waitkeydown(inf,71);
@@ -230,10 +218,10 @@ try
         % Show final accuracy
         cgpencol(1,1,1); % white
         %Calculate the joint accuracy
-        interim_acc = sum(data.output(:,21))/(trial);
+        interim_acc = sum(data.output(:,21))/length(data.output(:,21));
         %show interim accuracy
-        cgtext(['Your final team score is ' num2str(interim_acc*(trial)) ' out of ' num2str((trial)) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
-        cgtext(['Your final team score is ' num2str(interim_acc*(trial)) ' out of ' num2str((trial)) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);
+        cgtext(['Your final team score is ' num2str(sum(data.output(:,21))) ' out of ' num2str((length(data.output(:,21)))) ' points (' num2str(round(interim_acc*100)) ' %)'],mWidth,-200);
+        cgtext(['Your final team score is ' num2str(sum(data.output(:,21))) ' out of ' num2str((length(data.output(:,21)))) ' points (' num2str(round(interim_acc*100)) ' %)'],-mWidth,-200);
         cgflip(background(1),background(2),background(3)); % display the two buffers created above (text and fixation cross)
         waitkeydown(inf,71);
         

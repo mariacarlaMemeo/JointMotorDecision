@@ -21,18 +21,18 @@ zeroLineLength = 15;
 % CONFIDENCE KEYS
 % Note: for joint decision, conf. keys are adjusted as necessary in script
 % confidence keys A1
-firstA1Key      = 76; % Agent1 1 -> down
-secondA1Key     = 82; % Agent1 7 -> up
-confirmA1Key    = 79; % Agent1 4 -> confirm
+% firstA1Key      = 82; % Agent1 7 -> down
+% secondA1Key     = 76; % Agent1 1 -> up
+% confirmA1Key    = 79; % Agent1 4 -> confirm
 % confidence keys A2
 firstA2Key      = 83; % Agent2 8 -> down
 secondA2Key     = 77; % Agent2  2 -> up
 confirmA2Key    = 80; % Agent2 5 -> confirm
 
 % % confidence keys A1
-% firstA1Key      = 3; % Agent1 C -> down
-% secondA1Key     = 5; % Agent1 E -> up
-% confirmA1Key    = 4; % Agent1 D -> confirm
+firstA1Key      = 3; % Agent1 C -> down
+secondA1Key     = 5; % Agent1 E -> up
+confirmA1Key    = 4; % Agent1 D -> confirm
 % % confidence keys A2
 % firstA2Key      = 2; % Agent2 B -> down
 % secondA2Key     = 20;% Agent2 T -> up
@@ -54,24 +54,29 @@ abortKey = 52;  % ESC
 cgfont('Arial',fontsizebig); % set font to big
 
 % instruction texts
+
+wait4partner_1    = 'TURN AWAY';%'Please turn away';
+wait4partner_2    = 'while partner acts';
+% return2start_1    = 'Get ready for the trial';
+% return2start_2    = 'and press the start button.';
+return2start_1st_1    = 'YOU START';
+return2start_1st_2    = 'Press start button';
+return2start_2nd_1    = 'YOUR TURN';
+return2start_2nd_2    = 'Press start button';
+return2startJ_1   = 'Press start button';
+return2startJ_2   = 'and take JOINT decision';
+decisionPrompt    = '1° stimolo               ?               2° stimolo';
+observePartner    = 'OBSERVE partner';%'Please observe your partner.';
+partnerDecidesJ_1 = 'Partner takes JOINT decision';
+partnerDecidesJ_2 = 'OBSERVE partner now';%'Please observe your partner now.';
+confidenceQ       = 'How confident are you?';
+fullyConf         = 'Fully confident';
+zeroConf          = 'Not confident';
+
+% return2start    = 'Place your finger on the start position.';
 % getReady        = 'Get ready for the next trial.';
 % PartnerGetReady = 'Your partner starts the next trial.';
-wait4partner_1    = 'Please turn away';
-wait4partner_2    = 'while your partner performs the task.';
-% return2start    = 'Place your finger on the start position.';
-return2start_1  = 'Get ready for the trial';
-return2start_2  = 'and press the start button.';
-return2startJ_1 = 'Please press the start button';
-return2startJ_2 = 'and take the JOINT decision now.';
-decisionPrompt  = '1° stimolo               ?               2° stimolo';
-observePartner  = 'Please observe your partner.';
 % decisionPromptJ = 'Please take the JOINT decision now.';
-partnerDecidesJ_1 = 'Your partner now takes the JOINT decision.';
-partnerDecidesJ_2 = 'Please observe your partner now.';
-
-confidenceQ     = 'How confident are you?';
-fullyConf       = 'Fully confident';
-zeroConf        = 'Not confident';
 
 % Prepare the recorded sound file
 loadsound('tone.wav', 1) %Puts sound in buffer 1.
@@ -211,8 +216,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     cgsetsprite(0);
     cgtext(wait4partner_1,mWidth,yPos);
     cgtext(wait4partner_2,mWidth,-yPos);
-    cgtext(return2start_1,-mWidth,yPos);
-    cgtext(return2start_2,-mWidth,-yPos);
+    cgtext(return2start_1st_1,-mWidth,yPos);
+    cgtext(return2start_1st_2,-mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
     WaitSecs(2);
     
@@ -233,8 +238,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         % A2 might be pressing a target button at the same time (55/47)
         if data_in ~= 63 && data_in ~= 55 && data_in ~= 47
             while data_in ~= 63 && data_in ~= 55 && data_in ~= 47
-                cgtext(return2start_1,-mWidth,yPos);
-                cgtext(return2start_2,-mWidth,-yPos);
+                cgtext(return2start_1st_1,-mWidth,yPos);
+                cgtext(return2start_1st_2,-mWidth,-yPos);
                 cgtext(wait4partner_1,mWidth,yPos);
                 cgtext(wait4partner_2,mWidth,-yPos);
                 cgflip(background(1),background(2),background(3));
@@ -453,8 +458,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     % ADD VOICE HERE: ITS YOUR TURN (A2) and PLEASE OBSERVE (A1)
     playsound(1);
     cgtext(observePartner,-mWidth,0);
-    cgtext(return2start_1,mWidth,yPos);
-    cgtext(return2start_2,mWidth,-yPos);
+    cgtext(return2start_2nd_1,mWidth,yPos);
+    cgtext(return2start_2nd_2,mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
     WaitSecs(2);
     
@@ -481,8 +486,8 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
             data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
             if data_in ~= a2homebutton
                 while data_in ~= a2homebutton
-                    cgtext(return2start_1,mWidth,yPos);
-                    cgtext(return2start_2,mWidth,-yPos);
+                    cgtext(return2start_2nd_1,mWidth,yPos);
+                    cgtext(return2start_2nd_2,mWidth,-yPos);
                     cgtext(observePartner,-mWidth,0);
                     cgflip(background(1),background(2),background(3));
                     data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
@@ -704,8 +709,8 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     cgsetsprite(0);
     cgtext(wait4partner_1,-mWidth,yPos);
     cgtext(wait4partner_2,-mWidth,-yPos);
-    cgtext(return2start_1,mWidth,yPos);
-    cgtext(return2start_2,mWidth,-yPos);
+    cgtext(return2start_1st_1,mWidth,yPos);
+    cgtext(return2start_1st_2,mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
     WaitSecs(2);
     
@@ -723,8 +728,8 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
         data_in=io64(cogent.io.ioObj,add.inp_address_startSubj2);
         if data_in ~= a2homebutton
             while data_in ~= a2homebutton
-                cgtext(return2start_1,mWidth,yPos);
-                cgtext(return2start_2,mWidth,-yPos);
+                cgtext(return2start_1st_1,mWidth,yPos);
+                cgtext(return2start_1st_2,mWidth,-yPos);
                 cgtext(wait4partner_1,-mWidth,yPos);
                 cgtext(wait4partner_2,-mWidth,-yPos);
                 cgflip(background(1),background(2),background(3));
@@ -938,8 +943,8 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
     % ADD VOICE HERE: ITS YOUR TURN (A1) and PLEASE OBSERVE (A2)
     playsound(1);
     cgtext(observePartner,mWidth,0);
-    cgtext(return2start_1,-mWidth,yPos);
-    cgtext(return2start_2,-mWidth,-yPos);
+    cgtext(return2start_2nd_1,-mWidth,yPos);
+    cgtext(return2start_2nd_2,-mWidth,-yPos);
     cgflip(background(1),background(2),background(3));
     WaitSecs(2);
     
@@ -966,8 +971,8 @@ elseif mod(trial,2) == 0 % A2 starts in all even trials
             data_in=io64(cogent.io.ioObj,add.inp_address);
             if data_in ~= 63 && data_in ~= 55 && data_in ~= 47
                 while data_in ~= 63 && data_in ~= 55 && data_in ~= 47
-                    cgtext(return2start_1,-mWidth,yPos);
-                    cgtext(return2start_2,-mWidth,-yPos);
+                    cgtext(return2start_2nd_1,-mWidth,yPos);
+                    cgtext(return2start_2nd_2,-mWidth,-yPos);
                     cgtext(observePartner,mWidth,0);
                     cgflip(background(1),background(2),background(3));
                     data_in=io64(cogent.io.ioObj,add.inp_address);
@@ -1350,9 +1355,12 @@ if mod(trial,2) == 1
         Collconf = 0; % set confidence rating to zero initially
         
         % confidence keys A1 (for joint decision)
-        firstCollKey      = 76; % Agent1 1 -> down
-        secondCollKey     = 82; % Agent1 7 -> up
-        confirmCollKey    = 79; % Agent1 4 -> confirm
+%         firstCollKey      = 82; % Agent1 7 -> down
+%         secondCollKey     = 76; % Agent1 1 -> up
+%         confirmCollKey    = 79; % Agent1 4 -> confirm
+        firstCollKey      = 3; % Agent1 C -> down
+        secondCollKey     = 5; % Agent1 E -> up
+        confirmCollKey    = 4; % Agent1 D -> confirm
         
         
         % READ INPUT (until decision is confirmed)
