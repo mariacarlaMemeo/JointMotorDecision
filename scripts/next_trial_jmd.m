@@ -2,9 +2,9 @@
 % ANNOUNCE NEXT TRIAL (and wait for keypress)
 cgfont('Arial',fontsizebig);
 
-nextTrialStart  = 'NEW TRIAL.';%'Trial about to begin.';
-nextA1          = 'Blue starts.';%'Blue participant starts.';
-nextA2          = 'Yellow starts.';%'Yellow participant starts.';
+nextTrialStart  = 'NEW TRIAL';%'Trial about to begin.';
+nextA1          = 'Blue starts';%'Blue participant starts.';
+nextA2          = 'Yellow starts';%'Yellow participant starts.';
 
 if stimuli.trial < stimuli.trialsInBlock
     % announce which agent will start next trial

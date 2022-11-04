@@ -54,29 +54,28 @@ abortKey = 52;  % ESC
 cgfont('Arial',fontsizebig); % set font to big
 
 % instruction texts
-
-wait4partner_1    = 'TURN AWAY';%'Please turn away';
-wait4partner_2    = 'while partner acts';
-% return2start_1    = 'Get ready for the trial';
-% return2start_2    = 'and press the start button.';
+wait4partner_1        = 'TURN AWAY';
+wait4partner_2        = 'while partner acts';
 return2start_1st_1    = 'YOU START';
 return2start_1st_2    = 'Press start button';
 return2start_2nd_1    = 'YOUR TURN';
 return2start_2nd_2    = 'Press start button';
-return2startJ_1   = 'Press start button';
-return2startJ_2   = 'and take JOINT decision';
-decisionPrompt    = '1° stimolo               ?               2° stimolo';
-observePartner    = 'OBSERVE partner';%'Please observe your partner.';
-partnerDecidesJ_1 = 'Partner takes JOINT decision';
-partnerDecidesJ_2 = 'OBSERVE partner now';%'Please observe your partner now.';
-confidenceQ       = 'How confident are you?';
-fullyConf         = 'Fully confident';
-zeroConf          = 'Not confident';
+return2startJ_1       = 'Press start button';
+return2startJ_2       = 'and take TEAM decision';
+decisionPrompt        = '1° stimolo               ?               2° stimolo';
+observePartner        = 'OBSERVE partner';
+partnerDecidesJ_1     = 'Partner takes TEAM decision';
+partnerDecidesJ_2     = 'OBSERVE partner now';
+confidenceQ           = 'How confident are you?';
+fullyConf             = 'Fully confident';
+zeroConf              = 'Not confident';
 
-% return2start    = 'Place your finger on the start position.';
-% getReady        = 'Get ready for the next trial.';
-% PartnerGetReady = 'Your partner starts the next trial.';
-% decisionPromptJ = 'Please take the JOINT decision now.';
+% return2start_1    = 'Get ready for the trial';
+% return2start_2    = 'and press the start button.';
+% return2start      = 'Place your finger on the start position.';
+% getReady          = 'Get ready for the next trial.';
+% PartnerGetReady   = 'Your partner starts the next trial.';
+% decisionPromptJ   = 'Please take the JOINT decision now.';
 
 % Prepare the recorded sound file
 loadsound('tone.wav', 1) %Puts sound in buffer 1.

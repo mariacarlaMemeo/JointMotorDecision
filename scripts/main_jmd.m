@@ -209,7 +209,9 @@ try
                     ];
                 
                 data.stimuli(rnd,block,trial) = stimuli;
-                save(resultFileName,'data');
+                save(resultFileName,'data'); % save current results in main folder
+                % NOTE that the save-function here serves just as a backup
+                % in case the experiment is not run until the end
             end % end of trial loop
             %--------------------------------------------------------------
         end % end of block loop
@@ -237,7 +239,7 @@ try
     
     % stop Cogent and save results
     stop_cogent;
-    save(fullfile(save_dir,resultFileName),'data');
+    save(fullfile(save_dir,resultFileName),'data'); % save final result file in data-folder
     
 catch me
     stop_cogent;
