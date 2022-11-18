@@ -301,6 +301,7 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
     cgtext(wait4partner_2,mWidth,-yPos);
     % t0 = time when decision prompt appears (i.e., screen flips)
     t0 = cgflip(background(1),background(2),background(3)).*1000;
+    %EDIT t0 should be right after the flip
     % start Vicon recording (once home button is released)
     io64(cogent.io.ioObj,add.out_address,2); % set LPT to 2
     
@@ -316,6 +317,9 @@ if mod(trial,2) == 1 % A1 starts in all odd trials
         waitkeydown(inf);
     end
     
+    %EDIT: the next flip is not necessary - use a different method to
+    %measure time (check t0 to be coheren)
+    %EDIT t1 should be right before the flip
     % MOVEMENT START (t = 1)
     cgtext(decisionPrompt,0+(stimuli.A1.side*spriteWidth/2),0);
     t1 = cgflip(background(1),background(2),background(3)).*1000;

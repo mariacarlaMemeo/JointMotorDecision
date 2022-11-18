@@ -52,12 +52,13 @@ SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 % tstart = 200ms + reaction time(without movement time)
 % tstop  = end of the video
 
-for p = 1:length(SUBJECTS)
+for p = 2:length(SUBJECTS)
 
+    disp(['Start ' SUBJECTS{p}(2:end)])
     clear vid_info
     % Create a table
     vid_info     = table();
-    varName     = {'pair','trial','name_vid','dura_vid','dura_vid_cut','tstart_cut','tstartSample_cut','tstopSample_cut','nFrames_cut','vid_width','vid_height'};
+    varName     = {'pair','trial','name_vid','agentActing','rt_agentActing','dura_vid','dura_vid_cut','tstart_cut','tstartSample_cut','tstopSample_cut','nFrames_cut','vid_width','vid_height'};
 
     % set the path for the video and the rt variables
     path_data_each = fullfile(path_data,SUBJECTS{p},['task\pilotData_' SUBJECTS{p}(2:end) '.xlsx'] );
@@ -83,12 +84,16 @@ for p = 1:length(SUBJECTS)
         at1stDec      = cell2mat(raw(:,at1stDec_ind));
         if at1stDec(t)==1 %if it's agent1
             rt_ind    = strcmp('A2_rt',txt);
-            tstart    = 0.2 + (0.001*raw{t,rt_ind}); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
+            rt_agent  = 0.001*raw{t,rt_ind};
+            tstart    = 0.2 + (rt_agent); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
             vid_ind   = 3;% (the fourth video to be add to the first index) The loop should be every 6 videos. 2 videos from the 2 videocam per trial.
+            agentExec = 2;%agent executing the action in the video
         elseif at1stDec(t)==2
             rt_ind    = strcmp('A1_rt',txt);
-            tstart    = 0.2 + (0.001*raw{t,rt_ind}); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
+            rt_agent  = 0.001*raw{t,rt_ind};
+            tstart    = 0.2 + (rt_agent); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
             vid_ind   = 2;% (the third video to be add to the first index) The for loop should be every 6 videos. 2 videos from the 2 videocam per trial.
+            agentExec = 1;%agent executing the action in the video
         end
 
         % The video indeces should be every 6 videos
@@ -110,7 +115,10 @@ for p = 1:length(SUBJECTS)
         deltaFrames    =  (v.NumFrames - tstart_frame);%number of frames in the same video
 
         % Fill the table
-        vid_info(t,:) = {['P' SUBJECTS{p}(2:end)],t,curr_vid,v.Duration,vidObj.Duration,tstart,tstart_frame,v.NumFrames,deltaFrames,v.Width,v.Height};
+        vid_info(t,:) = {['P' SUBJECTS{p}(2:end)],t,curr_vid,agentExec,rt_agent,...
+                        v.Duration,vidObj.Duration,...
+                        tstart,tstart_frame,v.NumFrames,deltaFrames,...
+                        v.Width,v.Height};
         % Close video object
         close(vidObj);
 
