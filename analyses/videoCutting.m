@@ -1,5 +1,6 @@
 % %% Use the cluster - Franklin
 clear
+close all
 % addpath('C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecnologia\Documents\MATLAB\IntegrationScripts\franklin')
 % c = parcluster;
 %
@@ -44,6 +45,8 @@ SUBJECT_LIST = cellfun(@(s) find(contains(s,'P1')),SUBJECTS,'uni',0);
 SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 
+%%
+vidObj.FrameRate  = 100;
 
 % The information we need to retrieve is the reaction time. It is in the
 % excel file and it depends on the agent that is performing the 2nd trial,
@@ -55,13 +58,11 @@ SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 
 for p = length(SUBJECTS)% 1:length(SUBJECTS) 
     
-    clear session
-
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear vid_info
     % Create a table
     vid_info     = table();
-    varName     = {'pair','trial','name_vid','agentActing','rt_agentActing','dura_vid','dura_vid_cut','tstart_cut','tstartSample_cut','tstopSample_cut','nFrames_cut','vid_width','vid_height'};
+    varName     = {'pair','trial','name_vid','agentActing','rt_agentActing','rt_index','rt_ulna','dura_vid','dura_vid_cut','tstart_cut','tstartSample_cut','tstopSample_cut','nFrames_cut','vid_width','vid_height'};
 
     % set the path for the video and the rt variables
     path_data_each = fullfile(path_data,SUBJECTS{p},['task\pilotData_' SUBJECTS{p}(2:end) '.xlsx'] );
@@ -70,11 +71,22 @@ for p = length(SUBJECTS)% 1:length(SUBJECTS)
     mkdir(path_video_cut);
     %It loads the 'session' struct for each pair of participants
     path_kin_each  = fullfile(path_kin,[SUBJECTS{p},'.mat']);
-    %Set the initial trial avoiding the training (different for each pari)
-    if strcmp(SUBJECTS{p},'P103')
-        exp_ind    = 19;%very first trial in Nexus
-    end
-    session = session(exp_ind:end);
+    
+    tic
+    load(path_kin_each);
+    toc
+
+    %Remove trials in 'session' cell to avoid inserting the (last?) trials in
+    %which there's no 'marker' field 
+    mark           = cell2mat(cellfun(@(s) isfield(s,'markers'),session,'uni',0));
+    sMarkers       = session(mark);
+%     %Set the initial trial avoiding the training (different for each pair)
+%     if strcmp(SUBJECTS{p},'P103')
+%         exp_ind    = 19;%very first trial in Nexus
+%     end
+%     %Remove the training trials
+%     warning("The c3d files of the training trials are NOT included in the list of trials.")
+%     session = session(exp_ind:end);
 
     % Open excel file to check who's performing the 2nd trial and choose the reaction time of the complementar agent.
     % If you check column 'AgentTakingFirstDecision' you already have the
@@ -87,7 +99,7 @@ for p = length(SUBJECTS)% 1:length(SUBJECTS)
     vid_list      = dir([path_video '*.avi']);
     each6_vid     = 1:6:length(vid_list);%the first index of
     %Create a vector with all the first indeces of the  group of 3 trials
-    c3d_ind       = 1:3:length(session);
+    c3d_ind       = 1:3:length(sMarkers);
 
     for t = 1:length(raw)
 
@@ -99,37 +111,43 @@ for p = length(SUBJECTS)% 1:length(SUBJECTS)
             rt_agent   = 0.001*raw{t,rt_ind};
             tstart     = 0.2 + (rt_agent); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
             vid_ind    = 3;% (the fourth video to be add to the first index) The loop should be every 6 videos. 2 videos from the 2 videocam per trial.
-            kin_ind    = 1+c3d_ind(t); % the 2° in case it's the second agent acting
         elseif at1stDec(t)==2
             rt_ind     = strcmp('A1_rt',txt);
             agentExec  = 'a1';%agent executing the action in the video
             rt_agent   = 0.001*raw{t,rt_ind};
             tstart     = 0.2 + (rt_agent); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
             vid_ind    = 2;% (the third video to be add to the first index) The for loop should be every 6 videos. 2 videos from the 2 videocam per trial.
-            kin_ind    = c3d_ind(t); % the 1° in case it's the first agent acting
         end
+        kin_ind    = 1+c3d_ind(t); % always the 2° in case it's the first/second agent acting
         
         % CHECK index and wrist velocity threshold
         vel_th     = 20; %20[mm/s]
         preAcq     = 20; %preacquisition of 200ms == 20 frames
         model_name = [SUBJECTS{p} '_' agentExec(2) '_' agentExec];%name of the model in Nexus
-        samp       = 1:session{kin_ind}.info.nSamples;
-        index      = session{kin_ind}.markers.([model_name '_index']).Vm;
-        ulna       = session{kin_ind}.markers.([model_name '_ulna']).Vm;
+        samp       = 1:sMarkers{kin_ind}.info.nSamples;
+        index      = sMarkers{kin_ind}.markers.([model_name '_index']).Vm;
+        ulna       = sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm;
         indexTh    = findTh_cons(index(preAcq:end),vel_th,10);%>20[mm/s] for 5 frames, the first interval
-        ulnaTh     = findTh_cons(ulna(preAcq:end),vel_th-5,5);%>15[mm/s]
-        
-        yPos_text   = max([index; ulna]);
+        indexTh    = indexTh + preAcq;
+        ulnaTh     = findTh_cons(ulna(preAcq:end),vel_th,10);%>15[mm/s]
+        ulnaTh     = ulnaTh + preAcq;
+
+        yPos_text   = max(ulna);
         
         v=figure(); set(v, 'WindowStyle', 'Docked');
         yyaxis left; plot(samp,index);
         yyaxis right; plot(samp,ulna);
-        xline(preAcq); text(preAcq,yPos_text-200,' pre: 200ms');
-        xline(samp(end)-10); text((samp(end)-10),yPos_text-200,' post: 100ms');
-        xline(indexTh(1),'b');text(indexTh(1),yPos_text-250,' Index > 20','Color', 'b');
-        xline(ulnaTh(1),'r');text(ulnaTh(1),yPos_text-300,' Ulna > 20','Color', 'r');
-        title()
-
+        xline(preAcq); text(preAcq,yPos_text-300,' pre: 200ms');
+        xline(samp(end)-10); text((samp(end)-10),yPos_text-300,' post');
+        xline(rt_agent*vidObj.FrameRate,'Color', [0.4660 0.6740 0.1880]); text((rt_agent*vidObj.FrameRate),yPos_text-300,' RTagent','Color',[0.4660 0.6740 0.1880]);
+        if ~isnan(indexTh(1))
+        xline(indexTh(1),'Color',[0 0.4470 0.7410]);text(indexTh(1),yPos_text-300,' Index > 20','Color', [0 0.4470 0.7410]);
+        end
+        if ~isnan(ulnaTh(1))
+        xline(ulnaTh(1),'Color',[0.8500 0.3250 0.0980]);text(ulnaTh(1),yPos_text-350,' Ulna > 20','Color', [0.8500 0.3250 0.0980]);
+        end
+        title(['P' SUBJECTS{p}(2:end) ' trial: ' num2str(sMarkers{kin_ind}.info.trial_id) ' agent: ' agentExec])
+        
         % FIND the correct video to cut
         % The video indeces should be every 6 videos
         %Create a vector with all the first indeces of the  group of 6
@@ -140,19 +158,28 @@ for p = length(SUBJECTS)% 1:length(SUBJECTS)
         % Cut video based on tstart and tstop
         v                 = VideoReader(fullfile(path_video,curr_vid));
         vidObj            = VideoWriter([path_video_cut,curr_vid(1:end-4)],'MPEG-4');
-        vidObj.FrameRate  = 100;
         open(vidObj);
+        % Choose the initial frame between : agent reaction time, index finger/ulna reaction time
         tstart_frame   = ceil(tstart*vidObj.FrameRate);
-        for frame = tstart_frame:v.NumFrames %from tstart(transformed in frame) to the very last frame
+        startVector    = [tstart_frame,indexTh(1),ulnaTh(1)];
+        [~,startFrame] = min(startVector);
+        if startFrame ~= 1
+            %If the initial frame is from the index/ulna movement, take n
+            %frames before as startFrame
+            startFrame = startFrame - 10;
+        end
+
+        for frame = startFrame:v.NumFrames %from tstart(transformed in frame) to the very last frame
             new_v = read(v,frame);
             writeVideo(vidObj,new_v)
         end
-        deltaFrames    =  (v.NumFrames - tstart_frame);%number of frames in the same video
+        deltaFrames    =  (v.NumFrames - startFrame);%number of frames in the same video
 
         % Fill the table
         vid_info(t,:) = {['P' SUBJECTS{p}(2:end)],t,curr_vid,str2num(agentExec(2)),rt_agent,...
+                        indexTh(1)/vidObj.FrameRate,ulnaTh(1)/vidObj.FrameRate,...
                         v.Duration,vidObj.Duration,...
-                        tstart,tstart_frame,v.NumFrames,deltaFrames,...
+                        tstart,startFrame,v.NumFrames,deltaFrames,...
                         v.Width,v.Height};
         % Close video object
         close(vidObj);
@@ -162,4 +189,5 @@ for p = length(SUBJECTS)% 1:length(SUBJECTS)
         writetable(vid_info,fullfile(path_video_cut,['P' SUBJECTS{p}(2:end) '_vidInfo.xlsx']));
 
     end
+    clear sMarkers session
 end
