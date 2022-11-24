@@ -142,7 +142,7 @@ for p = 1:length(SUBJECTS)
         ulna       = sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm;% - mean(sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm(1:preAcq));
         indexTh    = findTh_cons(index(preAcq:end),vel_th,10);%>20[mm/s] for 5 frames, the first interval
         indexTh    = indexTh + preAcq;%I add preAcq because I excluded it from the previous function
-        ulnaTh     = findTh_cons(ulna(preAcq:end),vel_th,10);%>15[mm/s]
+        ulnaTh     = findTh_cons(ulna(preAcq:end),vel_th,10);%>15[mm/s] 
         ulnaTh     = ulnaTh + preAcq;
 
         %z coordinates
