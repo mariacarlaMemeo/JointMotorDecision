@@ -1,6 +1,14 @@
-% %% Use the cluster - Franklin
+%% Joint motor decision exp. Pilot data Nov 2022.
+% Video cutting for the observation exp
 clear
 close all
+
+%%
+% Pilot data
+% - P100. Vicon(2.10.3) crashed at trial 93. In Nexus the corresponding trials are missing, i.e. 277-279. Instead in MAtlab they are present.
+% - P101. Vicon(2.10.3) crashed at trial 3. In Nexus there is continuity among the trials, so the trials 31-33 are related to the trial n.4
+
+% %% Use the cluster - Franklin
 % addpath('C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecnologia\Documents\MATLAB\IntegrationScripts\franklin')
 % c = parcluster;
 %
@@ -56,7 +64,7 @@ frameRate  = 100;
 % tstart = 200ms + reaction time(without movement time)
 % tstop  = end of the video
 
-for p = 1:length(SUBJECTS)-1
+for p = 1:length(SUBJECTS)
 
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear vid_info vidObj v
@@ -102,7 +110,6 @@ for p = 1:length(SUBJECTS)-1
     c3d_ind       = 1:3:length(sMarkers);
 
     for t = 1:length(raw)
-
         at1stDec_ind   = strcmp('AgentTakingFirstDecision',txt);
         at1stDec       = cell2mat(raw(:,at1stDec_ind));
         if at1stDec(t)==1 %if it's agent1
@@ -118,19 +125,29 @@ for p = 1:length(SUBJECTS)-1
             tstart     = 0.2 + (rt_agent); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
             vid_ind    = 2;% (the third video to be add to the first index) The for loop should be every 6 videos. 2 videos from the 2 videocam per trial.
         end
-        kin_ind    = 1+c3d_ind(t); % always the 2° in case it's the first/second agent acting
+        if p==2 && t>=116 && t<=137%there is misalignment of 1 trial for this subejct (cannot figure it out)
+            kin_ind    = c3d_ind(t);
+        elseif p==2 && t>=138 %there is misalignment of 1 trial for this subejct (cannot figure it out)
+            kin_ind    = c3d_ind(t)-1;
+        else
+            kin_ind    = 1+c3d_ind(t); % always the 2° in case it's the first/second agent acting
+        end
 
         % CHECK index and wrist velocity threshold
         vel_th     = 20; %20[mm/s]
         preAcq     = 20; %preacquisition of 200ms == 20 frames
         model_name = [SUBJECTS{p} '_' agentExec(2) '_' agentExec];%name of the model in Nexus
         samp       = 1:sMarkers{kin_ind}.info.nSamples;
-        index      = sMarkers{kin_ind}.markers.([model_name '_index']).Vm;
-        ulna       = sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm;
+        index      = sMarkers{kin_ind}.markers.([model_name '_index']).Vm;% - mean(sMarkers{kin_ind}.markers.([model_name '_index']).Vm(1:preAcq));
+        ulna       = sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm;% - mean(sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm(1:preAcq));
         indexTh    = findTh_cons(index(preAcq:end),vel_th,10);%>20[mm/s] for 5 frames, the first interval
         indexTh    = indexTh + preAcq;%I add preAcq because I excluded it from the previous function
         ulnaTh     = findTh_cons(ulna(preAcq:end),vel_th,10);%>15[mm/s]
         ulnaTh     = ulnaTh + preAcq;
+
+        %z coordinates
+        indexZ     = sMarkers{kin_ind}.markers.([model_name '_index']).xyzf(:,3);%-  mean(sMarkers{kin_ind}.markers.([model_name '_index']).xyzf(1:preAcq,3));
+        ulnaZ      = sMarkers{kin_ind}.markers.([model_name '_ulna']).xyzf(:,3);% - mean(sMarkers{kin_ind}.markers.([model_name '_ulna']).xyzf(1:preAcq,3));
 
         % FIND the correct video to cut
         % The video indeces should be every 6 videos
@@ -143,8 +160,8 @@ for p = 1:length(SUBJECTS)-1
         yPos_text   = max(ulna);
 
         v=figure('Name',['P' SUBJECTS{p}(2:end)]); set(v, 'WindowStyle', 'Docked');
-        yyaxis left; plot(samp,index);
-        yyaxis right; plot(samp,ulna);
+        yyaxis left; plot(samp,index);hold on; plot(samp,indexZ); hold off;
+        yyaxis right; plot(samp,ulna);hold on; plot(samp,ulnaZ); hold off;
         xline(preAcq); text(preAcq,yPos_text-300,' pre: 200ms');
         xline(samp(end)-10); text((samp(end)-10),yPos_text-300,' post');
         xline(tstart*frameRate,'Color', [0.4660 0.6740 0.1880]); text((tstart*frameRate),yPos_text-300,' RTagent','Color',[0.4660 0.6740 0.1880]);
@@ -190,7 +207,7 @@ for p = 1:length(SUBJECTS)-1
             deltaFrames  = 0;
             cutVideo_dur = 0;
         end
-        
+
         % Fill the table
         vid_info(t,:) = {['P' SUBJECTS{p}(2:end)],t,curr_vid,str2num(agentExec(2)),rt_agent,...
             indexTh(1)/frameRate,ulnaTh(1)/frameRate,...
