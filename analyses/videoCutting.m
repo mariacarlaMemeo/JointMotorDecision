@@ -64,7 +64,7 @@ frameRate  = 100;
 % tstart = 200ms + reaction time(without movement time)
 % tstop  = end of the video
 
-for p = 1:length(SUBJECTS)
+for p = 1%:length(SUBJECTS)
 
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear vid_info vidObj v
@@ -136,13 +136,14 @@ for p = 1:length(SUBJECTS)
         % CHECK index and wrist velocity threshold
         vel_th     = 20; %20[mm/s]
         preAcq     = 20; %preacquisition of 200ms == 20 frames
+        succSample = 15; %samples where to check if the kinematic threshold is higher than 
         model_name = [SUBJECTS{p} '_' agentExec(2) '_' agentExec];%name of the model in Nexus
         samp       = 1:sMarkers{kin_ind}.info.nSamples;
         index      = sMarkers{kin_ind}.markers.([model_name '_index']).Vm;% - mean(sMarkers{kin_ind}.markers.([model_name '_index']).Vm(1:preAcq));
         ulna       = sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm;% - mean(sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm(1:preAcq));
-        indexTh    = findTh_cons(index(preAcq:end),vel_th,10);%>20[mm/s] for 5 frames, the first interval
+        indexTh    = findTh_cons(index(preAcq:end),vel_th,succSample);%>20[mm/s] for 5 frames, the first interval
         indexTh    = indexTh + preAcq;%I add preAcq because I excluded it from the previous function
-        ulnaTh     = findTh_cons(ulna(preAcq:end),vel_th,10);%>15[mm/s] 
+        ulnaTh     = findTh_cons(ulna(preAcq:end),vel_th,succSample); 
         ulnaTh     = ulnaTh + preAcq; 
 
         %z coordinates
