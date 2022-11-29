@@ -64,15 +64,16 @@ frameRate  = 100;
 % tstart = 200ms + reaction time(without movement time)
 % tstop  = end of the video
 
-for p = 1%:length(SUBJECTS)
+for p = 1:length(SUBJECTS)
 
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear vid_info vidObj v
     % Create a table
     vid_info     = table();
-    varName     = {'pair','trial','name_vid','agentActing','rt_agentActing','rt_index','rt_ulna','dura_vid','dura_vid_cut','tstart_cut','tstartSample_cut','tstopSample_cut','nFrames_cut','vid_width','vid_height'};
+    varName     = {'pair','trial','name_vid','agentActing','rt_agentActing','rt_index','rt_ulna','rt_final','dura_vid','dura_vid_cut','tstartSample_cut','tstopSample_cut','nFrames_cut','vid_width','vid_height'};
 
     % set the path for the video and the rt variables
+    path_task      = fullfile(path_data,SUBJECTS{p},'task');
     path_data_each = fullfile(path_data,SUBJECTS{p},['task\pilotData_' SUBJECTS{p}(2:end) '.xlsx'] );
     path_video     = fullfile(path_data,SUBJECTS{p},'jmd\');
     path_video_cut = fullfile(path_data,SUBJECTS{p},'video_cut\');
@@ -99,8 +100,11 @@ for p = 1%:length(SUBJECTS)
     % Open excel file to check who's performing the 2nd trial and choose the reaction time of the complementar agent.
     % If you check column 'AgentTakingFirstDecision' you already have the
     % agent whose reaction time you need to use for the video.
-    [~,txt,raw] = xlsread(path_data_each);
-    raw         = raw(2:end,:);%removed the header
+    [~,txt,raw]   = xlsread(path_data_each);
+    raw           = raw(2:end,:);%removed the header
+    txt           = [txt {'rt_final'}];
+    data          = cell2table(raw);
+    data.rt_final = zeros(length(raw),1);
 
     % The video indeces should be every 6 videos
     %Create a vector with all the first indeces of the  group of 6 trials
@@ -125,18 +129,18 @@ for p = 1%:length(SUBJECTS)
             tstart     = 0.2 + (rt_agent); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
             vid_ind    = 2;% (the third video to be add to the first index) The for loop should be every 6 videos. 2 videos from the 2 videocam per trial.
         end
-        if p==2 && t>=116 && t<=137%there is misalignment of 1 trial for this subejct (cannot figure it out)
-            kin_ind    = c3d_ind(t);
-        elseif p==2 && t>=138 %there is misalignment of 1 trial for this subejct (cannot figure it out)
-            kin_ind    = c3d_ind(t)-1;
-        else
+%         if p==2 && t>=116 && t<=137%there is misalignment of 1 trial for this subejct (cannot figure it out)
+%             kin_ind    = c3d_ind(t);
+%         elseif p==2 && t>=138 %there is misalignment of 1 trial for this subejct (cannot figure it out)
+%             kin_ind    = c3d_ind(t)-1;
+%         else
             kin_ind    = 1+c3d_ind(t); % always the 2° in case it's the first/second agent acting
-        end
+%         end
 
         % CHECK index and wrist velocity threshold
         vel_th     = 20; %20[mm/s]
         preAcq     = 20; %preacquisition of 200ms == 20 frames
-        succSample = 15; %samples where to check if the kinematic threshold is higher than 
+        succSample = 10; %samples where to check if the velocity trajectory is higher than vel_th
         model_name = [SUBJECTS{p} '_' agentExec(2) '_' agentExec];%name of the model in Nexus
         samp       = 1:sMarkers{kin_ind}.info.nSamples;
         index      = sMarkers{kin_ind}.markers.([model_name '_index']).Vm;% - mean(sMarkers{kin_ind}.markers.([model_name '_index']).Vm(1:preAcq));
@@ -186,10 +190,15 @@ for p = 1%:length(SUBJECTS)
 
         %If the initial frame is from the index/ulna movement, take n
         %frames before as startFrame
-        startFrame = startFrame - 10;
+        startFrame = startFrame - succSample;
         if startFrame<=0
             startFrame = 1;
         end
+        
+        %save the rt variables
+        rt_index = (indexTh(1)-preAcq)/frameRate;
+        rt_ulna  = (ulnaTh(1)-preAcq)/frameRate;
+        rt_final = startFrame+succSample-preAcq;
 
         %In case the video lasts only 20 or 50 frames there was an issue
         %in the acquisition: the video is discarded
@@ -202,26 +211,37 @@ for p = 1%:length(SUBJECTS)
             deltaFrames    =  (stopFrame - startFrame);%number of frames in the same video
             cutVideo_dur   = vidObj.Duration;
         else
-            indexTh(1)   = NaN;
-            ulnaTh(1)    = NaN;
+            rt_index     = 0;
+            rt_ulna      = 0;
+            rt_final     = 0;
+            startFrame   = 0;
             stopFrame    = v.NumFrames-10;
             deltaFrames  = 0;
             cutVideo_dur = 0;
         end
 
-        % Fill the table
+        %Plot rt_final
+        xline(startFrame,'--m');
+
+        % Fill the table. All the rt variables are measured after the 200ms
+        % of pre-acquisition
         vid_info(t,:) = {['P' SUBJECTS{p}(2:end)],t,curr_vid,str2num(agentExec(2)),rt_agent,...
-            indexTh(1)/frameRate,ulnaTh(1)/frameRate,...
+            rt_index,rt_ulna,rt_final,...
             v.Duration,vidObj.Duration,...
-            tstart,startFrame,stopFrame,deltaFrames,...
+            startFrame,stopFrame,deltaFrames,...
             v.Width,v.Height};
         % Close video object
         close(vidObj);
 
-        %save variable
+        %save variables and Video excel file
         vid_info.Properties.VariableNames = varName;
         writetable(vid_info,fullfile(path_video_cut,['P' SUBJECTS{p}(2:end) '_vidInfo.xlsx']));
-
+        
+        % Write the final rt in the excel file created during the
+        % acquisition
+        data{t,end}   = rt_final;
+        data.Properties.VariableNames = txt;
+        writetable(data,fullfile(path_task,['P' SUBJECTS{p}(2:end) '_rtUpdated.xlsx']));
     end
     clear sMarkers session
 end
