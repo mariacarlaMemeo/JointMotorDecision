@@ -68,6 +68,8 @@ for p = 1:length(SUBJECTS)
 
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear vid_info vidObj v
+    close all
+
     % Create a table
     vid_info     = table();
     varName     = {'pair','trial','name_vid','agentActing','rt_agentActing','rt_index','rt_ulna','rt_final','dura_vid','dura_vid_cut','tstartSample_cut','tstopSample_cut','nFrames_cut','vid_width','vid_height'};
@@ -102,7 +104,8 @@ for p = 1:length(SUBJECTS)
     % agent whose reaction time you need to use for the video.
     [~,txt,raw]   = xlsread(path_data_each);
     raw           = raw(2:end,:);%removed the header
-    txt           = [txt {'rt_final'}];
+    txt           = [txt {'rt_final' ...
+                    'targetContrast' 'firstSecondInterval' 'targetLoc' 'A1_decision' 'A1_acc'}];
     data          = cell2table(raw);
     data.rt_final = zeros(length(raw),1);
 
@@ -129,13 +132,9 @@ for p = 1:length(SUBJECTS)
             tstart     = 0.2 + (rt_agent); %The variable is in [s]. Added the 200ms from the pre-acquisition in Vicon
             vid_ind    = 2;% (the third video to be add to the first index) The for loop should be every 6 videos. 2 videos from the 2 videocam per trial.
         end
-%         if p==2 && t>=116 && t<=137%there is misalignment of 1 trial for this subejct (cannot figure it out)
-%             kin_ind    = c3d_ind(t);
-%         elseif p==2 && t>=138 %there is misalignment of 1 trial for this subejct (cannot figure it out)
-%             kin_ind    = c3d_ind(t)-1;
-%         else
-            kin_ind    = 1+c3d_ind(t); % always the 2° in case it's the first/second agent acting
-%         end
+
+        kin_ind    = 1+c3d_ind(t); % always the 2° in case it's the first/second agent acting
+
 
         % CHECK index and wrist velocity threshold
         vel_th     = 20; %20[mm/s]
@@ -145,10 +144,15 @@ for p = 1:length(SUBJECTS)
         samp       = 1:sMarkers{kin_ind}.info.nSamples;
         index      = sMarkers{kin_ind}.markers.([model_name '_index']).Vm;% - mean(sMarkers{kin_ind}.markers.([model_name '_index']).Vm(1:preAcq));
         ulna       = sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm;% - mean(sMarkers{kin_ind}.markers.([model_name '_ulna']).Vm(1:preAcq));
-        indexTh    = findTh_cons(index(preAcq:end),vel_th,succSample);%>20[mm/s] for 5 frames, the first interval
+        %Find the indeces 
+        indexTh    = findTh_cons(index(preAcq:end),vel_th,succSample);
         indexTh    = indexTh + preAcq;%I add preAcq because I excluded it from the previous function
         ulnaTh     = findTh_cons(ulna(preAcq:end),vel_th,succSample); 
         ulnaTh     = ulnaTh + preAcq; 
+        if p==3 || p==4
+            indexTh    = findTh_cons(index,vel_th,succSample);%%>20[mm/s] for 5 frames, the first interval
+            ulnaTh     = findTh_cons(ulna,vel_th,succSample);
+        end
 
         %z coordinates
         indexZ     = sMarkers{kin_ind}.markers.([model_name '_index']).xyzf(:,3);%-  mean(sMarkers{kin_ind}.markers.([model_name '_index']).xyzf(1:preAcq,3));
@@ -189,16 +193,31 @@ for p = 1:length(SUBJECTS)
         [startFrame,ind_start] = min(startVector);
 
         %If the initial frame is from the index/ulna movement, take n
-        %frames before as startFrame
-        startFrame = startFrame - succSample;
+        %frames before as startFrame to make sure that the initial movement
+        %is captured.
+        startFrame = startFrame - 10;
         if startFrame<=0
             startFrame = 1;
         end
-        
+
+        %select the startframe
+        if p==3 && t==17
+            startFrame = 58;
+        elseif p==3 && t==18
+            startFrame = 48;
+        end        
+
         %save the rt variables
         rt_index = (indexTh(1)-preAcq)/frameRate;
         rt_ulna  = (ulnaTh(1)-preAcq)/frameRate;
-        rt_final = startFrame+succSample-preAcq;
+        rt_final = (startFrame+succSample-preAcq)/frameRate;%rt_final should be = to the minimum value between rt_index or rt_ulna
+        
+        if p==3 || p==4
+            rt_index = (indexTh(1))/frameRate;
+            rt_ulna  = (ulnaTh(1))/frameRate;
+            rt_final = (startFrame+succSample)/frameRate;%rt_final should be = to the minimum value between rt_index or rt_ulna
+        end
+
 
         %In case the video lasts only 20 or 50 frames there was an issue
         %in the acquisition: the video is discarded
