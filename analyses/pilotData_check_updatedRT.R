@@ -9,6 +9,8 @@ source('C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Docum
 # DataDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/'
 # DataDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/video_cut/'
 DataDir = 'C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/analyses/'
+DataDirObs = 'C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/analyses/data_obs/'
+
 # save plots here
 #PlotDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/pilotPlots/'
 # PlotDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/pilotPlots/video_cut/'
@@ -62,12 +64,8 @@ set.seed(1)
 
 # create data frame
 collect_dat = data.frame(matrix(ncol = 0, nrow = 0))
-cursub = "pilotData_all.xlsx" # just for testing the script
-
-
+cursub = "pilotData_all.xlsx" # execution data
 Filetmp <- sprintf('%s%s', DataDir, cursub)       # create path
-#curdat <- read.csv(Filetmp,sep=",",header=FALSE) # load file
-#curdat <- read.csv(Filetmp,sep=",",header=TRUE) # updated file has a header
 
 # read all the sheets, i.e. all the pairs data, the from the excel file
 dat       = read_all_sheets(Filetmp,"P","A:AH")
@@ -164,10 +162,6 @@ ggplot(mt_rt_conf_sum, aes(x=conf, y=var, color=var_lab, group=var_lab)) +
 ggsave(file=sprintf(("%stime_conf.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
-# plot
- 
-
-
 ##### THIS IS NEW
 for (v in 1:2){
   
@@ -221,6 +215,17 @@ for (v in 1:2){
 
 ##### THIS IS NEW
 
+##############################################################################################################
+#                                     OBSERVATION                                                            #
+##############################################################################################################
+curobs = "Results_updated_12012023_magic.xlsx" #observation data
+file <- sprintf('%s%s', DataDirObs, curobs) 
+# read all the sheets, i.e. all the pairs data, the from the excel file of observation
+datObs = read_all_sheets(file,"P","A:U")
+curdatObs = rbindlist(datObs)
+
+#combine execution and observation 
+inout = currdat[]
 
 ## BELOW ARE THE PLOTS THAT WE DID FOR THE PREVIOUS VERSION OF THE RT ######################################
 

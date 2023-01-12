@@ -72,11 +72,14 @@ mt_final = ((samp(end)-10)-(startFrame))/frameRate;%mt_final=recording end(inclu
 
 %In case the video lasts only 20 or 52 frames there was an issue
 %in the acquisition: the trial is discarded
-if samp(end) < 55 || rt_final < 0.05
+if rt_final < 0.05
     rt_index  = NaN;
     rt_ulna   = NaN;
     rt_final  = NaN;
     mt_final  = NaN;
+elseif samp(end) < 55
+    rt_final  = 10000;
+    mt_final  = 10000;
 end
 
 %Plot rt_final

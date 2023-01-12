@@ -127,7 +127,11 @@ for p = 1:length(SUBJECTS)
         data{t,ol+5} = mt_final2;
         data{t,ol+6} = mt_finalColl;
         data.Properties.VariableNames = txt;
-        writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '.xlsx']));
+        if flag_pre
+            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_withPre.xlsx']));
+        else
+            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '.xlsx']));
+        end
     end
 
 
