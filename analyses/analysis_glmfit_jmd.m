@@ -1,6 +1,6 @@
 % analysis of perceptual sensitivity for oddball detection task
-close all
-load('Y:\Datasets\JointMotorDecision\Static\Raw\P102\task\gID102_run1_jomode.mat')
+close all;
+load('C:\Users\Laura\Sync\00_Research\2022_UKE\Confidence from motion\04_Analysis\pilotData\gID103_run1_jomode.mat');
 
 % define variables
 asymp_limits    = [0 0.5];
@@ -31,10 +31,14 @@ end
 % plot accuracies across contrasts for A1, A2, and Collective
 figure(1);
 subplot(1,2,1);
-semilogx(absConSteps,data.result.a1.acc,'rs-'); % A1 red
+semilogx(absConSteps,data.result.a1.acc,'bs-'); % A1 blue
 hold on
-semilogx(absConSteps,data.result.a2.acc,'bo-'); % A2 blue
-semilogx(absConSteps,data.result.coll.acc,'kv-','LineWidth',3); % Coll black
+semilogx(absConSteps,data.result.a2.acc,'yo-'); % A2 yellow
+semilogx(absConSteps,data.result.coll.acc,'gv-','LineWidth',1); % Coll green
+% semilogx(absConSteps,data.result.a1.acc,[0 0.4470 0.7410]); % A1 blue
+% hold on
+% semilogx(absConSteps,data.result.a2.acc,[0 0.4470 0.7410]); % A2 yellow
+% semilogx(absConSteps,data.result.coll.acc,[0 0.4470 0.7410],'LineWidth',1); % Coll green
 xlabel('LOG |C2 - C1|');
 xlim([min(absConSteps)*.8 max(absConSteps)*1.2]);
 ylabel('Accuracy');
@@ -70,10 +74,10 @@ for cIndex = 1 : size(conSteps,1)
 end
 figure(1);
 subplot(1,2,2);
-plot(conSteps,data.result.a1.fs,'rs-');
+plot(conSteps,data.result.a1.fs,'bs-');
 hold on
-plot(conSteps,data.result.a2.fs,'bo-');
-plot(conSteps,data.result.coll.fs,'kv-','LineWidth',3);
+plot(conSteps,data.result.a2.fs,'yo-');
+plot(conSteps,data.result.coll.fs,'gv-','LineWidth',1);
 xlabel('C2 - C1');
 ylabel('P(Report 2nd)');
 %-------------------------------------------------------------------------%
@@ -111,18 +115,18 @@ slope_a2 = max(diff(ps_a2)./diff(C_a2));
 clear bhat;
 hold on;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% plot Collective in red
+% plot Collective in green
 plotSym = '*';
 y = data.result.coll.fs';
 bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
 data.result.coll.mean = -bhat(1)/bhat(2);
 data.result.coll.sd   = 1/bhat(2);
-plot(conSteps, y,['r' plotSym],'LineWidth',2);
+plot(conSteps, y,['g' plotSym],'LineWidth',2);
 hold on;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 C_coll = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
 ps_coll = cdf('norm',C_coll,data.result.coll.mean,data.result.coll.sd);
-plot(C_coll,ps_coll,'r-','LineWidth',3)
+plot(C_coll,ps_coll,'g-','LineWidth',3)
 sdyad = max(diff(ps_coll)./diff(C_coll));
 clear bhat;
 hold on;
@@ -134,7 +138,8 @@ hold on;
 smax  = max(slope_a1,slope_a2);
 smin  = min(slope_a1,slope_a2);
 coll_ben = sdyad/smax;
-text(-0.15,0.6,['coll ben = ' num2str(coll_ben)]);
+coll_ben_rounded = round(coll_ben,2);
+text(-0.15,0.6,['coll. benefit = ' num2str(coll_ben_rounded)]);
 hold off;
 
 ratio = smin/smax;

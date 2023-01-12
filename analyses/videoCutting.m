@@ -54,7 +54,7 @@ SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 
 %%
-frameRate  = 100;
+frameRate  = 50;
 
 % The information we need to retrieve is the reaction time. It is in the
 % excel file and it depends on the agent that is performing the 2nd trial,
@@ -64,21 +64,32 @@ frameRate  = 100;
 % tstart = 200ms + reaction time(without movement time)
 % tstop  = end of the video
 
-for p = 1:length(SUBJECTS)
+for p = 4%1:length(SUBJECTS)
 
     disp(['Start ' SUBJECTS{p}(2:end)])
-    clear vid_info vidObj v
+    clear vid_info vidObj v vid_info_all raw_clm
     close all
 
     % Create a table
     vid_info     = table();
-    varName     = {'pair','trial','name_vid','agentActing','rt_agentActing','rt_index','rt_ulna','rt_final','dura_vid','dura_vid_cut','tstartSample_cut','tstopSample_cut','nFrames_cut','vid_width','vid_height'};
+    raw_clm      = table();
+    vid_info_all = table();
+    varName      = {'pair','trial','name_vid',...                    
+                    'agentActing',...
+                    'rt_agentActing','rt_index','rt_ulna','rt_final',...
+                    'dura_vid','dura_vid_cut',...
+                    'tstartSample_cut','tstopSample_cut','nFrames_cut',...
+                    'vid_width','vid_height'};
+    varName_exp  = {'targetContrast','firstSecondInterval','targetLoc',...
+                    'A1_decision','A1_acc','A1_conf','A1_confRT',...
+                    'A2_decision','A2_acc','A2_conf','A2_confRT',...
+                    'Coll_decision','Coll_acc','Coll_conf','Coll_confRT'};
 
     % set the path for the video and the rt variables
     path_task      = fullfile(path_data,SUBJECTS{p},'task');
     path_data_each = fullfile(path_data,SUBJECTS{p},['task\pilotData_' SUBJECTS{p}(2:end) '.xlsx'] );
     path_video     = fullfile(path_data,SUBJECTS{p},'jmd\');
-    path_video_cut = fullfile(path_data,SUBJECTS{p},'video_cut\');
+    path_video_cut = fullfile(path_data,SUBJECTS{p},'video_cut_50\');
     mkdir(path_video_cut);
     %It loads the 'session' struct for each pair of participants
     path_kin_each  = fullfile(path_kin,[SUBJECTS{p},'.mat']);
@@ -99,13 +110,12 @@ for p = 1:length(SUBJECTS)
     %     warning("The c3d files of the training trials are NOT included in the list of trials.")
     %     session = session(exp_ind:end);
 
-    % Open excel file to check who's performing the 2nd trial and choose the reaction time of the complementar agent.
+    % Open the excel file to check who's performing the 2nd trial and choose the reaction time of the complementar agent.
     % If you check column 'AgentTakingFirstDecision' you already have the
     % agent whose reaction time you need to use for the video.
     [~,txt,raw]   = xlsread(path_data_each);
     raw           = raw(2:end,:);%removed the header
-    txt           = [txt {'rt_final' ...
-                    'targetContrast' 'firstSecondInterval' 'targetLoc' 'A1_decision' 'A1_acc'}];
+    txt           = [txt {'rt_final'}];
     data          = cell2table(raw);
     data.rt_final = zeros(length(raw),1);
 
@@ -113,7 +123,7 @@ for p = 1:length(SUBJECTS)
     %Create a vector with all the first indeces of the  group of 6 trials
     vid_list      = dir([path_video '*.avi']);
     each6_vid     = 1:6:length(vid_list);%the first index of
-    %Create a vector with all the first indeces of the  group of 3 trials
+    %Create a vector with all the first indeces of the group of 3 trials
     c3d_ind       = 1:3:length(sMarkers);
 
     for t = 1:length(raw)
@@ -185,7 +195,7 @@ for p = 1:length(SUBJECTS)
         % Cut video based on tstart and tstop
         v                 = VideoReader(fullfile(path_video,curr_vid));
         vidObj            = VideoWriter([path_video_cut,curr_vid(1:end-4)],'MPEG-4');
-        vidObj.FrameRate  = 100;
+        vidObj.FrameRate  = 50;%%%EDIT
         open(vidObj);
         % Choose the initial frame between : agent reaction time, index finger/ulna reaction time
         tstart_frame   = ceil(tstart*frameRate);
@@ -223,7 +233,7 @@ for p = 1:length(SUBJECTS)
         %in the acquisition: the video is discarded
         if v.NumFrames > 50
             stopFrame  = v.NumFrames-10;
-            for frame = startFrame:stopFrame %from tstart(transformed in frame) to the last frame - 10 (100ms were added to the video by matlab script)
+            for frame = startFrame:2:stopFrame %from tstart(transformed in frame) to the last frame - 10 (100ms were added to the video by matlab script)
                 new_v = read(v,frame);
                 writeVideo(vidObj,new_v)
             end
@@ -239,28 +249,41 @@ for p = 1:length(SUBJECTS)
             cutVideo_dur = 0;
         end
 
-        %Plot rt_final
+%         %Plot rt_final
         xline(startFrame,'--m');
 
-        % Fill the table. All the rt variables are measured after the 200ms
-        % of pre-acquisition
-        vid_info(t,:) = {['P' SUBJECTS{p}(2:end)],t,curr_vid,str2num(agentExec(2)),rt_agent,...
+        % Fill the table. Retrieve the values of interest from the experiment excel file (pilotData_XXX.xlsx)
+        % All the rt variables are measured after the 200ms of pre-acquisition
+        match       = cellfun(@(x) ismember(x, {'targetContrast','firstSecondInterval','targetLoc',...
+                        'A1_decision','A1_acc','A1_conf','A1_confRT',...
+                        'A2_decision','A2_acc','A2_conf','A2_confRT',...
+                        'Coll_decision','Coll_acc','Coll_conf','Coll_confRT'}), txt, 'UniformOutput', 0);
+        clm          = find(cell2mat(match));
+        raw_clm(t,:) = cell2table({raw{t,clm}});
+        raw_clm.Properties.VariableNames = varName_exp;
+
+        vid_info(t,:) = {['P' SUBJECTS{p}(2:end)],t,curr_vid,...
+            str2num(agentExec(2)),rt_agent,...
             rt_index,rt_ulna,rt_final,...
             v.Duration,vidObj.Duration,...
             startFrame,stopFrame,deltaFrames,...
             v.Width,v.Height};
+        vid_info.Properties.VariableNames = varName;
+
         % Close video object
         close(vidObj);
 
-        %save variables and Video excel file
-        vid_info.Properties.VariableNames = varName;
-        writetable(vid_info,fullfile(path_video_cut,['P' SUBJECTS{p}(2:end) '_vidInfo.xlsx']));
-        
         % Write the final rt in the excel file created during the
         % acquisition
         data{t,end}   = rt_final;
         data.Properties.VariableNames = txt;
         writetable(data,fullfile(path_task,['P' SUBJECTS{p}(2:end) '_rtUpdated.xlsx']));
     end
+    
+    vid_info_all = [vid_info raw_clm];
+    %save variables and Video excel file
+    writetable(vid_info_all,fullfile(path_video_cut,['P' SUBJECTS{p}(2:end) '_vidInfo_50.xlsx']));
+
+
     clear sMarkers session
 end
