@@ -123,7 +123,6 @@ rt_conf     = rbind(rt_conf_a1,rt_conf_a2)
 rt_conf_sum = summarySE(rt_conf,measurevar="rtKin",groupvars=c("conf"))
 
 #mt - calc the average, se, ci
-
 mt_conf_a1  = curdat[,c("A1_conf","A1_mtKin")]; names(mt_conf_a1) = c("conf","mtKin")
 mt_conf_a2  = curdat[,c("A2_conf","A2_mtKin")]; names(mt_conf_a2) = c("conf","mtKin")
 mt_conf     = rbind(mt_conf_a1,mt_conf_a2)
@@ -138,16 +137,16 @@ mt_rt_conf_sum$var_lab = c(replicate(length(rt_conf_sum), "rt"),replicate(length
 pd <- position_dodge(0.001) 
 ggplot(mt_rt_conf_sum, aes(x=conf, y=var, color=var_lab, group=var_lab)) + 
         geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
-        #scale_y_continuous(limits = c(0.4,1.0), breaks=seq(0.3,1.1, by=0.1)) +
-        # scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
+        scale_y_continuous(limits = c(0.25,1.75), breaks=seq(0.25,1.75, by=0.25)) +
+        scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
         geom_point(aes(shape=var_lab, color=var_lab, size=var_lab), position=pd) +
         geom_line(aes(linetype=var_lab, color=var_lab), size=1, position=pd) +
         scale_shape_manual(values=c(15, 16)) +
         scale_color_manual(values=c("grey", "black")) +
         scale_linetype_manual(values=c("dotted","solid")) +
         scale_size_manual(values=c(3,3)) +
-        xlab("confidence") + ylab("time [s]") +   # Set axis labels
-        ggtitle("MT/RT as a function of confidence") +    # Set title
+        xlab("agent confidence") + ylab("time [s]") +   # Set axis labels
+        ggtitle("MT/RT as a function of confidence (individual all)") +    # Set title
         theme_bw() +
         theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
               axis.title.x = element_text(face="bold", size=14,vjust=0.1),
@@ -223,9 +222,85 @@ file <- sprintf('%s%s', DataDirObs, curobs)
 # read all the sheets, i.e. all the pairs data, the from the excel file of observation
 datObs = read_all_sheets(file,"P","A:U")
 curdatObs = rbindlist(datObs)
+names(curdatObs)[names(curdatObs)=="Trial"] <- "trial_obs"
+names(curdatObs)[names(curdatObs)=="Block"] <- "block_obs"
+names(curdatObs)[names(curdatObs)=="Group"] <- "pair_obs"
+names(curdatObs)[names(curdatObs)=="CorrResp"] <- "agent_confidence"
+names(curdatObs)[names(curdatObs)=="SubjResp"] <- "observer_confidence"
+names(curdatObs)[names(curdatObs)=="SubjAcc01"] <- "observer_acc"
+names(curdatObs)[names(curdatObs)=="SubjRTnorm"] <- "observer_RTnorm"
+
 
 #combine execution and observation 
-inout = currdat[]
+#First remove the trials in which the video was not recorded during execution
+exedat      = curdat[-c(2,6,8),]
+exedat      = as.data.frame(lapply(exedat, rep, each=4)) #repeat each row 4 times to match the observation data (4 blocks ordered in Excel so that each the first 4 rows represent trial1 from block 1-2-3-4)
+exedat_a2a1 = with(exedat, exedat[order(group,-AgentTakingSecondDecision),])#first agent2 acting second, observed by agent1 (to align with obsdat)
+names(exedat_a2a1)[names(exedat_a2a1)=="trial"] <- "trial_exe"
+names(exedat_a2a1)[names(exedat_a2a1)=="group"] <- "pair_exe"
+
+#Check if the order of agents is the same
+all(exedat_a2a1$AgentTakingSecondDecision==curdatObs$Pagent)
+all(exedat_a2a1$AgentTakingFirstDecision==curdatObs$Oagent)
+if (dim(exedat_a2a1)[1] == dim(curdatObs)[1]){merge = 1}
+
+#merge execution and observation
+if (merge) {inout = cbind(exedat_a2a1,curdatObs)}
+
+sinout = inout[,c("pair_exe","pair_obs","Pagent","Oagent","trial_exe","trial_obs","block_obs","Video","targetContrast","firstSecondInterval",
+                  "agent_confidence","observer_confidence","observer_acc","observer_RTnorm",
+                  "A1_acc","A1_conf","A1_confRT","A2_acc","A2_conf","A2_confRT","Coll_acc","Coll_conf","Coll_confRT",
+                  "AgentTakingSecondDecision","rt_final2","mt_final2","A1_rtKin","A2_rtKin","A1_mtKin","A2_mtKin")]
+
+
+# prepare plotting
+#rt - calc the average, se, ci
+rt_confObs  = sinout[,c("observer_confidence","rt_final2")]; names(rt_confObs) = c("observer_confidence","time")
+rt_confObs_sum = summarySE(rt_confObs,measurevar="time",groupvars=c("observer_confidence"))
+
+#mt - calc the average, se, ci
+mt_confObs  = sinout[,c("observer_confidence","mt_final2")]; names(mt_confObs) = c("observer_confidence","time")
+mt_confObs_sum = summarySE(mt_confObs,measurevar="time",groupvars=c("observer_confidence"))
+
+names(rt_confObs_sum) = c("observer_confidence","N","var","sd","se","ci")
+names(mt_confObs_sum) = c("observer_confidence","N","var","sd","se","ci")
+mt_rt_confObs_sum = rbind(rt_confObs_sum,mt_confObs_sum); 
+mt_rt_confObs_sum$var_lab = c(replicate(length(rt_confObs_sum), "rt"),replicate(length(mt_confObs_sum), "mt"))
+mt_rt_confObs_sum = mt_rt_confObs_sum[!is.na(mt_rt_confObs_sum$observer_confidence),]
+
+
+
+
+##  
+ggplot(mt_rt_confObs_sum, aes(x=observer_confidence, y=var, color=var_lab, group=var_lab)) + 
+  geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
+  scale_y_continuous(limits = c(0.25,1.75), breaks=seq(0.25,1.75, by=0.25)) +
+  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
+  geom_point(aes(shape=var_lab, color=var_lab, size=var_lab), position=pd) +
+  geom_line(aes(linetype=var_lab, color=var_lab), size=1, position=pd) +
+  scale_shape_manual(values=c(15, 16)) +
+  scale_color_manual(values=c("grey", "black")) +
+  scale_linetype_manual(values=c("dotted","solid")) +
+  scale_size_manual(values=c(3,3)) +
+  xlab("observer confidence") + ylab("time [s]") +   # Set axis labels
+  ggtitle("MT/RT as a function of confidence (indivdual 2nd)") +    # Set title
+  theme_bw() +
+  theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
+        axis.title.x = element_text(face="bold", size=14,vjust=0.1),
+        axis.title.y = element_text(face="bold", size=14,vjust=2),
+        axis.text.y = element_text(size=12),
+        axis.text.x = element_text(size=12),
+        panel.border = element_blank(),
+        axis.line = element_line(color = 'black'),
+        legend.title=element_blank(),
+        legend.text = element_text(size=14),
+        legend.position=c(0.75,0.9))
+ggsave(file=sprintf(("%stime_obs_conf.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+
+
+
+
+
 
 ## BELOW ARE THE PLOTS THAT WE DID FOR THE PREVIOUS VERSION OF THE RT ######################################
 
