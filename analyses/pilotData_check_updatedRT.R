@@ -302,7 +302,7 @@ ggsave(file=sprintf(("%stime_obs_conf.png"),PlotDir), dpi = 300, units=c("cm"), 
 
 
 
- ## BELOW ARE THE PLOTS THAT WE DID FOR THE PREVIOUS VERSION OF THE RT ######################################
+## BELOW ARE THE PLOTS THAT WE DID FOR THE PREVIOUS VERSION OF THE RT ######################################
 
 # reshape data to long format, to include A1, A2, and Coll in one plot
 ##################  ACCURACY  ################## 
