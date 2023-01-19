@@ -5,6 +5,9 @@ rm(list = ls())
 ## Functions
 source('C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/temporalLagMEmodulation/Temporal Lag of ME modulation/read_all_sheets.R')
 
+##flag 
+all_script = FALSE #run all the scritp
+
 # select directory
 # DataDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/'
 # DataDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/video_cut/'
@@ -184,7 +187,7 @@ for (v in 1:2){
   pd <- position_dodge(0.001) 
   print(ggplot(all_sum, aes(x=targetContrast, y=var, color=DecisionType, group=DecisionType)) + 
     geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
-    #scale_y_continuous(limits = c(0.4,1.0), breaks=seq(0.3,1.1, by=0.1)) +
+    scale_y_continuous(limits = c(0.4,1.5), breaks=seq(0.4,1.5, by=0.1)) +
     # scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
     geom_point(aes(shape=DecisionType, color=DecisionType, size=DecisionType), position=pd) +
     geom_line(aes(linetype=DecisionType, color=DecisionType), size=1, position=pd) +
@@ -209,8 +212,61 @@ for (v in 1:2){
   
 }
 
-
-
+###per group
+for (m in 1:2){
+  
+  ################## plot RT and MT as a function of target contrast/per agent  ################## 
+  if (m==1){lab ="RT"
+  all <- curdat[,c("targetContrast","A1_rtKin","A2_rtKin","rt_finalColl","group")]
+  lim = c(0.2,1.6)} else {lab="MT"
+  all <- curdat[,c("targetContrast","A1_mtKin","A2_mtKin","mt_finalColl","group")]
+  lim = c(0.5,2.5)}# 
+  
+  all$group=as.factor(all$group)
+  
+  for (g in 100:104){
+  
+  sub_all=all[all$group==g,]
+  sub_all=subset(sub_all, select = -c(group) )
+  all_long <- melt(sub_all, id="targetContrast")  # convert to long format
+  # rename factor levels
+  levels(all_long$variable) <- c("A1", "A2", "Collective")
+  
+  all_sum = summarySE(all_long,measurevar="value",groupvars=c("variable","targetContrast"))
+  var = all_sum$value
+  
+  # rename variables
+  names(all_sum)[names(all_sum)=='value'] <- lab
+  names(all_sum)[names(all_sum)=='variable'] <- 'DecisionType'
+  
+  # plot for each pair
+  pd <- position_dodge(0.001) 
+  print(ggplot(all_sum, aes(x=targetContrast, y=var, color=DecisionType, group=DecisionType)) + 
+          geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
+          scale_y_continuous(limits = lim, breaks=seq(lim[1],lim[2], by=0.1)) +
+          # scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
+          geom_point(aes(shape=DecisionType, color=DecisionType, size=DecisionType), position=pd) +
+          geom_line(aes(linetype=DecisionType, color=DecisionType), size=1, position=pd) +
+          scale_shape_manual(values=c(15, 16, 17)) +
+          scale_color_manual(values=c("blue3", "gold2", "darkgreen")) +
+          scale_linetype_manual(values=c("dotted","dashed","solid")) +
+          scale_size_manual(values=c(3,3,3)) +
+          xlab("contrast level") + ylab(paste("mean ",lab," [s]")) +   # Set axis labels
+          ggtitle(paste(as.character(g)," ",lab," as a function of task difficulty")) +    # Set title
+          theme_bw() +
+          theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
+                axis.title.x = element_text(face="bold", size=14,vjust=0.1),
+                axis.title.y = element_text(face="bold", size=14,vjust=2),
+                axis.text.y = element_text(size=12),
+                axis.text.x = element_text(size=12),
+                panel.border = element_blank(),
+                axis.line = element_line(color = 'black'),
+                legend.title=element_blank(),
+                legend.text = element_text(size=14),
+                legend.position=c(0.75,0.9)))
+  ggsave(file=sprintf(paste0("%s",as.character(g),"_",lab,"_ave.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  }
+}
 
 ##### THIS IS NEW
 
@@ -265,10 +321,8 @@ mt_confObs_sum = summarySE(mt_confObs,measurevar="time",groupvars=c("observer_co
 names(rt_confObs_sum) = c("observer_confidence","N","var","sd","se","ci")
 names(mt_confObs_sum) = c("observer_confidence","N","var","sd","se","ci")
 mt_rt_confObs_sum = rbind(rt_confObs_sum,mt_confObs_sum); 
-mt_rt_confObs_sum$var_lab = c(replicate(length(rt_confObs_sum), "rt"),replicate(length(mt_confObs_sum), "mt"))
 mt_rt_confObs_sum = mt_rt_confObs_sum[!is.na(mt_rt_confObs_sum$observer_confidence),]
-
-
+mt_rt_confObs_sum$var_lab = c(replicate(length(rt_confObs_sum), "rt"),replicate(length(mt_confObs_sum), "mt"))
 
 
 ##  
@@ -300,8 +354,7 @@ ggsave(file=sprintf(("%stime_obs_conf.png"),PlotDir), dpi = 300, units=c("cm"), 
 
 
 
-
-
+if (all_script){
 ## BELOW ARE THE PLOTS THAT WE DID FOR THE PREVIOUS VERSION OF THE RT ######################################
 
 # reshape data to long format, to include A1, A2, and Coll in one plot
@@ -514,7 +567,7 @@ ggplot(conf_dist, aes(x=Confidence, fill=Agent)) +
 
 ##################
 collect_dat = rbind(collect_dat, curdat_filt) # combine all subjects' data
-}
+
 
 ################################################################################
 #################### plot as a function of difficulty ##########################
@@ -583,7 +636,7 @@ Data_analysis <- Data_prep_analysis[,c("Nr","VP","Sportart","RT","RTCongruent","
 
 write.csv(Data_analysis,sprintf("%sResults/GazeData.csv",DataDir))
 write_xlsx(Data_analysis,sprintf("%sResults/GazeData.xlsx",DataDir))
-
+}
 
 
 
