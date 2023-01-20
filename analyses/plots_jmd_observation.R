@@ -44,8 +44,8 @@ dataFile = "C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/05_O
 dataDir  = "C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/05_Observation task/data/"
 
 # create vector with participant names
-participants   <- c("P100_A1", "P100_A2", "P101_A1", "P101_A2", "P103_A1", "P103_A2")
-p_originalFile <- c("P100_vidInfo50_A1", "P100_vidInfo50_A2", "P101_vidInfo50_A1", "P101_vidInfo50_A2", "P103_vidInfo50_A1", "P103_vidInfo50_A2")
+participants   <- c("P100_A1", "P100_A2", "P101_A1", "P101_A2","P102_A1","P102_A2", "P103_A1", "P103_A2")
+p_originalFile <- c("P100_vidInfo50_A1", "P100_vidInfo50_A2", "P101_vidInfo50_A1", "P101_vidInfo50_A2", "P102_vidInfo50_A1", "P102_vidInfo50_A2", "P103_vidInfo50_A1", "P103_vidInfo50_A2")
 obsAveHiLo = c()
 exeAveAcc  = c()
 obsAveconf = c()
