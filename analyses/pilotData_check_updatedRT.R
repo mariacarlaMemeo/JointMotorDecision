@@ -7,7 +7,7 @@ source('C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Docum
 
 ##flag 
 all_script = FALSE #run all the script
-schon_data = FALSE #remove 1 pair(102) because of the unbalanced confidence answers 
+schon_data = TRUE #remove 1 pair(102) because of the unbalanced confidence answers 
 
 # select directory
 # DataDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/'
@@ -23,7 +23,7 @@ PlotDir = 'C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Do
 # load necessary/useful libraries
 ## Load libraries
 pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez","MuMIn","BayesFactor","permuco","RVAideMemoire",
-          "ggpur","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr", "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl")
+          "RColorBrewer","ggpur","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr", "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl")
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)#Check how many packages failed the loading
 
 
@@ -79,10 +79,90 @@ group     = c(rep(100,list_size[[1]][[1]]),rep(101,list_size[[2]][[1]]),rep(102,
 trial     = c(1:list_size[[1]][[1]],1:list_size[[2]][[1]],1:list_size[[3]][[1]],1:list_size[[4]][[1]])
 curdat    = rbindlist(dat)
 curdat    = cbind(group,trial,curdat) # added at the beginning of the dataframe
+#Add a column to express the agreement on the perceptual task between the 2 agents. [1=agreement, -1=disagreement]
+curdat$agree = as.integer(curdat$A1_decision == curdat$A2_decision)
+curdat$agree[curdat$agree==0]=-1
 
-
+#Remove pair 102 - didn't follow the instructions
 if(schon_data){curdat    = curdat[curdat$group!=102,]
                schon_lab = "noPair102" } else{schon_lab = ""}
+
+
+##################  CONFIDENCE   ##################
+#According to the level of agreement
+conf_all <- curdat[,c("targetContrast","A1_conf","A2_conf","Coll_conf","agree")]
+conf_all_long <- melt(conf_all, id=c("targetContrast","agree"))  # convert to long format
+conf_all_sum = summarySE(conf_all_long,measurevar="value",groupvars=c("variable","targetContrast","agree"))
+# rename variables
+names(conf_all_sum)[names(conf_all_sum)=='value'] <- 'Confidence'
+names(conf_all_sum)[names(conf_all_sum)=='variable'] <- 'Agent'
+# rename factor levels
+levels(conf_all_sum$Agent) <- c("Agent 1", "Agent 2", "Collective")
+conf_all_sum$agree = as.factor(conf_all_sum$agree)
+levels(conf_all_sum$agree) <- c("disagree", "agree")
+
+# plot - Confidence level by agreement 
+pd <- position_dodge(0.001)
+ggplot(conf_all_sum, aes(x=targetContrast, y=Confidence, color=Agent, shape=agree)) +
+  geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
+    scale_y_continuous(limits = c(1,6), breaks=seq(1,6, by=1)) +
+  geom_point(aes(shape=agree, color=Agent), size = 3,position=pd) +
+  geom_line(aes(linetype=agree), size=1, position=pd) +
+    scale_color_manual(values=c("blue3", "gold2", "darkgreen")) +
+    scale_linetype_manual(values=c("dashed","solid"))+
+  ggtitle("Confidence level by agreement") +    
+  theme_bw() +
+  theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
+        axis.title.x = element_text(face="bold", size=14,vjust=0.1),
+        axis.title.y = element_text(face="bold", size=14,vjust=2),
+        axis.text.y = element_text(size=12),
+        axis.text.x = element_text(size=12),
+        panel.border = element_blank(),
+        axis.line = element_line(color = 'black', linewidth=0.1),
+        legend.title=element_blank(),
+        legend.text = element_text(size=14),
+        legend.position=c(0.2,0.85))
+ggsave(file=paste0(PlotDir,"conf_agree_individual",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+
+
+
+#According to the level of agreement and accuracy (only collective)
+conf_all_acc <- curdat[,c("targetContrast","Coll_acc","Coll_conf","agree")]
+conf_all_long_acc <- melt(conf_all_acc, id=c("targetContrast","agree","Coll_acc"))  # convert to long format
+conf_all_sum_acc = summarySE(conf_all_long_acc,measurevar="value",groupvars=c("targetContrast","agree","Coll_acc"))
+# rename variables
+names(conf_all_sum_acc)[names(conf_all_sum_acc)=='value'] <- 'Confidence'
+names(conf_all_sum_acc)[names(conf_all_sum_acc)=='Coll_acc'] <- 'Accuracy'
+# rename factor levels
+conf_all_sum_acc$agree = as.factor(conf_all_sum_acc$agree)
+levels(conf_all_sum_acc$agree) <- c("disagree", "agree")
+conf_all_sum_acc$Accuracy = as.factor(conf_all_sum_acc$Accuracy)
+levels(conf_all_sum_acc$Accuracy) <- c("incorrect", "correct")
+
+# plot - Confidence level by agreement and accuracy (only collective) 
+pd <- position_dodge(0.001)
+ggplot(conf_all_sum_acc, aes(x=targetContrast, y=Confidence, color=Accuracy, shape=agree)) +
+  geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
+  scale_y_continuous(limits = c(1,6), breaks=seq(1,6, by=1)) +
+  geom_point(aes(shape=agree, color=Accuracy), size = 3,position=pd) +
+  geom_line(aes(linetype=agree), size=1, position=pd) +
+  scale_color_manual(values=c("red", "green")) +
+  scale_linetype_manual(values=c("dashed","solid"))+
+  ggtitle("Collective confidence level by agreement and accuracy") +    
+  theme_bw() +
+  theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
+        axis.title.x = element_text(face="bold", size=14,vjust=0.1),
+        axis.title.y = element_text(face="bold", size=14,vjust=2),
+        axis.text.y = element_text(size=12),
+        axis.text.x = element_text(size=12),
+        panel.border = element_blank(),
+        axis.line = element_line(color = 'black', linewidth=0.1),
+        legend.title=element_blank(),
+        legend.text = element_text(size=14),
+        legend.position=c(0.2,0.85))
+ggsave(file=paste0(PlotDir,"conf_agree_corr_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+
+
 
 #########################################################
 #Create a column containing the confidence of the 1st and 2nd decisions
@@ -343,7 +423,7 @@ for (m in 1:2){
 ##############################################################################################################
 #                                     OBSERVATION                                                            #
 ##############################################################################################################
-curobs = "Results_updated_12012023_magic.xlsx" #observation data
+curobs = "Results_updated_24012023_magic.xlsx" #observation data
 file <- sprintf('%s%s', DataDirObs, curobs) 
 # read all the sheets, i.e. all the pairs data, the from the excel file of observation
 datObs = read_all_sheets(file,"P","A:U")
@@ -375,9 +455,21 @@ if (dim(exedat_a2a1)[1] == dim(curdatObs)[1]){merge = 1}
 if (merge) {inout = cbind(exedat_a2a1,curdatObs)}
 
 sinout = inout[,c("pair_exe","pair_obs","Pagent","Oagent","trial_exe","trial_obs","block_obs","Video","targetContrast","firstSecondInterval",
-                  "agent_confidence","observer_confidence","observer_acc","observer_RTnorm",
+                  "agent_confidence","observer_confidence","observer_acc","observer_RTnorm","agree",
                   "A1_acc","A1_conf","A1_confRT","A2_acc","A2_conf","A2_confRT","Coll_acc","Coll_conf","Coll_confRT",
                   "AgentTakingSecondDecision","rt_final2","mt_final2","A1_rtKin","A2_rtKin","A1_mtKin","A2_mtKin")]
+
+#calculating average values of confidence for each video because in observation we show videos 4 times
+sinout = transformBy(~Video+pair_obs,data=sinout, conf_aveBlock = round(mean(as.numeric(observer_confidence),na.rm=T),1))
+#calculating the difference between averaged obs confidence and agent confidence
+sinout$diff_conf = sinout$conf_aveBlock-sinout$agent_confidence
+#calculating the difference in movement time between the agents in a pair
+sinout$diff_mt   = round(abs(sinout$A1_mtKin - sinout$A2_mtKin),2)
+
+## Selection of only 1 block because the values of confidence are averaged across blocks 
+# Remove the pair 102
+sinout_1block = sinout[sinout$block_obs==1 & sinout$pair_obs!=102,] 
+
 
 
 # prepare plotting
@@ -442,22 +534,44 @@ conf_exe_obs = ggplot(sinout, aes(x = observer_confidence, y = agent_confidence)
 ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 print(conf_exe_obs)
 
+
+## Scatterplot - average value of confidence for Observation
+# Linear regression: take observed conf. as predictor for subjective conf.
+fit_ave <- lm(sinout_1block$conf_aveBlock ~ sinout_1block$agent_confidence) 
+summary(fit_ave)
+Rsquared <- summary(fit_ave)$r.squared
+print(Rsquared,digits=3)
+conf_exe_obsAve = ggplot(sinout_1block, aes(x = agent_confidence, y = conf_aveBlock)) +
+  geom_point(shape = 1,   # Use hollow circles
+             position = position_jitter(width = 0.1, height = .1)) +
+  scale_y_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
+  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
+  geom_smooth(method = lm, # Add linear regression line
+              color = "blue", fill = "#69b3a2",se = TRUE) +
+  annotate("text", x=5, y=1, label = paste("R2 = ", format(summary(fit_ave)$r.squared,digits=3)), col="black", cex=6)+
+  ggtitle("Observer confidence vs Agent confidence (all pairs)")
+ggsave(file=sprintf(paste0("%sexeconf_vs_obsconfAveraged_noPair",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+print(conf_exe_obsAve + labs(y = "Mean observer confidence", x = "agent confidence"))
+
+
 ## multiple facets with all the agents
 #https://r-graphics.org/recipe-annotate-facet
 
-# lm_labels <- function(sinout) {
-#   mod <- lm(agent_confidence ~ observer_confidence, data = sinout)
-#   formula <- sprintf("italic(y) == %.2f %+.2f * italic(x)",
-#                      round(coef(mod)[1], 3), round(coef(mod)[2], 3))
-#   r <- cor(sinout$observer_confidence, sinout$agent_confidence, use="complete.obs")
-#   r2 <- sprintf("R^2 == %.2f", r^2)
-#   data.frame(formula = formula, r2 = r2, stringsAsFactors = FALSE)
-# }
-# 
+lm_labels <- function(sinout) {
+  mod <- lm(agent_confidence ~ observer_confidence, data = sinout)
+  formula <- sprintf("italic(y) == %.2f %+.2f * italic(x)",
+                     round(coef(mod)[1], 3), round(coef(mod)[2], 3))
+  r <- cor(sinout$observer_confidence, sinout$agent_confidence, use="complete.obs")
+  r2 <- sprintf("R^2 == %.2f", r^2)
+  data.frame(formula = formula, r2 = r2, stringsAsFactors = FALSE)
+}
+
 
 labels <- sinout %>%
-  group_by(interaction(pair_obs,Oagent)) %>%
-  summarise(r2 = cor(agent_confidence, observer_confidence)^2)
+  group_by(interaction(pair_obs,Oagent))%>%
+  summarise(lm_labels)
+
+#%>% summarise(r2 = cor(sinout$agent_confidence, sinout$observer_confidence, use="complete.obs")^2)
 
 mpg_plot <- ggplot(sinout, aes(x = observer_confidence, y = agent_confidence)) +
   geom_point() +
@@ -466,12 +580,84 @@ mpg_plot <- ggplot(sinout, aes(x = observer_confidence, y = agent_confidence)) +
              position = position_jitter(width = 0.1, height = .1)) +
   geom_smooth(method = lm, # Add linear regression line
               color = "blue", fill = "#69b3a2",se = TRUE) 
+ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf_perPair",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 80)
+print(mpg_plot)
 
-##Need to add to each facet the relative r2
-mpg_plot +
-  geom_smooth(method = lm, se = FALSE) +
-  geom_text(data = labels, aes(label = formula), x = 3, y = 40, parse = TRUE, hjust = 0) +
-  geom_text(x = 2.5, y = 5.5, aes(label = r2), data = labels, hjust = 0)
+# ##Need to add to each facet the relative r2
+# mpg_plot +
+#   geom_smooth(method = lm, se = FALSE) +
+#   geom_text(data = labels, aes(label = formula), x = 3, y = 40, parse = TRUE, hjust = 0) +
+#   geom_text(x = 2.5, y = 5.5, aes(label = r2), data = labels, hjust = 0)
+
+
+
+#### Plot (averaged obs conf - agent conf) vs contrast level
+ggplot(sinout_1block, aes(x=targetContrast, y=diff_conf)) + 
+  # scale_y_continuous(limits = lim, breaks=seq(lim[1],lim[2], by=0.1)) +
+  scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
+  geom_point(shape=1,position = position_jitter(width = 0.005, height = .01))
+
+# scatterplot - check each agent
+ggplot(sinout_1block, aes(x=targetContrast, y=diff_conf, color=interaction(Oagent,pair_obs))) + 
+  scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
+  geom_point(aes(color=interaction(Oagent,pair_obs)), position = position_jitter(width = 0.005, height = .01)) + 
+  scale_color_brewer(palette = "Paired")
+  
+# (averaged obs conf - agent conf) vs contrast level - calc the average, se, ci
+diffConf_targ  = sinout_1block[,c("targetContrast","diff_conf","pair_obs","Oagent")]
+diffConf_targ_sum = summarySE(diffConf_targ,measurevar="diff_conf",groupvars=c("targetContrast","pair_obs","Oagent"))
+
+ggplot(diffConf_targ_sum, aes(x=targetContrast, y=diff_conf, color=interaction(Oagent,pair_obs))) + 
+  geom_errorbar(aes(ymin=diff_conf-se, ymax=diff_conf+se), size=0.7, width=.01, position=pd) +
+  scale_y_continuous(limits = c(-0.2,2.8), breaks=seq(-0.2,2.8, by=0.2)) +
+  scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
+  geom_point(aes(color=interaction(Oagent,pair_obs))) + 
+  ylab("(mean obs confidence - agent confidence) ") +
+  geom_line(aes(linetype=interaction(Oagent,pair_obs), color=interaction(Oagent,pair_obs)), size=1)+
+  scale_color_brewer(palette = "Paired")
+ggsave(file=sprintf(paste0("%sdiffConf_vs_contrasts_noPair102",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
+
+
+## (averaged obs conf - agent conf) vs movement time
+# scatterplot - check each agent
+ggplot(sinout_1block, aes(x=diff_mt, y=diff_conf, color=interaction(Oagent,pair_obs))) + 
+  # scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
+  geom_point(aes(color=interaction(Oagent,pair_obs)), position = position_jitter(width = 0.005, height = .01)) + 
+  scale_color_brewer(palette = "Paired")
+
+## averaged movement time - divided by CONTRAST/agent/group
+diffConf_mt  = sinout_1block[,c("targetContrast","diff_conf","diff_mt","pair_obs","Oagent")]
+diffConf_mt_sum = summarySE(diffConf_mt,measurevar="diff_mt",groupvars=c("targetContrast","pair_obs","Oagent"))
+diffConf_mt_sum$diff_conf = diffConf_targ_sum$diff_conf
+  
+# scatterplot - check each agent
+ggplot(diffConf_mt_sum, aes(x=diff_mt, y=diff_conf, color=interaction(Oagent,pair_obs))) + 
+  # scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
+  geom_point(aes(shape=as.factor(targetContrast), color=interaction(Oagent,pair_obs))) + 
+  scale_color_brewer(palette = "Paired")
+
+
+## averaged movement time - divided by AGENT/group
+diffConf_diffMt  = sinout_1block[,c("diff_conf","diff_mt","pair_obs","Oagent")]
+sub_mt           = summarySE(diffConf_diffMt,measurevar="diff_mt",groupvars=c("pair_obs"));names(sub_mt)=c("pair_obs","N_mt","diff_mt","sd_mt","se_mt","ci_mt")
+sub_mt           = sub_mt[rep(seq_len(nrow(sub_mt)), each = 2), ]
+sub_conf         = summarySE(diffConf_diffMt,measurevar="diff_conf",groupvars=c("pair_obs","Oagent"));names(sub_conf)=c("pair_obs","Oagent","N_conf","diff_conf","sd_conf","se_conf","ci_conf")
+diffConf_diffMt_sum  = cbind(sub_mt,sub_conf[,c("Oagent","N_conf","diff_conf","sd_conf","se_conf","ci_conf")])
+
+#fitting a line
+fit_ave_confMt <- lm(diffConf_diffMt$diff_mt ~ diffConf_diffMt$diff_conf) 
+summary(fit_ave_confMt)
+Rsquared <- summary(fit_ave_confMt)$r.squared
+
+
+# scatterplot - check each agent
+ggplot(diffConf_diffMt_sum, aes(x=diff_mt, y=diff_conf, color=interaction(Oagent,pair_obs))) + 
+  geom_errorbar(aes(ymin=diff_conf-se_conf, ymax=diff_conf+se_conf), size=0.7, width=.01, position=pd) +
+  # geom_errorbar(aes(xmin=diff_mt-se_mt, xmax=diff_mt+se_mt), size=0.7, width=.01, position=pd)+
+  # scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
+  geom_point(aes(color=interaction(Oagent,pair_obs))) + 
+  scale_color_brewer(palette = "Paired")
+ggsave(file=sprintf(paste0("%sdiffConf_vs_diffMt_noPair102",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 
 
 
