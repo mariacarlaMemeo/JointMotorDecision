@@ -19,6 +19,7 @@ PlotDir = paste0(DataDir,"plot/")
 source(paste0(DataDir,'read_all_sheets.R'))
 source(paste0(DataDir,'summarySE.R'))
 source(paste0(DataDir,'theme_custom.R'))
+source(paste0(DataDir,'plotSE.R'))
 
 ##############################################################################################################
 #                                     EXECUTION                                                              #
@@ -64,14 +65,9 @@ conf_all_sum$agree = as.factor(conf_all_sum$agree)
 levels(conf_all_sum$agree) <- c("disagree", "agree")
 
 # plot - Confidence level by agreement 
-print(ggplot(conf_all_sum, aes(x=targetContrast, y=Confidence, color=DecisionType, shape=agree)) +
-        geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-        scale_y_continuous(limits = conf_lim, breaks=conf_break) +
-        geom_point(aes(shape=agree, color=DecisionType), size = 3,position=pd) +
-        geom_line(aes(linetype=agree), size=1, position=pd) +
-        scale_color_manual(values=c("steelblue1", "darkgreen")) +
-        scale_linetype_manual(values=c("dashed","solid"))+
-        ggtitle("Confidence level by agreement") + theme_custom())
+print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
+             colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,titlestr="Confidence level by agreement")+
+        theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree_individual",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
