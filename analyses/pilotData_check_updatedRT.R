@@ -18,6 +18,7 @@ PlotDir = paste0(DataDir,"plot/")
 #Call needed functions 
 source(paste0(DataDir,'read_all_sheets.R'))
 source(paste0(DataDir,'summarySE.R'))
+source(paste0(DataDir,'theme_custom.R'))
 
 ##############################################################################################################
 #                                     EXECUTION                                                              #
@@ -64,24 +65,13 @@ levels(conf_all_sum$agree) <- c("disagree", "agree")
 
 # plot - Confidence level by agreement 
 print(ggplot(conf_all_sum, aes(x=targetContrast, y=Confidence, color=DecisionType, shape=agree)) +
-  geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-    scale_y_continuous(limits = conf_lim, breaks=conf_break) +
-  geom_point(aes(shape=agree, color=DecisionType), size = 3,position=pd) +
-  geom_line(aes(linetype=agree), size=1, position=pd) +
-    scale_color_manual(values=c("steelblue1", "darkgreen")) +
-    scale_linetype_manual(values=c("dashed","solid"))+
-  ggtitle("Confidence level by agreement") +    
-  theme_bw() +
-  theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-        axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-        axis.title.y = element_text(face="bold", size=14,vjust=2),
-        axis.text.y = element_text(size=12),
-        axis.text.x = element_text(size=12),
-        panel.border = element_blank(),
-        axis.line = element_line(color = 'black', linewidth=0.1),
-        legend.title=element_blank(),
-        legend.text = element_text(size=14),
-        legend.position=c(0.2,0.85)))
+        geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
+        scale_y_continuous(limits = conf_lim, breaks=conf_break) +
+        geom_point(aes(shape=agree, color=DecisionType), size = 3,position=pd) +
+        geom_line(aes(linetype=agree), size=1, position=pd) +
+        scale_color_manual(values=c("steelblue1", "darkgreen")) +
+        scale_linetype_manual(values=c("dashed","solid"))+
+        ggtitle("Confidence level by agreement") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree_individual",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
@@ -107,19 +97,7 @@ print(ggplot(conf_all_sum_acc, aes(x=targetContrast, y=Confidence, color=Accurac
   geom_point(aes(shape=agree, color=Accuracy), size = 3,position=pd) +
   geom_line(aes(linetype=agree), size=1, position=pd) +
   scale_color_manual(values=c("red", "green")) +
-  scale_linetype_manual(values=c("dashed","solid"))+
-  ggtitle("Collective confidence level by agreement and accuracy") +    
-  theme_bw() +
-  theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-        axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-        axis.title.y = element_text(face="bold", size=14,vjust=2),
-        axis.text.y = element_text(size=12),
-        axis.text.x = element_text(size=12),
-        panel.border = element_blank(),
-        axis.line = element_line(color = 'black', linewidth=0.1),
-        legend.title=element_blank(),
-        legend.text = element_text(size=14),
-        legend.position=c(0.2,0.85)))
+  scale_linetype_manual(values=c("dashed","solid"))+ theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree_corr_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
@@ -175,18 +153,7 @@ print(ggplot(mt_rt_conf_2d_sum, aes(x=conf2, y=var, color=var_lab, group=var_lab
   scale_linetype_manual(values=c("dotted","solid")) +
   scale_size_manual(values=c(3,3)) +
   xlab("agent confidence") + ylab("time [s]") +   # Set axis labels
-  ggtitle(paste0("MT/RT as a function of confidence (individual 2nd) ",schon_lab)) +    # Set title
-  theme_bw() +
-  theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-        axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-        axis.title.y = element_text(face="bold", size=14,vjust=2),
-        axis.text.y = element_text(size=12),
-        axis.text.x = element_text(size=12),
-        panel.border = element_blank(),
-        axis.line = element_line(color = 'black'),
-        legend.title=element_blank(),
-        legend.text = element_text(size=14),
-        legend.position=c(0.75,0.9)))
+  ggtitle(paste0("MT/RT as a function of confidence (individual 2nd) ",schon_lab)) + theme_custom())
 ggsave(file=sprintf(paste0("%stime_conf_2d",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
@@ -257,18 +224,7 @@ mt_rt_conf_sum$var_lab = c(replicate(length(rt_conf_sum), "rt"),replicate(length
 #         scale_linetype_manual(values=c("dotted","solid")) +
 #         scale_size_manual(values=c(3,3)) +
 #         xlab("agent confidence") + ylab("time [s]") +   # Set axis labels
-#         ggtitle("MT/RT as a function of confidence (individual all)") +    # Set title
-#         theme_bw() +
-#         theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-#               axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-#               axis.title.y = element_text(face="bold", size=14,vjust=2),
-#               axis.text.y = element_text(size=12),
-#               axis.text.x = element_text(size=12),
-#               panel.border = element_blank(),
-#               axis.line = element_line(color = 'black'),
-#               legend.title=element_blank(),
-#               legend.text = element_text(size=14),
-#               legend.position=c(0.75,0.9))
+#         ggtitle("MT/RT as a function of confidence (individual all)") + theme_custom())
 # ggsave(file=paste0(PlotDir,"time_conf",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 ########################################################
 
@@ -297,19 +253,7 @@ print(ggplot(aveConf_Mt, aes(x=MovementTime, y=Confidence, color=subject)) +
         geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
         scale_y_continuous(limits = conf_lim, breaks=conf_break) +
         geom_point(aes(color=subject), size = 3,position=pd) +
-        ggtitle("Mean confidence and Mean MT") +    
-        theme_bw() +
-        theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-              axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-              axis.title.y = element_text(face="bold", size=14,vjust=2),
-              axis.text.y = element_text(size=12),
-              axis.text.x = element_text(size=12),
-              panel.border = element_blank(),
-              axis.line = element_line(color = 'black', linewidth=0.1),
-              legend.title=element_blank(),
-              legend.text = element_text(size=14),
-              legend.position=c(0.2,0.85))+ 
-  scale_color_brewer(palette = "Paired"))
+        ggtitle("Mean confidence and Mean MT") + theme_custom())
 # ggsave(file=paste0(PlotDir,"conf_agree_individual",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
@@ -348,18 +292,7 @@ for (v in 1:2){
     scale_linetype_manual(values=c("dotted","solid")) +
     scale_size_manual(values=c(3,3)) +
     xlab("contrast level") + ylab(paste("mean ",lab," [s]")) +   # Set axis labels
-    ggtitle(paste(lab," as a function of task difficulty")) +    # Set title
-            theme_bw() +
-            theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-                  axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-                  axis.title.y = element_text(face="bold", size=14,vjust=2),
-                  axis.text.y = element_text(size=12),
-                  axis.text.x = element_text(size=12),
-                  panel.border = element_blank(),
-                  axis.line = element_line(color = 'black'),
-                  legend.title=element_blank(),
-                  legend.text = element_text(size=14),
-                  legend.position=c(0.75,0.9)))
+    ggtitle(paste(lab," as a function of task difficulty")) + theme_custom())
     ggsave(file=sprintf(paste0("%s",lab,"_ave",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
   
 }
@@ -405,18 +338,7 @@ for (m in 1:2){
           scale_linetype_manual(values=c("dotted","dashed","solid")) +
           scale_size_manual(values=c(3,3,3)) +
           xlab("contrast level") + ylab(paste("mean ",lab," [s]")) +   # Set axis labels
-          ggtitle(paste(as.character(g)," ",lab," as a function of task difficulty")) +    # Set title
-          theme_bw() +
-          theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-                axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-                axis.title.y = element_text(face="bold", size=14,vjust=2),
-                axis.text.y = element_text(size=12),
-                axis.text.x = element_text(size=12),
-                panel.border = element_blank(),
-                axis.line = element_line(color = 'black'),
-                legend.title=element_blank(),
-                legend.text = element_text(size=14),
-                legend.position=c(0.75,0.9)))
+          ggtitle(paste(as.character(g)," ",lab," as a function of task difficulty")) + theme_custom())
   ggsave(file=sprintf(paste0("%s",as.character(g),"_",lab,"_ave",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
   }
 }
@@ -504,18 +426,7 @@ print(ggplot(mt_rt_confObs_sum, aes(x=observer_confidence, y=var, color=var_lab,
   scale_linetype_manual(values=c("dotted","solid")) +
   scale_size_manual(values=c(3,3)) +
   xlab("observer confidence") + ylab("time [s]") +   # Set axis labels
-  ggtitle("MT/RT as a function of confidence (individual 2nd)") +    # Set title
-  theme_bw() +
-  theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-        axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-        axis.title.y = element_text(face="bold", size=14,vjust=2),
-        axis.text.y = element_text(size=12),
-        axis.text.x = element_text(size=12),
-        panel.border = element_blank(),
-        axis.line = element_line(color = 'black'),
-        legend.title=element_blank(),
-        legend.text = element_text(size=14),
-        legend.position=c(0.75,0.9)))
+  ggtitle("MT/RT as a function of confidence (individual 2nd)") + theme_custom())
 ggsave(file=sprintf(paste0("%stime_obs_conf",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
@@ -707,18 +618,7 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 #   scale_linetype_manual(values=c("dotted","dashed","solid")) +
 #   scale_size_manual(values=c(3,3,3)) +
 #   xlab("contrast level") + ylab("mean accuracy") +   # Set axis labels
-#   ggtitle("Perceptual accuracy") +                   # Set title
-#   theme_bw() +
-#   theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-#         axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-#         axis.title.y = element_text(face="bold", size=14,vjust=2),
-#         axis.text.y = element_text(size=12),
-#         axis.text.x = element_text(size=12),
-#         panel.border = element_blank(),
-#         axis.line = element_line(color = 'black'),
-#         legend.title=element_blank(),
-#         legend.text = element_text(size=14),
-#         legend.position=c(0.8,0.2)) 
+#   ggtitle("Perceptual accuracy") + theme_custom()) 
 # #legend.position=c(1,0) / scale_fill_discrete(labels = c("A", "B", "C"))
 # 
 # # save plots XXX adjust this to save for each pair
@@ -748,18 +648,7 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 #   scale_linetype_manual(values=c("dotted","dashed","solid")) +
 #   scale_size_manual(values=c(3,3,3)) +
 #   xlab("contrast level") + ylab("mean RT (ms)") +   # Set axis labels
-#   ggtitle("Reaction time") +                        # Set title
-#   theme_bw() +
-#   theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-#         axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-#         axis.title.y = element_text(face="bold", size=14,vjust=2),
-#         axis.text.y = element_text(size=12),
-#         axis.text.x = element_text(size=12),
-#         panel.border = element_blank(),
-#         axis.line = element_line(color = 'black', linewidth=0.1),
-#         legend.title=element_blank(),
-#         legend.text = element_text(size=14),
-#         legend.position=c(0.8,0.85)) 
+#   ggtitle("Reaction time") + theme_custom())
 # 
 # ################## MOVEMENT TIME ##################
 # mt_all <- curdat_filt[,c("targetContrast","A1_MT","A2_MT","Coll_MT")]
@@ -785,19 +674,9 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 #   scale_linetype_manual(values=c("dotted","dashed","solid")) +
 #   scale_size_manual(values=c(3,3,3)) +
 #   xlab("contrast level") + ylab("mean MT (ms)") +   # Set axis labels
-#   ggtitle("Movement time") +                        # Set title
-#   theme_bw() +
-#   theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-#         axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-#         axis.title.y = element_text(face="bold", size=14,vjust=2),
-#         axis.text.y = element_text(size=12),
-#         axis.text.x = element_text(size=12),
-#         panel.border = element_blank(),
-#         axis.line = element_line(color = 'black', linewidth=0.1),
-#         legend.title=element_blank(),
-#         legend.text = element_text(size=14),
-#         legend.position=c(0.8,0.85)) 
-# 
+#   ggtitle("Movement time") + theme_custom())
+
+
 # ##################  CONFIDENCE   ################## 
 # conf_all <- curdat_filt[,c("targetContrast","A1_Confidence","A2_Confidence","Coll_Confidence")]
 # conf_all_long <- melt(conf_all, id="targetContrast")  # convert to long format
@@ -822,18 +701,7 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 #   scale_linetype_manual(values=c("dotted","dashed","solid")) +
 #   scale_size_manual(values=c(3,3,3)) +
 #   xlab("contrast level") + ylab("mean confidence") +   # Set axis labels
-#   ggtitle("Confidence level (1-6)") +                           # Set title
-#   theme_bw() +
-#   theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-#         axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-#         axis.title.y = element_text(face="bold", size=14,vjust=2),
-#         axis.text.y = element_text(size=12),
-#         axis.text.x = element_text(size=12),
-#         panel.border = element_blank(),
-#         axis.line = element_line(color = 'black', linewidth=0.1),
-#         legend.title=element_blank(),
-#         legend.text = element_text(size=14),
-#         legend.position=c(0.2,0.85))
+#   ggtitle("Confidence level (1-6)") + theme_custom())
 # 
 # ##################  CONFIDENCE per RT XXX   ################## 
 # conf_all <- curdat_filt[,c("targetContrast","A1_Confidence","A2_Confidence","Coll_Confidence")]
@@ -859,18 +727,7 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 #   scale_linetype_manual(values=c("dotted","dashed","solid")) +
 #   scale_size_manual(values=c(3,3,3)) +
 #   xlab("contrast level") + ylab("mean confidence") +   # Set axis labels
-#   ggtitle("Confidence level (1-6)") +                           # Set title
-#   theme_bw() +
-#   theme(plot.title = element_text(face="bold", size=18, hjust = 0.5),
-#         axis.title.x = element_text(face="bold", size=14,vjust=0.1),
-#         axis.title.y = element_text(face="bold", size=14,vjust=2),
-#         axis.text.y = element_text(size=12),
-#         axis.text.x = element_text(size=12),
-#         panel.border = element_blank(),
-#         axis.line = element_line(color = 'black', linewidth=0.1),
-#         legend.title=element_blank(),
-#         legend.text = element_text(size=14),
-#         legend.position=c(0.2,0.85))
+#   ggtitle("Confidence level (1-6)") + theme_custom())
 # 
 # ##################  CONFIDENCE distribution  ##################
 # conf_all <- curdat_filt[,c("targetContrast","A1_Confidence","A2_Confidence","Coll_Confidence")]
