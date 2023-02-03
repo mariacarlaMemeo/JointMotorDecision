@@ -9,6 +9,9 @@ pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
           "RColorBrewer","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr", "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl")
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)#Check how many packages failed the loading
 
+#Flags
+schon_data = TRUE
+
 #Retrieve the directory of the current file and create the main directory path
 slash   = unlist(gregexpr("/", this.path()))
 DataDir = substr(this.path(),1,slash[length(slash)])
@@ -46,10 +49,9 @@ if(schon_data){curdat    = curdat[curdat$group!=102,]
                schon_lab = "noPair102" } else{schon_lab = ""}
 
 #configure plot variables
-pd         = position_dodge(0.001)
-conf_lim   = c(1,6)
-conf_break = seq(1,6, by=1)
-
+pd          = position_dodge(0.001)
+conf_scale  = list("lim"=c(1,6),"breaks"=seq(1,6, by=1))
+conf_target = list("breaks"=unique(conf_all_sum$targetContrast),"labels"=unique(conf_all_sum$targetContrast))
 
 ##################  CONFIDENCE BY TARGET CONTRASTS  ##################
 #According to the level of agreement
@@ -64,15 +66,17 @@ names(conf_all_sum)[names(conf_all_sum)=='variable'] <- 'DecisionType'
 conf_all_sum$agree = as.factor(conf_all_sum$agree)
 levels(conf_all_sum$agree) <- c("disagree", "agree")
 
-# plot - Confidence level by agreement 
+# plot - Confidence level by target contrast and agreement 
 print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
-             colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,titlestr="Confidence level by agreement")+
-        theme_custom())
-ggsave(file=paste0(PlotDir,"conf_agree_individual",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+             colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,
+             xscale=conf_target,yscale=conf_scale,titlestr="Confidence level by agreement",
+             manual_col=c("steelblue1", "darkgreen"),disco=FALSE)+
+        xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
+ggsave(file=paste0(PlotDir,"conf_agree",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
 
-#According to the level of agreement and accuracy (only collective)
+#According to the level of agreement and accuracy (only collective decision)
 conf_all_acc <- curdat[,c("targetContrast","Coll_acc","Coll_conf","agree")]
 conf_all_long_acc <- melt(conf_all_acc, id=c("targetContrast","agree","Coll_acc"))  # convert to long format
 conf_all_sum_acc = summarySE(conf_all_long_acc,measurevar="value",groupvars=c("targetContrast","agree","Coll_acc"))
@@ -85,19 +89,15 @@ levels(conf_all_sum_acc$agree) <- c("disagree", "agree")
 conf_all_sum_acc$Accuracy = as.factor(conf_all_sum_acc$Accuracy)
 levels(conf_all_sum_acc$Accuracy) <- c("incorrect", "correct")
 
-# plot - Confidence level by agreement and accuracy (only collective) 
-
-print(ggplot(conf_all_sum_acc, aes(x=targetContrast, y=Confidence, color=Accuracy, shape=agree)) +
-  geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-  scale_y_continuous(limits = conf_lim, breaks=conf_break) +
-  geom_point(aes(shape=agree, color=Accuracy), size = 3,position=pd) +
-  geom_line(aes(linetype=agree), size=1, position=pd) +
-  scale_color_manual(values=c("red", "green")) +
-  scale_linetype_manual(values=c("dashed","solid"))+ theme_custom())
-ggsave(file=paste0(PlotDir,"conf_agree_corr_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
-
-
+# plot - Confidence level by target contrasts and agreement and accuracy (only collective decision)
+print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_all_sum_acc$Confidence,
+             colorvar=conf_all_sum_acc$Accuracy,shapevar=conf_all_sum_acc$agree,
+             xscale=conf_target,yscale=conf_scale,titlestr="Confidence level by agreement",
+             manual_col=c("red", "green"),disco=FALSE)+
+        xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
+ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 ########################################################
+
 
 ##################  RT and MT BY CONFIDENCE   ##################
 #Create a column containing the confidence of the 1st and 2nd decisions
@@ -136,20 +136,15 @@ mt_rt_conf_2d_sum = rbind(rt_conf_2d_sum,mt_conf_2d_sum);
 mt_rt_conf_2d_sum$var_lab = c(replicate(length(rt_conf_2d_sum), "rt"),replicate(length(mt_conf_2d_sum), "mt"))
 
 
-# plot that include RT and MT as a function of confidence level (across participants)
+# plot - RT and MT as a function of confidence level (across participants)
+d          = mt_rt_conf_2d_sum
+time_scale = list("lim"=c(0.2,1.75),"breaks"=seq(0.2,1.75, by=0.25))
 
-print(ggplot(mt_rt_conf_2d_sum, aes(x=conf2, y=var, color=var_lab, group=var_lab)) + 
-  geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
-  scale_y_continuous(limits = c(0.25,1.75), breaks=seq(0.25,1.75, by=0.25)) +
-  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
-  geom_point(aes(shape=var_lab, color=var_lab, size=var_lab), position=pd) +
-  geom_line(aes(linetype=var_lab, color=var_lab), size=1, position=pd) +
-  scale_shape_manual(values=c(15, 16)) +
-  scale_color_manual(values=c("grey", "black")) +
-  scale_linetype_manual(values=c("dotted","solid")) +
-  scale_size_manual(values=c(3,3)) +
-  xlab("agent confidence") + ylab("time [s]") +   # Set axis labels
-  ggtitle(paste0("MT/RT as a function of confidence (individual 2nd) ",schon_lab)) + theme_custom())
+print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
+             colorvar=d$var_lab,shapevar=NULL,
+             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence A2 ",schon_lab),
+             manual_col=c("grey", "black"),disco=TRUE) +
+        xlab("agent confidence") + ylab("time [s]") + theme_custom())
 ggsave(file=sprintf(paste0("%stime_conf_2d",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
@@ -224,7 +219,9 @@ mt_rt_conf_sum$var_lab = c(replicate(length(rt_conf_sum), "rt"),replicate(length
 # ggsave(file=paste0(PlotDir,"time_conf",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 ########################################################
 
+
 ##################  CONFIDENCE BY MT ##################
+#Don't know why we included the following section
 conf_a1a2 = curdat[,c("group","A1_conf","A2_conf")]
 conf_a1a2_long <- melt(conf_a1a2, id=c("group"))
 
@@ -251,9 +248,8 @@ print(ggplot(aveConf_Mt, aes(x=MovementTime, y=Confidence, color=subject)) +
         geom_point(aes(color=subject), size = 3,position=pd) +
         ggtitle("Mean confidence and Mean MT") + theme_custom())
 # ggsave(file=paste0(PlotDir,"conf_agree_individual",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
-
-
 ########################################################
+
 
 ###################### RT and MT BY TARGET CONTRASTS ###################################
 

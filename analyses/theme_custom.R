@@ -10,6 +10,6 @@ theme_custom <- function() {
           axis.line = element_line(color = 'black', linewidth=0.1),
           legend.title=element_blank(),
           legend.text = element_text(size=14),
-          legend.position=c(0.2,0.85))
+          legend.position="top")
 }
 
