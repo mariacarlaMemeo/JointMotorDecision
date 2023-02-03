@@ -1,97 +1,52 @@
-# First data check for JMD Data
+## Script to analyze JMD pilot data collected in November 2022
+
+#Remove variables and plots
 rm(list = ls())
-dev.off()
+graphics.off()
 
-
-## Functions
-source('C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/temporalLagMEmodulation/Temporal Lag of ME modulation/read_all_sheets.R')
-
-##flag 
-all_script = FALSE #run all the script
-schon_data = TRUE #remove 1 pair(102) because of the unbalanced confidence answers 
-
-# select directory
-# DataDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/'
-# DataDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/video_cut/'
-DataDir = 'C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/analyses/'
-DataDirObs = 'C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/analyses/data_obs/'
-
-# save plots here
-#PlotDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/pilotPlots/'
-# PlotDir <- 'C:/Users/Laura/Sync/00_Research/2022_UKE/Confidence from motion/04_Analysis/pilotData/pilotPlots/video_cut/'
-PlotDir = 'C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/analyses/plot/'
-
-# load necessary/useful libraries
-## Load libraries
-pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez","MuMIn","BayesFactor","permuco","RVAideMemoire",
-          "RColorBrewer","ggpur","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr", "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl")
+#Load necessary/useful libraries
+pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez","MuMIn","BayesFactor","permuco","RVAideMemoire","this.path",
+          "RColorBrewer","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr", "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl")
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)#Check how many packages failed the loading
 
+#Retrieve the directory of the current file and create the main directory path
+slash   = unlist(gregexpr("/", this.path()))
+DataDir = substr(this.path(),1,slash[length(slash)])
+#Save plots here
+PlotDir = paste0(DataDir,"plot/")
 
-##### function to compute means #####
-summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=TRUE,
-                      conf.interval=.95, .drop=TRUE) {
-  library(plyr)
-  
-  # new version of length which can handle NAs (if na.rm==T, don't count them)
-  length2 <- function (x, na.rm=TRUE) {
-    if (na.rm) sum(!is.na(x))
-    else       length(x)
-  }
-  
-  # this does the summary. for each group's data frame, return a vector with
-  # N, mean, and SD
-  datac <- ddply(data, groupvars, .drop=.drop,
-                 .fun = function(xx, col) {
-                   c(N    = length2(xx[[col]], na.rm=na.rm),
-                     mean = mean   (xx[[col]], na.rm=na.rm),
-                     sd   = sd     (xx[[col]], na.rm=na.rm)
-                   )
-                 },
-                 measurevar
-  )
-  
-  # rename the "mean" column    
-  datac <- rename(datac, c("mean" = measurevar))
-  
-  datac$se <- datac$sd / sqrt(datac$N)  # calculate Standard Error of the Mean
-  
-  ciMult <- qt(conf.interval/2 + .5, datac$N-1)
-  datac$ci <- datac$se * ciMult
-  
-  return(datac)
-}
-
-
-##### load data ####
-
-# can be used for random selection (always same randomization)
-set.seed(1)
-
+#Call needed functions 
+source(paste0(DataDir,'read_all_sheets.R'))
+source(paste0(DataDir,'summarySE.R'))
 
 ##############################################################################################################
 #                                     EXECUTION                                                              #
 ##############################################################################################################
-# create data frame
-collect_dat = data.frame(matrix(ncol = 0, nrow = 0))
+#Create data frame of execution part - retrieve data from an Excel file that was manually created by merging the single pair files. 
+#Single pair files were created with movement_onset.m matlab file, starting from the .mat files acquired during the exp.
 cursub = "pilotData_all.xlsx" # execution data
 Filetmp <- sprintf('%s%s', DataDir, cursub)       # create path
 
-# read all the sheets, i.e. all the pairs data, the from the excel file
+#Read all the sheets till the selected columns and create curdat dataframe.
 dat       = read_all_sheets(Filetmp,"P","A:AH")
 list_size = lapply(dat,lengths)
 group     = c(rep(100,list_size[[1]][[1]]),rep(101,list_size[[2]][[1]]),rep(102,list_size[[3]][[1]]),rep(103,list_size[[4]][[1]]))
 trial     = c(1:list_size[[1]][[1]],1:list_size[[2]][[1]],1:list_size[[3]][[1]],1:list_size[[4]][[1]])
+#Rbind all the excel sheets
 curdat    = rbindlist(dat)
 curdat    = cbind(group,trial,curdat) # added at the beginning of the dataframe
 #Add a column to express the agreement on the perceptual task between the 2 agents. [1=agreement, -1=disagreement]
 curdat$agree = as.integer(curdat$A1_decision == curdat$A2_decision)
 curdat$agree[curdat$agree==0]=-1
 
-
 #Remove pair 102 - didn't follow the instructions
 if(schon_data){curdat    = curdat[curdat$group!=102,]
                schon_lab = "noPair102" } else{schon_lab = ""}
+
+#configure plot variables
+pd         = position_dodge(0.001)
+conf_lim   = c(1,6)
+conf_break = seq(1,6, by=1)
 
 
 ##################  CONFIDENCE BY TARGET CONTRASTS  ##################
@@ -108,10 +63,9 @@ conf_all_sum$agree = as.factor(conf_all_sum$agree)
 levels(conf_all_sum$agree) <- c("disagree", "agree")
 
 # plot - Confidence level by agreement 
-pd <- position_dodge(0.001)
 print(ggplot(conf_all_sum, aes(x=targetContrast, y=Confidence, color=DecisionType, shape=agree)) +
   geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-    scale_y_continuous(limits = c(1,6), breaks=seq(1,6, by=1)) +
+    scale_y_continuous(limits = conf_lim, breaks=conf_break) +
   geom_point(aes(shape=agree, color=DecisionType), size = 3,position=pd) +
   geom_line(aes(linetype=agree), size=1, position=pd) +
     scale_color_manual(values=c("steelblue1", "darkgreen")) +
@@ -146,10 +100,10 @@ conf_all_sum_acc$Accuracy = as.factor(conf_all_sum_acc$Accuracy)
 levels(conf_all_sum_acc$Accuracy) <- c("incorrect", "correct")
 
 # plot - Confidence level by agreement and accuracy (only collective) 
-pd <- position_dodge(0.001)
+
 print(ggplot(conf_all_sum_acc, aes(x=targetContrast, y=Confidence, color=Accuracy, shape=agree)) +
   geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-  scale_y_continuous(limits = c(1,6), breaks=seq(1,6, by=1)) +
+  scale_y_continuous(limits = conf_lim, breaks=conf_break) +
   geom_point(aes(shape=agree, color=Accuracy), size = 3,position=pd) +
   geom_line(aes(linetype=agree), size=1, position=pd) +
   scale_color_manual(values=c("red", "green")) +
@@ -209,11 +163,11 @@ mt_rt_conf_2d_sum$var_lab = c(replicate(length(rt_conf_2d_sum), "rt"),replicate(
 
 
 # plot that include RT and MT as a function of confidence level (across participants)
-pd <- position_dodge(0.001) 
+
 print(ggplot(mt_rt_conf_2d_sum, aes(x=conf2, y=var, color=var_lab, group=var_lab)) + 
   geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
   scale_y_continuous(limits = c(0.25,1.75), breaks=seq(0.25,1.75, by=0.25)) +
-  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
+  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
   geom_point(aes(shape=var_lab, color=var_lab, size=var_lab), position=pd) +
   geom_line(aes(linetype=var_lab, color=var_lab), size=1, position=pd) +
   scale_shape_manual(values=c(15, 16)) +
@@ -295,7 +249,7 @@ mt_rt_conf_sum$var_lab = c(replicate(length(rt_conf_sum), "rt"),replicate(length
 # ggplot(mt_rt_conf_sum, aes(x=conf, y=var, color=var_lab, group=var_lab)) + 
 #         geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
 #         scale_y_continuous(limits = c(0.25,1.75), breaks=seq(0.25,1.75, by=0.25)) +
-#         scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
+#         scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
 #         geom_point(aes(shape=var_lab, color=var_lab, size=var_lab), position=pd) +
 #         geom_line(aes(linetype=var_lab, color=var_lab), size=1, position=pd) +
 #         scale_shape_manual(values=c(15, 16)) +
@@ -341,7 +295,7 @@ aveConf_Mt = subset(aveConf_Mt,select=-c(subject_mt))
 
 print(ggplot(aveConf_Mt, aes(x=MovementTime, y=Confidence, color=subject)) +
         geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-        scale_y_continuous(limits = c(1,6), breaks=seq(1,6, by=1)) +
+        scale_y_continuous(limits = conf_lim, breaks=conf_break) +
         geom_point(aes(color=subject), size = 3,position=pd) +
         ggtitle("Mean confidence and Mean MT") +    
         theme_bw() +
@@ -382,7 +336,7 @@ for (v in 1:2){
   names(all_sum)[names(all_sum)=='variable'] <- 'DecisionType'
   
   # plot for each pair
-  pd <- position_dodge(0.001) 
+  
   print(ggplot(all_sum, aes(x=targetContrast, y=var, color=DecisionType, group=DecisionType)) + 
     geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
     scale_y_continuous(limits = c(0.4,1.5), breaks=seq(0.4,1.5, by=0.1)) +
@@ -439,7 +393,7 @@ for (m in 1:2){
   names(all_sum)[names(all_sum)=='variable'] <- 'DecisionType'
   
   # plot for each pair
-  pd <- position_dodge(0.001) 
+  
   print(ggplot(all_sum, aes(x=targetContrast, y=var, color=DecisionType, group=DecisionType)) + 
           geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
           scale_y_continuous(limits = lim, breaks=seq(lim[1],lim[2], by=0.1)) +
@@ -542,7 +496,7 @@ mt_rt_confObs_sum$var_lab = c(replicate(length(rt_confObs_sum), "rt"),replicate(
 print(ggplot(mt_rt_confObs_sum, aes(x=observer_confidence, y=var, color=var_lab, group=var_lab)) + 
   geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
   scale_y_continuous(limits = c(0.25,1.9), breaks=seq(0.25,1.9, by=0.25)) +
-  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
+  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
   geom_point(aes(shape=var_lab, color=var_lab, size=var_lab), position=pd) +
   geom_line(aes(linetype=var_lab, color=var_lab), size=1, position=pd) +
   scale_shape_manual(values=c(15, 16)) +
@@ -594,8 +548,8 @@ print(Rsquared,digits=3)
 conf_exe_obsAve = ggplot(sinout_1block, aes(x = agent_confidence, y = conf_aveBlock)) +
   geom_point(shape = 1,   # Use hollow circles
              position = position_jitter(width = 0.1, height = .1)) +
-  scale_y_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
-  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=seq(1,6, by=1)) +
+  scale_y_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
+  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
   geom_smooth(method = lm, # Add linear regression line
               color = "blue", fill = "#69b3a2",se = TRUE) +
   annotate("text", x=5, y=1, label = paste("R2 = ", format(summary(fit_ave)$r.squared,digits=3)), col="black", cex=6)+
@@ -716,10 +670,13 @@ pCon_iCon           = cbind(mergissimo_sub,mergissimo_mt); names(pCon_iCon)[name
 
 pCon_iCon$diff_mt_signedAve[pCon_iCon$agent==2] = -(pCon_iCon$diff_mt_signedAve[pCon_iCon$agent==2])
 
-print(ggplot(pCon_iCon, aes(x=interaction(agent,pair), y=diff_mt_signedAve, color=interaction(agent,pair), shape=as.factor(iconHigh))) + 
-        geom_point(aes(color=interaction(agent,pair),shape=as.factor(iconHigh),size=3)) + 
-        labs( y = "Difference in MT (A1 - A2)", x = "Agent and Pair") +
-        scale_color_brewer(palette = "Paired"))
+inter_agent_pair    = interaction(pCon_iCon$agent,pCon_iCon$pair)
+inter_agent_pair    = factor(inter_agent_pair, levels = c("1.100", "1.101", "1.103","2.100", "2.101", "2.103"))
+
+print(ggplot(pCon_iCon, aes(x=inter_agent_pair, y=diff_mt_signedAve, color=inter_agent_pair, shape=as.factor(iconHigh))) + 
+        geom_point(aes(color=inter_agent_pair,shape=as.factor(iconHigh),size=3)) + 
+        labs( y = "Difference in MT (A1 - A2)", x = "Agent and Pair"))
+        # scale_color_brewer(palette = "Paired"))
 ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 
 
@@ -739,7 +696,6 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 # 
 # # plot for each pair
 # group_acc <- accuracy_all_sum
-# pd <- position_dodge(0.001) 
 # ggplot(group_acc, aes(x=targetContrast, y=Accuracy, color=Agent, group=Agent)) + 
 #   geom_errorbar(aes(ymin=Accuracy-se, ymax=Accuracy+se), size=0.7, width=.01, position=pd) +
 #   scale_y_continuous(limits = c(0.4,1.0), breaks=seq(0.3,1.1, by=0.1)) +
@@ -857,7 +813,7 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 # pd <- position_dodge(0.001) 
 # ggplot(group_conf, aes(x=targetContrast, y=Confidence, color=Agent, group=Agent)) + 
 #   geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-#   scale_y_continuous(limits = c(1,6), breaks=seq(1,6, by=1)) +
+#   scale_y_continuous(limits = conf_lim, breaks=conf_break) +
 #   scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
 #   geom_point(aes(shape=Agent, color=Agent, size=Agent), position=pd) +
 #   geom_line(aes(linetype=Agent, color=Agent), size=1, position=pd) +
@@ -894,7 +850,7 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 # pd <- position_dodge(0.001) 
 # ggplot(group_conf, aes(x=targetContrast, y=Confidence, color=Agent, group=Agent)) + 
 #   geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-#   scale_y_continuous(limits = c(1,6), breaks=seq(1,6, by=1)) +
+#   scale_y_continuous(limits = conf_lim, breaks=conf_break) +
 #   scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
 #   geom_point(aes(shape=Agent, color=Agent, size=Agent), position=pd) +
 #   geom_line(aes(linetype=Agent, color=Agent), size=1, position=pd) +
@@ -935,6 +891,7 @@ ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi
 # #https://es.sonicurlprotection-fra.com/click?PV=2&MSGID=202301111614160142157&URLID=1&ESV=10.0.19.7431&IV=BAD6512CAE5511F393A81FF3342D7CF1&TT=1673453657212&ESN=6RqFVHQ3UCp8TU9tR5eie7OtUmOEYnwkhc24442tYcU%3D&KV=1536961729280&B64_ENCODED_URL=aHR0cHM6Ly9yLWNoYXJ0cy5jb20vZGlzdHJpYnV0aW9uL2hpc3RvZ3JhbS1ncm91cC1nZ3Bsb3QyLw&HK=DC2FA2A0C28F7BA64EE2B6864EF8555DD2A90BFA1F64E405B62B31A19F8B5F11
 # 
 # ##################
+# collect_dat = data.frame(matrix(ncol = 0, nrow = 0))
 # collect_dat = rbind(collect_dat, curdat_filt) # combine all subjects' data
 # 
 # 
