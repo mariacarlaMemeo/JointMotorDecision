@@ -24,6 +24,9 @@ source(paste0(DataDir,'summarySE.R'))
 source(paste0(DataDir,'theme_custom.R'))
 source(paste0(DataDir,'plotSE.R'))
 
+#Initialize variables
+decision1 = c()
+
 ##############################################################################################################
 #                                     EXECUTION                                                              #
 ##############################################################################################################
@@ -50,7 +53,7 @@ for (row in 1:dim(curdat)[1])
   if (f_dec==1){decision1[row] = curdat[row,A1_decision]}else{decision1[row] = curdat[row,A2_decision]}
 }
 curdat$decision1 = decision1
-curdat$switch    = as.integer(curdat$decision1 == curdat$Coll_decision)
+curdat$switch    = as.integer(curdat$decision1 != curdat$Coll_decision)
 curdat$switch[curdat$switch==0]=-1
 
 #Remove pair 102 - didn't follow the instructions
