@@ -10,7 +10,7 @@ pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)#Check how many packages failed the loading
 
 #Flags
-schon_data = TRUE
+schon_data = TRUE # if TRUE the dataset doesn't contain the 102 pair
 
 #Retrieve the directory of the current file and create the main directory path
 slash   = unlist(gregexpr("/", this.path()))
@@ -43,6 +43,15 @@ curdat    = cbind(group,trial,curdat) # added at the beginning of the dataframe
 #Add a column to express the agreement on the perceptual task between the 2 agents. [1=agreement, -1=disagreement]
 curdat$agree = as.integer(curdat$A1_decision == curdat$A2_decision)
 curdat$agree[curdat$agree==0]=-1
+#Add a column to show if there was a switching in the collective decision respect to the first decision [1=switch, -1=no switch]
+for (row in 1:dim(curdat)[1])
+{
+  f_dec = curdat[row,AgentTakingFirstDecision]
+  if (f_dec==1){decision1[row] = curdat[row,A1_decision]}else{decision1[row] = curdat[row,A2_decision]}
+}
+curdat$decision1 = decision1
+curdat$switch    = as.integer(curdat$decision1 == curdat$Coll_decision)
+curdat$switch[curdat$switch==0]=-1
 
 #Remove pair 102 - didn't follow the instructions
 if(schon_data){curdat    = curdat[curdat$group!=102,]
