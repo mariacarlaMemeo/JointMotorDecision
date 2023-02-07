@@ -23,6 +23,7 @@ source(paste0(DataDir,'read_all_sheets.R'))
 source(paste0(DataDir,'summarySE.R'))
 source(paste0(DataDir,'theme_custom.R'))
 source(paste0(DataDir,'plotSE.R'))
+source(paste0(DataDir,'final_rtmt_byAgent.R'))
 
 #Initialize variables
 decision1 = c()
@@ -87,9 +88,9 @@ target_scale = list("breaks"=unique(curdat$targetContrast),"labels"=unique(curda
 
 ##################  CONFIDENCE BY TARGET CONTRASTS  ##################
 #According to the level of agreement (include only A1 decisions)
-conf_all <- curdat[,c("targetContrast","conf1","Coll_conf","agree")]
+conf_all <- curdat[,c("targetContrast","confidence1","Coll_conf","agree")]
 conf_all_long <- melt(conf_all, id=c("targetContrast","agree"))  # convert to long format
-levels(conf_all_long$variable) <- c("Individual", "Individual", "Collective")
+levels(conf_all_long$variable) <- c("Individual_A1", "Collective")
 conf_all_sum = summarySE(conf_all_long,measurevar="value",groupvars=c("variable","targetContrast","agree"))
 # rename variables
 names(conf_all_sum)[names(conf_all_sum)=='value'] <- 'Confidence'
@@ -99,7 +100,7 @@ conf_all_sum$agree = as.factor(conf_all_sum$agree)
 levels(conf_all_sum$agree) <- c("disagree", "agree")
 
 # plot - Confidence level by target contrast and agreement 
-print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
+print(plotSE(n_var=2,df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
              colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
              manual_col=c("steelblue1", "darkgreen"),disco=FALSE)+
@@ -122,7 +123,7 @@ conf_all_sum_acc$Accuracy = as.factor(conf_all_sum_acc$Accuracy)
 levels(conf_all_sum_acc$Accuracy) <- c("incorrect", "correct")
 
 # plot - Confidence level by target contrasts and agreement and accuracy (only collective decision)
-print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_all_sum_acc$Confidence,
+print(plotSE(n_var=2,df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_all_sum_acc$Confidence,
              colorvar=conf_all_sum_acc$Accuracy,shapevar=conf_all_sum_acc$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
              manual_col=c("red", "green"),disco=FALSE)+
@@ -131,36 +132,18 @@ ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, u
 ########################################################
 
 
-##################  RT and MT BY CONFIDENCE   ##################
-#Create a column containing the confidence of the 1st and 2nd decisions
-#First decision
-a1_conf_1d = curdat[curdat$AgentTakingFirstDecision=="B",c("B_conf","trial","group")]
-a2_conf_1d = curdat[curdat$AgentTakingFirstDecision=="Y",c("Y_conf","trial","group")]
-names(a1_conf_1d) = c("conf","trial","group")
-names(a2_conf_1d) = c("conf","trial","group")
-dconf_1d    = rbind(a1_conf_1d,a2_conf_1d)    
-conf_1d  = with(dconf_1d, dconf_1d[order(group,trial,conf),])
+##################  RT and MT BY CONFIDENCE   ###################
+#"B_rt" and "Y_rt" (or as in an alternative version "A1_rt" or "A2_rt") are the reaction time calculated during acquisition (the same for mt). 
+#In the post processing we calculated rt and mt for each agent with kinematics,"rt_final1" and "rt_final2": that's what we're going to use. 
+#Those variables are related to the rt of the 1st and 2nd decision respectively (not to the agent).
 
-#Second decision
-a1_conf_2d =curdat[curdat$AgentTakingSecondDecision=="B",c("B_conf","trial","group")]
-a2_conf_2d =curdat[curdat$AgentTakingSecondDecision=="Y",c("Y_conf","trial","group")]
-names(a1_conf_2d) = c("conf","trial","group")
-names(a2_conf_2d) = c("conf","trial","group")
-dconf_2d    = rbind(a1_conf_2d,a2_conf_2d)    
-conf_2d  = with(dconf_2d, dconf_2d[order(group,trial,conf),])
-
-#add the new variable to the dataframe of execution 
-curdat$conf_1d = conf_1d$conf
-curdat$conf_2d = conf_2d$conf
-
-#
 #rt 2nd decision - calc the average, se, ci
-rt_conf_2d  = curdat[,c("conf_2d","rt_final2")]; names(rt_conf_2d) = c("conf2","rtKin2")
-rt_conf_2d_sum = summarySE(rt_conf_2d,measurevar="rtKin2",groupvars=c("conf2"))
+rt_conf_2d  = curdat[,c("confidence2","rt_final2")]
+rt_conf_2d_sum = summarySE(rt_conf_2d,measurevar="rt_final2",groupvars=c("confidence2"))
 
 #mt 2nd decision - calc the average, se, ci
-mt_conf_2d  = curdat[,c("conf_2d","mt_final2")]; names(mt_conf_2d) = c("conf2","mtKin2")
-mt_conf_2d_sum = summarySE(mt_conf_2d,measurevar="mtKin2",groupvars=c("conf2"))
+mt_conf_2d  = curdat[,c("confidence2","mt_final2")]
+mt_conf_2d_sum = summarySE(mt_conf_2d,measurevar="mt_final2",groupvars=c("confidence2"))
 
 names(rt_conf_2d_sum) = c("conf2","N","var","sd","se","ci")
 names(mt_conf_2d_sum) = c("conf2","N","var","sd","se","ci")
@@ -172,68 +155,34 @@ mt_rt_conf_2d_sum$var_lab = c(replicate(length(rt_conf_2d_sum), "rt"),replicate(
 d          = mt_rt_conf_2d_sum
 time_scale = list("lim"=c(0.2,1.75),"breaks"=seq(0.2,1.75, by=0.25))
 
-print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
+print(plotSE(n_var=2,df=d,xvar=d$conf2,yvar=d$var,
              colorvar=d$var_lab,shapevar=NULL,
-             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (2nd decision)",schon_lab),
+             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (2nd decision) ",schon_lab),
              manual_col=c("grey", "black"),disco=TRUE) +
         xlab("agent confidence") + ylab("time [s]") + theme_custom())
 ggsave(file=sprintf(paste0("%stime_conf_2d",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
+##### XXXX We don't need it because it includes the first decision and we needed only the second 
 ### Order data according to agents
-#rt agent 1
-rt1_a1=curdat[curdat$AgentTakingFirstDecision==1,c("rt_final1","trial","group")]
-rt2_a1=curdat[curdat$AgentTakingSecondDecision==1,c("rt_final2","trial","group")]
-names(rt1_a1) = c("rt","trial","group")
-names(rt2_a1) = c("rt","trial","group")
-drt_a1 = rbind(rt1_a1,rt2_a1)
-rt_a1  = with(drt_a1, drt_a1[order(group,trial,rt),])
-#rt agent 2
-rt1_a2=curdat[curdat$AgentTakingFirstDecision==2,c("rt_final1","trial","group")]
-rt2_a2=curdat[curdat$AgentTakingSecondDecision==2,c("rt_final2","trial","group")]
-names(rt1_a2) = c("rt","trial","group")
-names(rt2_a2) = c("rt","trial","group")
-drt_a2 = rbind(rt1_a2,rt2_a2)
-rt_a2  = with(drt_a2, drt_a2[order(group,trial,rt),])
 
-#mt agent 1
-mt1_a1=curdat[curdat$AgentTakingFirstDecision==1,c("mt_final1","trial","group")]
-mt2_a1=curdat[curdat$AgentTakingSecondDecision==1,c("mt_final2","trial","group")]
-names(mt1_a1) = c("mt","trial","group")
-names(mt2_a1) = c("mt","trial","group")
-dmt_a1 = rbind(mt1_a1,mt2_a1)
-mt_a1  = with(dmt_a1, dmt_a1[order(group,trial,mt),])
-#mt agent 2
-mt1_a2=curdat[curdat$AgentTakingFirstDecision==2,c("mt_final1","trial","group")]
-mt2_a2=curdat[curdat$AgentTakingSecondDecision==2,c("mt_final2","trial","group")]
-names(mt1_a2) = c("mt","trial","group")
-names(mt2_a2) = c("mt","trial","group")
-dmt_a2 = rbind(mt1_a2,mt2_a2)
-mt_a2  = with(dmt_a2, dmt_a2[order(group,trial,mt),])
 
-#merge
-(rt_a1$trial == rt_a2$trial) && (mt_a1$trial == mt_a2$trial)
-curdat$A1_rtKin = rt_a1$rt
-curdat$A2_rtKin = rt_a2$rt
-curdat$A1_mtKin = mt_a1$mt
-curdat$A2_mtKin = mt_a2$mt
-
-#rt - calc the average, se, ci
-rt_conf_a1  = curdat[,c("A1_conf","A1_rtKin")]; names(rt_conf_a1) = c("conf","rtKin")
-rt_conf_a2  = curdat[,c("A2_conf","A2_rtKin")]; names(rt_conf_a2) = c("conf","rtKin")
-rt_conf     = rbind(rt_conf_a1,rt_conf_a2)
-rt_conf_sum = summarySE(rt_conf,measurevar="rtKin",groupvars=c("conf"))
-
-#mt - calc the average, se, ci
-mt_conf_a1  = curdat[,c("A1_conf","A1_mtKin")]; names(mt_conf_a1) = c("conf","mtKin")
-mt_conf_a2  = curdat[,c("A2_conf","A2_mtKin")]; names(mt_conf_a2) = c("conf","mtKin")
-mt_conf     = rbind(mt_conf_a1,mt_conf_a2)
-mt_conf_sum = summarySE(mt_conf,measurevar="mtKin",groupvars=c("conf"))
-
-names(rt_conf_sum) = c("conf","N","var","sd","se","ci")
-names(mt_conf_sum) = c("conf","N","var","sd","se","ci")
-mt_rt_conf_sum = rbind(rt_conf_sum,mt_conf_sum);
-mt_rt_conf_sum$var_lab = c(replicate(length(rt_conf_sum), "rt"),replicate(length(mt_conf_sum), "mt"))
+# #rt - calc the average, se, ci
+# rt_conf_a1  = curdat[,c("A1_conf","A1_rtKin")]; names(rt_conf_a1) = c("conf","rtKin")
+# rt_conf_a2  = curdat[,c("A2_conf","A2_rtKin")]; names(rt_conf_a2) = c("conf","rtKin")
+# rt_conf     = rbind(rt_conf_a1,rt_conf_a2)
+# rt_conf_sum = summarySE(rt_conf,measurevar="rtKin",groupvars=c("conf"))
+# 
+# #mt - calc the average, se, ci
+# mt_conf_a1  = curdat[,c("A1_conf","A1_mtKin")]; names(mt_conf_a1) = c("conf","mtKin")
+# mt_conf_a2  = curdat[,c("A2_conf","A2_mtKin")]; names(mt_conf_a2) = c("conf","mtKin")
+# mt_conf     = rbind(mt_conf_a1,mt_conf_a2)
+# mt_conf_sum = summarySE(mt_conf,measurevar="mtKin",groupvars=c("conf"))
+# 
+# names(rt_conf_sum) = c("conf","N","var","sd","se","ci")
+# names(mt_conf_sum) = c("conf","N","var","sd","se","ci")
+# mt_rt_conf_sum = rbind(rt_conf_sum,mt_conf_sum);
+# mt_rt_conf_sum$var_lab = c(replicate(length(rt_conf_sum), "rt"),replicate(length(mt_conf_sum), "mt"))
 
 # # plot that include RT and MT as a function of confidence level (across participants)
 # ggplot(mt_rt_conf_sum, aes(x=conf, y=var, color=var_lab, group=var_lab)) + 
@@ -249,37 +198,38 @@ mt_rt_conf_sum$var_lab = c(replicate(length(rt_conf_sum), "rt"),replicate(length
 #         xlab("agent confidence") + ylab("time [s]") +   # Set axis labels
 #         ggtitle("MT/RT as a function of confidence (individual all)") + theme_custom())
 # ggsave(file=paste0(PlotDir,"time_conf",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+##### XXXX 
 ########################################################
-
-
-##################  CONFIDENCE BY MT ##################
-#Don't know why we included the following section
-conf_a1a2 = curdat[,c("group","A1_conf","A2_conf")]
-conf_a1a2_long <- melt(conf_a1a2, id=c("group"))
-
-mt_a1a2 = curdat[,c("group","A1_mtKin","A2_mtKin")]
-mt_a1a2_long <- melt(mt_a1a2, id=c("group")); names(mt_a1a2_long) = c("group","label_mt","mtKin")
-
-conf_mt_a1a2         = cbind(conf_a1a2_long,mt_a1a2_long)
-conf_mt_a1a2$agent   = c(rep("A1",length(curdat$A1_mtKin)),rep("A2",length(curdat$A1_mtKin)))
-names(conf_mt_a1a2)  = c("group","label_conf","Confidence","group_spare","label_mt","MovementTime","agent")
-conf_mt_a1a2         = subset(conf_mt_a1a2,select=-c(group_spare,label_mt,label_conf))
-conf_mt_a1a2$subject = interaction(conf_mt_a1a2$agent,conf_mt_a1a2$group)
-conf_mt_a1a2         = subset(conf_mt_a1a2,select=-c(group,agent))
-
-#Movement Time contains multiple NA values. They are not used to calculated the average
-aveConf = summarySE(conf_mt_a1a2,measurevar="Confidence",groupvars="subject")
-aveMt   = summarySE(conf_mt_a1a2,measurevar="MovementTime",groupvars="subject");names(aveMt)=c("subject_mt","N_mt","MovementTime","sd_mt","se_mt","ci_mt")
-#bind MT and confidence averaged values
-aveConf_Mt = cbind(aveConf,aveMt)
-aveConf_Mt = subset(aveConf_Mt,select=-c(subject_mt))
-
-print(ggplot(aveConf_Mt, aes(x=MovementTime, y=Confidence, color=subject)) +
-        geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
-        scale_y_continuous(limits = conf_lim, breaks=conf_break) +
-        geom_point(aes(color=subject), size = 3,position=pd) +
-        ggtitle("Mean confidence and Mean MT") + theme_custom())
-# ggsave(file=paste0(PlotDir,"conf_agree_individual",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+# 
+# 
+# ##################  CONFIDENCE BY MT ##################
+###################  Don't know why we included the following section ##################
+#
+# conf_a1a2 = curdat[,c("group","A1_conf","A2_conf")]
+# conf_a1a2_long <- melt(conf_a1a2, id=c("group"))
+# 
+# mt_a1a2 = curdat[,c("group","A1_mtKin","A2_mtKin")]
+# mt_a1a2_long <- melt(mt_a1a2, id=c("group")); names(mt_a1a2_long) = c("group","label_mt","mtKin")
+# 
+# conf_mt_a1a2         = cbind(conf_a1a2_long,mt_a1a2_long)
+# conf_mt_a1a2$agent   = c(rep("A1",length(curdat$A1_mtKin)),rep("A2",length(curdat$A1_mtKin)))
+# names(conf_mt_a1a2)  = c("group","label_conf","Confidence","group_spare","label_mt","MovementTime","agent")
+# conf_mt_a1a2         = subset(conf_mt_a1a2,select=-c(group_spare,label_mt,label_conf))
+# conf_mt_a1a2$subject = interaction(conf_mt_a1a2$agent,conf_mt_a1a2$group)
+# conf_mt_a1a2         = subset(conf_mt_a1a2,select=-c(group,agent))
+# 
+# #Movement Time contains multiple NA values. They are not used to calculated the average
+# aveConf = summarySE(conf_mt_a1a2,measurevar="Confidence",groupvars="subject")
+# aveMt   = summarySE(conf_mt_a1a2,measurevar="MovementTime",groupvars="subject");names(aveMt)=c("subject_mt","N_mt","MovementTime","sd_mt","se_mt","ci_mt")
+# #bind MT and confidence averaged values
+# aveConf_Mt = cbind(aveConf,aveMt)
+# aveConf_Mt = subset(aveConf_Mt,select=-c(subject_mt))
+# 
+# print(ggplot(aveConf_Mt, aes(x=MovementTime, y=Confidence, color=subject)) +
+#         geom_errorbar(aes(ymin=Confidence-se, ymax=Confidence+se), size=0.7, width=.01, position=pd) +
+#         scale_y_continuous(limits = conf_lim, breaks=conf_break) +
+#         geom_point(aes(color=subject), size = 3,position=pd) +
+#         ggtitle("Mean confidence and Mean MT") + theme_custom())
 ########################################################
 
 
@@ -304,32 +254,28 @@ for (v in 1:2){
   names(all_sum)[names(all_sum)=='variable'] <- 'DecisionType'
   
   # plot for each pair
+  print(plotSE(n_var=2,df=all_sum,xvar=all_sum$targetContrast,yvar=var,
+               colorvar=all_sum$DecisionType,shapevar=all_sum$DecisionType,
+               xscale=target_scale,yscale=time_scale,titlestr=paste(lab," as a function of task difficulty"),
+               manual_col=c("steelblue1", "darkgreen"),disco=FALSE)+
+          xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
   
-  print(ggplot(all_sum, aes(x=targetContrast, y=var, color=DecisionType, group=DecisionType)) + 
-    geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
-    scale_y_continuous(limits = c(0.4,1.5), breaks=seq(0.4,1.5, by=0.1)) +
-    # scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
-    geom_point(aes(shape=DecisionType, color=DecisionType, size=DecisionType), position=pd) +
-    geom_line(aes(linetype=DecisionType, color=DecisionType), size=1, position=pd) +
-    scale_shape_manual(values=c(15, 16)) +
-    scale_color_manual(values=c("steelblue1", "darkgreen")) +
-    scale_linetype_manual(values=c("dotted","solid")) +
-    scale_size_manual(values=c(3,3)) +
-    xlab("contrast level") + ylab(paste("mean ",lab," [s]")) +   # Set axis labels
-    ggtitle(paste(lab," as a function of task difficulty")) + theme_custom())
     ggsave(file=sprintf(paste0("%s",lab,"_ave",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
-  
+    
 }
 
 ###per group
+#Add 4 columns with the split rt/mt data for each agent
+curdat = final_rtmt_byAgent(curdat)
+
 for (m in 1:2){
   
   ################## plot RT and MT as a function of target contrast/per agent  ################## 
   if (m==1){lab ="RT"
-  all <- curdat[,c("targetContrast","A1_rtKin","A2_rtKin","rt_finalColl","group")]
-  lim = c(0.2,1.6)} else {lab="MT"
-  all <- curdat[,c("targetContrast","A1_mtKin","A2_mtKin","mt_finalColl","group")]
-  lim = c(0.5,2.5)}# 
+  all <- curdat[,c("targetContrast","B_rtKin","Y_rtKin","rt_finalColl","group")]
+  mov_scale = list("lim"=c(0,1.6),"breaks"=seq(0,1.6, by=0.2))} else {lab="MT"
+  all <- curdat[,c("targetContrast","B_mtKin","Y_mtKin","mt_finalColl","group")]
+  mov_scale = list("lim"=c(0.5,2.5),"breaks"=seq(0.5,2.5, by=0.25))}# 
   
   all$group=as.factor(all$group)
   if(schon_data){all_pairs = c(100,101,103)} else{all_pairs = c(100,101,102,103)}
@@ -340,29 +286,21 @@ for (m in 1:2){
   sub_all=subset(sub_all, select = -c(group) )
   all_long <- melt(sub_all, id="targetContrast")  # convert to long format
   # rename factor levels
-  levels(all_long$variable) <- c("A1", "A2", "Collective")
+  levels(all_long$variable) <- c("B", "Y", "Collective")
   
-  all_sum = summarySE(all_long,measurevar="value",groupvars=c("variable","targetContrast"))
-  var = all_sum$value
+  pair_sum = summarySE(all_long,measurevar="value",groupvars=c("variable","targetContrast"))
+  var = pair_sum$value
   
   # rename variables
-  names(all_sum)[names(all_sum)=='value'] <- lab
-  names(all_sum)[names(all_sum)=='variable'] <- 'DecisionType'
+  names(pair_sum)[names(pair_sum)=='value'] <- lab
+  names(pair_sum)[names(pair_sum)=='variable'] <- 'DecisionType'
   
   # plot for each pair
-  
-  print(ggplot(all_sum, aes(x=targetContrast, y=var, color=DecisionType, group=DecisionType)) + 
-          geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
-          scale_y_continuous(limits = lim, breaks=seq(lim[1],lim[2], by=0.1)) +
-          # scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
-          geom_point(aes(shape=DecisionType, color=DecisionType, size=DecisionType), position=pd) +
-          geom_line(aes(linetype=DecisionType, color=DecisionType), size=1, position=pd) +
-          scale_shape_manual(values=c(15, 16, 17)) +
-          scale_color_manual(values=c("blue3", "gold2", "darkgreen")) +
-          scale_linetype_manual(values=c("dotted","dashed","solid")) +
-          scale_size_manual(values=c(3,3,3)) +
-          xlab("contrast level") + ylab(paste("mean ",lab," [s]")) +   # Set axis labels
-          ggtitle(paste(as.character(g)," ",lab," as a function of task difficulty")) + theme_custom())
+  print(plotSE(n_var=3,df=pair_sum,xvar=pair_sum$targetContrast,yvar=var,
+               colorvar=pair_sum$DecisionType,shapevar=pair_sum$DecisionType,
+               xscale=target_scale,yscale=mov_scale,titlestr=paste(as.character(g)," ",lab," as a function of task difficulty"),
+               manual_col=c("blue3", "gold2", "darkgreen"),disco=FALSE)+
+          xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
   ggsave(file=sprintf(paste0("%s",as.character(g),"_",lab,"_ave",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
   }
 }
