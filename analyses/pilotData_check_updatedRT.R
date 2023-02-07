@@ -13,8 +13,9 @@ sum(lapply(pckgs, require, character.only = TRUE)==FALSE)#Check how many package
 schon_data = TRUE # if TRUE the dataset doesn't contain the 102 pair
 
 #Retrieve the directory of the current file and create the main directory path
-slash   = unlist(gregexpr("/", this.path()))
-DataDir = substr(this.path(),1,slash[length(slash)])
+slash      = unlist(gregexpr("/", this.path()))
+DataDir    = substr(this.path(),1,slash[length(slash)])
+DataDirObs =  paste0(DataDir,"data_obs/")
 #Save plots here
 PlotDir = paste0(DataDir,"plot/")
 
@@ -100,10 +101,10 @@ conf_all_sum$agree = as.factor(conf_all_sum$agree)
 levels(conf_all_sum$agree) <- c("disagree", "agree")
 
 # plot - Confidence level by target contrast and agreement 
-print(plotSE(n_var=2,df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
+print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
              colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("steelblue1", "darkgreen"),disco=FALSE)+
+             manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
         xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
@@ -123,10 +124,10 @@ conf_all_sum_acc$Accuracy = as.factor(conf_all_sum_acc$Accuracy)
 levels(conf_all_sum_acc$Accuracy) <- c("incorrect", "correct")
 
 # plot - Confidence level by target contrasts and agreement and accuracy (only collective decision)
-print(plotSE(n_var=2,df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_all_sum_acc$Confidence,
+print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_all_sum_acc$Confidence,
              colorvar=conf_all_sum_acc$Accuracy,shapevar=conf_all_sum_acc$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("red", "green"),disco=FALSE)+
+             manual_col=c("red", "green"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
         xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 ########################################################
@@ -155,10 +156,10 @@ mt_rt_conf_2d_sum$var_lab = c(replicate(length(rt_conf_2d_sum), "rt"),replicate(
 d          = mt_rt_conf_2d_sum
 time_scale = list("lim"=c(0.2,1.75),"breaks"=seq(0.2,1.75, by=0.25))
 
-print(plotSE(n_var=2,df=d,xvar=d$conf2,yvar=d$var,
+print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
              colorvar=d$var_lab,shapevar=NULL,
              xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (2nd decision) ",schon_lab),
-             manual_col=c("grey", "black"),disco=TRUE) +
+             manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
         xlab("agent confidence") + ylab("time [s]") + theme_custom())
 ggsave(file=sprintf(paste0("%stime_conf_2d",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
@@ -234,7 +235,6 @@ ggsave(file=sprintf(paste0("%stime_conf_2d",schon_lab,".png"),PlotDir), dpi = 30
 
 
 ###################### RT and MT BY TARGET CONTRASTS ###################################
-
 for (v in 1:2){
   
   ################## plot RT and MT as a function of target contrast  ################## 
@@ -254,10 +254,10 @@ for (v in 1:2){
   names(all_sum)[names(all_sum)=='variable'] <- 'DecisionType'
   
   # plot for each pair
-  print(plotSE(n_var=2,df=all_sum,xvar=all_sum$targetContrast,yvar=var,
+  print(plotSE(df=all_sum,xvar=all_sum$targetContrast,yvar=var,
                colorvar=all_sum$DecisionType,shapevar=all_sum$DecisionType,
                xscale=target_scale,yscale=time_scale,titlestr=paste(lab," as a function of task difficulty"),
-               manual_col=c("steelblue1", "darkgreen"),disco=FALSE)+
+               manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
           xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
   
     ggsave(file=sprintf(paste0("%s",lab,"_ave",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
@@ -267,7 +267,6 @@ for (v in 1:2){
 ###per group
 #Add 4 columns with the split rt/mt data for each agent
 curdat = final_rtmt_byAgent(curdat)
-
 for (m in 1:2){
   
   ################## plot RT and MT as a function of target contrast/per agent  ################## 
@@ -296,10 +295,10 @@ for (m in 1:2){
   names(pair_sum)[names(pair_sum)=='variable'] <- 'DecisionType'
   
   # plot for each pair
-  print(plotSE(n_var=3,df=pair_sum,xvar=pair_sum$targetContrast,yvar=var,
+  print(plotSE(df=pair_sum,xvar=pair_sum$targetContrast,yvar=var,
                colorvar=pair_sum$DecisionType,shapevar=pair_sum$DecisionType,
                xscale=target_scale,yscale=mov_scale,titlestr=paste(as.character(g)," ",lab," as a function of task difficulty"),
-               manual_col=c("blue3", "gold2", "darkgreen"),disco=FALSE)+
+               manual_col=c("blue3", "gold2", "darkgreen"),linevar=c("dotted","dashed","solid"),sizevar=c(3,3,3),disco=FALSE)+
           xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
   ggsave(file=sprintf(paste0("%s",as.character(g),"_",lab,"_ave",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
   }
@@ -325,26 +324,26 @@ names(curdatObs)[names(curdatObs)=="SubjRTnorm"] <- "observer_RTnorm"
 
 if(schon_data){curdatObs    = curdatObs[curdatObs$pair_obs!=102,]}
 
-#combine execution and observation 
+#Combine execution and observation datasets
 #First remove the trials in which the video was not recorded during execution
 exedat      = curdat[-c(2,6,8),]
 exedat      = as.data.frame(lapply(exedat, rep, each=4)) #repeat each row 4 times to match the observation data (4 blocks ordered in Excel so that each the first 4 rows represent trial1 from block 1-2-3-4)
-exedat_a2a1 = with(exedat, exedat[order(group,-AgentTakingSecondDecision),])#first agent2 acting second, observed by agent1 (to align with obsdat)
-names(exedat_a2a1)[names(exedat_a2a1)=="trial"] <- "trial_exe"
-names(exedat_a2a1)[names(exedat_a2a1)=="group"] <- "pair_exe"
+exedat_yb   = with(exedat, exedat[order(group,-AgentTakingSecondDecision),])#first agent YELLOW(Y) acting second, observed by agent BLUE(b) (to align with obsdat)
+names(exedat_yb)[names(exedat_yb)=="trial"] <- "trial_exe"
+names(exedat_yb)[names(exedat_yb)=="group"] <- "pair_exe"
 
 #Check if the order of agents is the same
-all(exedat_a2a1$AgentTakingSecondDecision==curdatObs$Pagent)
-all(exedat_a2a1$AgentTakingFirstDecision==curdatObs$Oagent)
-if (dim(exedat_a2a1)[1] == dim(curdatObs)[1]){merge = 1}
+all(exedat_yb$AgentTakingSecondDecision==curdatObs$Pagent)
+all(exedat_yb$AgentTakingFirstDecision==curdatObs$Oagent)
+if (dim(exedat_yb)[1] == dim(curdatObs)[1]){merge = 1}
 
 #merge execution and observation
-if (merge) {inout = cbind(exedat_a2a1,curdatObs)}
+if (merge) {inout = cbind(exedat_yb,curdatObs)}
 
 sinout = inout[,c("pair_exe","pair_obs","Pagent","Oagent","trial_exe","trial_obs","block_obs","Video","targetContrast","firstSecondInterval",
                   "agent_confidence","observer_confidence","observer_acc","observer_RTnorm","agree",
-                  "A1_acc","A1_conf","A1_confRT","A2_acc","A2_conf","A2_confRT","Coll_acc","Coll_conf","Coll_confRT",
-                  "AgentTakingSecondDecision","rt_final2","mt_final2","A1_rtKin","A2_rtKin","A1_mtKin","A2_mtKin")]
+                  "B_acc","B_conf","B_confRT","Y_acc","Y_conf","Y_confRT","Coll_acc","Coll_conf","Coll_confRT",
+                  "AgentTakingSecondDecision","rt_final2","mt_final2","B_rtKin","Y_rtKin","B_mtKin","Y_mtKin")]
 
 #calculating average values of confidence for each video because in observation we show videos 4 times
 sinout = transformBy(~Video+pair_obs,data=sinout, conf_aveBlock = round(mean(as.numeric(observer_confidence),na.rm=T),1))
