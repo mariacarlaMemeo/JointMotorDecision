@@ -11,6 +11,7 @@ sum(lapply(pckgs, require, character.only = TRUE)==FALSE)#Check how many package
 
 #Flags
 schon_data = TRUE # if TRUE the dataset doesn't contain the 102 pair
+patel_mt   = FALSE # does diff in mt predict confidence?
 
 #Retrieve the directory of the current file and create the main directory path
 slash      = unlist(gregexpr("/", this.path()))
@@ -154,10 +155,10 @@ mt_rt_conf_2d_sum$var_lab = c(replicate(length(rt_conf_2d_sum), "rt"),replicate(
 
 # plot - RT and MT as a function of confidence level (across participants)
 d          = mt_rt_conf_2d_sum
-time_scale = list("lim"=c(0.2,1.75),"breaks"=seq(0.2,1.75, by=0.25))
+time_scale = list("lim"=c(0,1.75),"breaks"=seq(0,1.75, by=0.25))
 
 print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
-             colorvar=d$var_lab,shapevar=NULL,
+             colorvar=d$var_lab,shapevar=d$var_lab,
              xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (2nd decision) ",schon_lab),
              manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
         xlab("agent confidence") + ylab("time [s]") + theme_custom())
@@ -346,26 +347,27 @@ if (dim(exedat_yb)[1] == dim(curdatObs)[1]){merge = 1}
 if (merge) {inout = cbind(exedat_yb,curdatObs)}
 
 sinout = inout[,c("pair_exe","pair_obs","Pagent","Oagent","trial_exe","trial_obs","block_obs","Video","targetContrast","firstSecondInterval",
-                  "agent_confidence","observer_confidence","observer_acc","observer_RTnorm","agree",
+                  "agent_confidence","observer_confidence","observer_acc","observer_RTnorm",
                   "B_acc","B_conf","B_confRT","Y_acc","Y_conf","Y_confRT","Coll_acc","Coll_conf","Coll_confRT",
                   "AgentTakingSecondDecision","asec","rt_final2","mt_final2","B_rtKin","Y_rtKin","B_mtKin","Y_mtKin",
-                  "agree","switch","decision1","decision2","confidence1","confidence2")]
+                  "decision1","decision2","Coll_decision","agree","switch","confidence1","confidence2")]
 
 #calculating average values of confidence for each video because in observation we show videos 4 times
 sinout = transformBy(~Video+pair_obs,data=sinout, conf_aveBlock = round(mean(as.numeric(observer_confidence),na.rm=T),1))
 #calculating the difference between averaged obs confidence and agent confidence - confidence for the same action 
+#conf_aveBlock>0 means the inferred confidence in observation is higher that confidence in the execution (different agents, same action)
 sinout$diff_conf = sinout$conf_aveBlock-sinout$agent_confidence
 #calculating the difference in movement time between the agents in a pair - absolute value
-sinout$diff_mt   = round(abs(sinout$A1_mtKin - sinout$A2_mtKin),2)
+sinout$diff_mt   = round(abs(sinout$B_mtKin - sinout$Y_mtKin),2)
 #calculating the difference in movement time between the agents in a pair - signed values
-sinout$diff_mt_signed   = round(sinout$A1_mtKin - sinout$A2_mtKin,2)
+#diff_mt_signed>0 means blue agent is slower than yellow agent 
+sinout$diff_mt_signed   = round(sinout$B_mtKin - sinout$Y_mtKin,2)
 
 ## Selection of only 1 block because the values of confidence are averaged across blocks 
 sinout_1block = sinout[sinout$block_obs==1,] 
 
 
-
-# prepare plotting
+###################### RT and MT BY CONFIDENCE -OBSERVATION- ###################################
 #rt - calc the average, se, ci
 rt_confObs  = sinout[,c("observer_confidence","rt_final2")]; names(rt_confObs) = c("observer_confidence","time")
 rt_confObs_sum = summarySE(rt_confObs,measurevar="time",groupvars=c("observer_confidence"))
@@ -381,63 +383,63 @@ mt_rt_confObs_sum = mt_rt_confObs_sum[!is.na(mt_rt_confObs_sum$observer_confiden
 mt_rt_confObs_sum$var_lab = c(replicate(length(rt_confObs_sum), "rt"),replicate(length(mt_confObs_sum), "mt"))
 
 
-##  
-print(ggplot(mt_rt_confObs_sum, aes(x=observer_confidence, y=var, color=var_lab, group=var_lab)) + 
-  geom_errorbar(aes(ymin=var-se, ymax=var+se), size=0.7, width=.01, position=pd) +
-  scale_y_continuous(limits = c(0.25,1.9), breaks=seq(0.25,1.9, by=0.25)) +
-  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
-  geom_point(aes(shape=var_lab, color=var_lab, size=var_lab), position=pd) +
-  geom_line(aes(linetype=var_lab, color=var_lab), size=1, position=pd) +
-  scale_shape_manual(values=c(15, 16)) +
-  scale_color_manual(values=c("grey", "black")) +
-  scale_linetype_manual(values=c("dotted","solid")) +
-  scale_size_manual(values=c(3,3)) +
-  xlab("observer confidence") + ylab("time [s]") +   # Set axis labels
-  ggtitle("MT/RT as a function of confidence (individual 2nd)") + theme_custom())
+# plot the rt/mt according to inferred confidence (observation task)
+time_scale = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
+print(plotSE(df=mt_rt_confObs_sum,xvar=mt_rt_confObs_sum$observer_confidence,yvar=mt_rt_confObs_sum$var,
+             colorvar=mt_rt_confObs_sum$var_lab,shapevar=mt_rt_confObs_sum$var_lab,
+             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (individual 2nd) ",schon_lab),
+             manual_col=c("grey", "black"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=TRUE) +
+             xlab("observer confidence") + ylab("time [s]") + theme_custom())
 ggsave(file=sprintf(paste0("%stime_obs_conf",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
-#### Plot agent confidence vs observer confidence (all agents together)
-# Linear regression: take observed conf. as predictor for subjective conf.
-fit <- lm(sinout$agent_confidence ~ sinout$observer_confidence)
-summary(fit)
-Rsquared <- summary(fit)$r.squared
-print(Rsquared,digits=3)
-## Scatterplot
-# include linear trend + confidence interval (se)
-# jitter the points to avoid overlay of data points (jitter range: 0.5 on both axes)
-conf_exe_obs = ggplot(sinout, aes(x = observer_confidence, y = agent_confidence)) +
-  geom_point(shape = 1,   # Use hollow circles
-    position = position_jitter(width = 0.1, height = .1)) +
-  geom_smooth(method = lm, # Add linear regression line
-    color = "blue", fill = "#69b3a2",se = TRUE) +
-  annotate("text", x=1.5, y=6, label = paste("R2 = ", format(summary(fit)$r.squared,digits=3)), col="black", cex=6)+
-  ggtitle("Agent confidence vs observer confidence")
-ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
-print(conf_exe_obs)
+# #### Plot agent confidence vs observer confidence (all agents together)
+# # Linear regression: take observed conf. as predictor for subjective conf.
+# fit <- lm(sinout$agent_confidence ~ sinout$observer_confidence)
+# summary(fit)
+# Rsquared <- summary(fit)$r.squared
+# print(Rsquared,digits=3)
+# ## Scatterplot
+# # include linear trend + confidence interval (se)
+# # jitter the points to avoid overlay of data points (jitter range: 0.5 on both axes)
+# conf_exe_obs = ggplot(sinout, aes(x = observer_confidence, y = agent_confidence)) +
+#   geom_point(shape = 1,   # Use hollow circles
+#     position = position_jitter(width = 0.1, height = .1)) +
+#   geom_smooth(method = lm, # Add linear regression line
+#     color = "blue", fill = "#69b3a2",se = TRUE) +
+#   annotate("text", x=1.5, y=6, label = paste("R2 = ", format(summary(fit)$r.squared,digits=3)), col="black", cex=6)+
+#   ggtitle("Agent confidence vs observer confidence")
+# ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+# print(conf_exe_obs)
 
 
 ## Scatterplot - average value of confidence for Observation
 # Linear regression: take observed conf. as predictor for subjective conf.
 fit_ave <- lm(sinout_1block$conf_aveBlock ~ sinout_1block$agent_confidence) 
-summary(fit_ave)
-Rsquared <- summary(fit_ave)$r.squared
-print(Rsquared,digits=3)
 conf_exe_obsAve = ggplot(sinout_1block, aes(x = agent_confidence, y = conf_aveBlock)) +
-  geom_point(shape = 1,   # Use hollow circles
-             position = position_jitter(width = 0.1, height = .1)) +
-  scale_y_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
-  scale_x_discrete(limits = factor(c(1,2,3,4,5,6)), breaks=conf_break) +
-  geom_smooth(method = lm, # Add linear regression line
-              color = "blue", fill = "#69b3a2",se = TRUE) +
-  annotate("text", x=5, y=1, label = paste("R2 = ", format(summary(fit_ave)$r.squared,digits=3)), col="black", cex=6)+
-  ggtitle("Observer confidence vs Agent confidence")
-ggsave(file=sprintf(paste0("%sexeconf_vs_obsconfAveraged",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+                    geom_point(shape = 1, position=position_jitter(width = 0.1, height = .01)) + 
+                    scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks) +
+                    scale_x_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks) +
+                    geom_smooth(method = lm, color = "blue", fill = "#69b3a2",se = TRUE) +
+                  annotate("text", x=5, y=1, label = paste("R2 = ", format(summary(fit_ave)$r.squared,digits=3)), col="black", cex=6)+
+                  ggtitle("Observer confidence vs Agent confidence")
 print(conf_exe_obsAve + labs(y = "Mean observer confidence", x = "agent confidence"))
+ggsave(file=sprintf(paste0("%sexeconf_vs_obsconfAveraged",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+
+# multiple facets with all the agents
+# https://r-graphics.org/recipe-annotate-facet
+mpg_plot <- ggplot(sinout, aes(x=agent_confidence, y=conf_aveBlock)) +
+  geom_point() +
+  facet_grid(. ~ interaction(pair_obs,Oagent)) +
+  geom_point(shape = 1, position = position_jitter(width = 0.1, height = .1)) +
+  geom_smooth(method = lm, color = "blue", fill = "#69b3a2",se = TRUE) 
+print(mpg_plot)
+ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf_perPair_",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20*length(levels(interaction(sinout$pair_obs,sinout$Oagent))))
 
 
-## multiple facets with all the agents
-#https://r-graphics.org/recipe-annotate-facet
+
+
+
 # lm_labels <- function(sinout) {
 #   mod <- lm(agent_confidence ~ observer_confidence, data = sinout)
 #   formula <- sprintf("italic(y) == %.2f %+.2f * italic(x)",
@@ -453,65 +455,54 @@ print(conf_exe_obsAve + labs(y = "Mean observer confidence", x = "agent confiden
 #   summarise(lm_labels)
 
 
-mpg_plot <- ggplot(sinout, aes(x = observer_confidence, y = agent_confidence)) +
-  geom_point() +
-  facet_grid(. ~ interaction(pair_obs,Oagent))+#rows = 2, cols = 4,
-  geom_point(shape = 1,   # Use hollow circles
-             position = position_jitter(width = 0.1, height = .1)) +
-  geom_smooth(method = lm, # Add linear regression line
-              color = "blue", fill = "#69b3a2",se = TRUE) 
-ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf_perPair",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 80)
-print(mpg_plot)
-
-
-
 #### Plot (averaged obs conf - agent conf) vs contrast level
 # (averaged obs conf - agent conf) vs contrast level - calc the average, se, ci
 diffConf_targ  = sinout_1block[,c("targetContrast","diff_conf","pair_obs","Oagent")]
 diffConf_targ_sum = summarySE(diffConf_targ,measurevar="diff_conf",groupvars=c("targetContrast","pair_obs","Oagent"))
 
-print(ggplot(diffConf_targ_sum, aes(x=targetContrast, y=diff_conf, color=interaction(Oagent,pair_obs))) + 
-  geom_errorbar(aes(ymin=diff_conf-se, ymax=diff_conf+se), size=0.7, width=.01, position=pd) +
-  scale_y_continuous(limits = c(-0.2,2.8), breaks=seq(-0.2,2.8, by=0.2)) +
-  scale_x_continuous(limits = c(0.1,0.265), breaks=seq(0.1,0.265, by=0.05)) +
-  geom_point(aes(color=interaction(Oagent,pair_obs))) + 
-  ylab("(mean obs confidence - agent confidence) ") +
-  geom_line(aes(linetype=interaction(Oagent,pair_obs), color=interaction(Oagent,pair_obs)), size=1)+
-  scale_color_brewer(palette = "Paired"))
-ggsave(file=sprintf(paste0("%sdiffConf_vs_contrasts",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
+diff_scale = list("lim"=c(-0.2,2.8),"breaks"=seq(-0.2,2.8, by=0.2))
+print(plotSE(df=diffConf_targ_sum,xvar=diffConf_targ_sum$targetContrast,yvar=diffConf_targ_sum$diff_conf,
+             colorvar=interaction(diffConf_targ_sum$Oagent,diffConf_targ_sum$pair_obs),
+             shapevar=NULL,
+             xscale=target_scale,yscale=diff_scale,titlestr="Confidence difference per contrast levels",
+             manual_col=interaction(diffConf_targ_sum$Oagent,diffConf_targ_sum$pair_obs),
+             linevar=interaction(diffConf_targ_sum$Oagent,diffConf_targ_sum$pair_obs),sizevar=c(3,3),disco=FALSE) +
+        xlab("Target Contrasts") + ylab("(mean obs confidence - agent confidence) ") + 
+        scale_color_brewer(palette = "Paired")) + theme_custom()
+ggsave(file=sprintf(paste0("%sdiffConf_vs_contrasts_",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 
 
 ## (averaged obs conf - agent conf) vs movement time
 ## averaged movement time - divided by CONTRAST/agent/group
-diffConf_mt  = sinout_1block[,c("targetContrast","diff_conf","diff_mt","pair_obs","Oagent")]
-diffConf_mt_sum = summarySE(diffConf_mt,measurevar="diff_mt",groupvars=c("targetContrast","pair_obs","Oagent"))
+diffConf_mt  = sinout_1block[,c("targetContrast","diff_conf","diff_mt_signed","pair_obs","Oagent")]
+diffConf_mt_sum = summarySE(diffConf_mt,measurevar="diff_mt_signed",groupvars=c("targetContrast","pair_obs","Oagent"))
 diffConf_mt_sum$diff_conf = diffConf_targ_sum$diff_conf
 
 ## averaged movement time - divided by AGENT/group
-diffConf_diffMt  = sinout_1block[,c("diff_conf","diff_mt","pair_obs","Oagent")]
-sub_mt           = summarySE(diffConf_diffMt,measurevar="diff_mt",groupvars=c("pair_obs"));names(sub_mt)=c("pair_obs","N_mt","diff_mt","sd_mt","se_mt","ci_mt")
+diffConf_diffMt  = sinout_1block[,c("diff_conf","diff_mt_signed","pair_obs","Oagent")]
+sub_mt           = summarySE(diffConf_diffMt,measurevar="diff_mt_signed",groupvars=c("pair_obs"));names(sub_mt)=c("pair_obs","N_mt","diff_mt_signed","sd_mt","se_mt","ci_mt")
 sub_mt           = sub_mt[rep(seq_len(nrow(sub_mt)), each = 2), ]
 sub_conf         = summarySE(diffConf_diffMt,measurevar="diff_conf",groupvars=c("pair_obs","Oagent"));names(sub_conf)=c("pair_obs","Oagent","N_conf","diff_conf","sd_conf","se_conf","ci_conf")
 diffConf_diffMt_sum  = cbind(sub_mt,sub_conf[,c("Oagent","N_conf","diff_conf","sd_conf","se_conf","ci_conf")])
 
 #fitting a line
-fit_ave_confMt <- lm(diffConf_diffMt$diff_mt ~ diffConf_diffMt$diff_conf) 
-summary(fit_ave_confMt)
-Rsquared <- summary(fit_ave_confMt)$r.squared
-
+fit_ave_confMt <- lm(diffConf_diffMt$diff_mt_signed ~ diffConf_diffMt$diff_conf) 
 
 # scatterplot - check each agent
 # difference in MT include 1st and 2nd decision
 # difference in confidence is always referred to the 2nd decision
-print(ggplot(diffConf_diffMt_sum, aes(x=diff_mt, y=diff_conf, color=interaction(Oagent,pair_obs))) + 
+print(ggplot(diffConf_diffMt_sum, aes(x=diff_mt_signed, y=diff_conf, color=interaction(Oagent,pair_obs))) + 
   geom_errorbar(aes(ymin=diff_conf-se_conf, ymax=diff_conf+se_conf), size=0.7, width=.01, position=pd) +
   geom_point(aes(color=interaction(Oagent,pair_obs))) + 
   scale_color_brewer(palette = "Paired"))
 ggsave(file=sprintf(paste0("%sdiffConf_vs_diffMt",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 
 
-
-#######
+# XXX Do participants who rate observed decisions, on average, as more confident than their own also move more slowly than the observed actions?
+# The faster agent should rate the observed action as less confident than their own (pCon > iCon). 
+# However, all our pilot participants rate the observed action as more confident than their own (pCon < iCon).
+# Patel, D., Fleming, S. M., & Kilner, J. M. (2012). Inferring subjective states through the observation of actions.
+if(patel_mt){
 sub_s         = sinout_1block[,c("pair_obs","Pagent","Oagent","agent_confidence","conf_aveBlock","diff_mt_signed")]
 sub_s         = transformBy(~pair_obs,data=sub_s, diff_mt_signedAve = round(mean(as.numeric(diff_mt_signed),na.rm=T),3))
 
@@ -556,7 +547,7 @@ print(ggplot(pCon_iCon, aes(x=inter_agent_pair, y=diff_mt_signedAve, color=inter
         labs( y = "Difference in MT (A1 - A2)", x = "Agent and Pair"))
         # scale_color_brewer(palette = "Paired"))
 ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
-
+}
 
 # if (all_script){
 # ## BELOW ARE THE PLOTS THAT WE DID FOR THE PREVIOUS VERSION OF THE RT ######################################
