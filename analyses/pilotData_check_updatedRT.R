@@ -326,15 +326,20 @@ if(schon_data){curdatObs    = curdatObs[curdatObs$pair_obs!=102,]}
 
 #Combine execution and observation datasets
 #First remove the trials in which the video was not recorded during execution
-exedat      = curdat[-c(2,6,8),]
-exedat      = as.data.frame(lapply(exedat, rep, each=4)) #repeat each row 4 times to match the observation data (4 blocks ordered in Excel so that each the first 4 rows represent trial1 from block 1-2-3-4)
-exedat_yb   = with(exedat, exedat[order(group,-AgentTakingSecondDecision),])#first agent YELLOW(Y) acting second, observed by agent BLUE(b) (to align with obsdat)
+exedat       = curdat[-c(2,6,8),]
+exedat       = as.data.frame(lapply(exedat, rep, each=4)) #repeat each row 4 times to match the observation data (4 blocks ordered in Excel so that each the first 4 rows represent trial1 from block 1-2-3-4)
+asec         = as.factor(exedat$AgentTakingSecondDecision)
+levels(asec) = c(1,2)
+exedat$asec  = as.numeric(asec)
+exedat_yb    = with(exedat, exedat[order(group,-asec),])#first agent YELLOW(Y) acting second, observed by agent BLUE(b) (to align with obsdat)
 names(exedat_yb)[names(exedat_yb)=="trial"] <- "trial_exe"
 names(exedat_yb)[names(exedat_yb)=="group"] <- "pair_exe"
 
 #Check if the order of agents is the same
-all(exedat_yb$AgentTakingSecondDecision==curdatObs$Pagent)
-all(exedat_yb$AgentTakingFirstDecision==curdatObs$Oagent)
+all(exedat_yb$asec==curdatObs$Pagent)
+afirst        = as.factor(exedat$AgentTakingFirstDecision);levels(afirst) = c(1,2)
+exedat$afirst = as.numeric(afirst)
+all(exedat_yb$afirst==curdatObs$Oagent)
 if (dim(exedat_yb)[1] == dim(curdatObs)[1]){merge = 1}
 
 #merge execution and observation
@@ -343,7 +348,8 @@ if (merge) {inout = cbind(exedat_yb,curdatObs)}
 sinout = inout[,c("pair_exe","pair_obs","Pagent","Oagent","trial_exe","trial_obs","block_obs","Video","targetContrast","firstSecondInterval",
                   "agent_confidence","observer_confidence","observer_acc","observer_RTnorm","agree",
                   "B_acc","B_conf","B_confRT","Y_acc","Y_conf","Y_confRT","Coll_acc","Coll_conf","Coll_confRT",
-                  "AgentTakingSecondDecision","rt_final2","mt_final2","B_rtKin","Y_rtKin","B_mtKin","Y_mtKin")]
+                  "AgentTakingSecondDecision","asec","rt_final2","mt_final2","B_rtKin","Y_rtKin","B_mtKin","Y_mtKin",
+                  "agree","switch","decision1","decision2","confidence1","confidence2")]
 
 #calculating average values of confidence for each video because in observation we show videos 4 times
 sinout = transformBy(~Video+pair_obs,data=sinout, conf_aveBlock = round(mean(as.numeric(observer_confidence),na.rm=T),1))
