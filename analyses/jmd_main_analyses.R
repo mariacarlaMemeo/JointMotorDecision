@@ -109,8 +109,6 @@ print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$
         xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
-
-
 #According to the level of agreement and accuracy (only collective decision)
 conf_all_acc <- curdat[,c("targetContrast","Coll_acc","Coll_conf","agree")]
 conf_all_long_acc <- melt(conf_all_acc, id=c("targetContrast","agree","Coll_acc"))  # convert to long format
@@ -133,6 +131,39 @@ print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_
 ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 ########################################################
 
+############## SWITCHING AS A FUNCTION OF CONFIDENCE DIFF ##############################
+# Select only disagreement trials
+dt      = curdat[curdat$agree==-1,]
+perc_dt = round(100*(dim(dt)[1]/dim(curdat)[1]))
+# check the trend of disagreement according to target contrast
+hist(dt$targetContrast)
+
+dt_long=melt(dt[,c("group","trial","confidence1","confidence2","switch")], id=c("group","trial","switch"))  
+
+switch_100=dt_long[dt_long$switch==1,]
+
+
+#confidence 1/2 vs trial
+ggplot(switch_100, aes(x=variable, y=value, color=variable, shape=variable)) +
+  geom_point(size = 3,position=position_jitter(width = .1, height = .1))+ geom_line(aes(group=trial))
+
+for(p in unique(dt_long$group)){
+  no_switch_100=dt_long[dt_long$group==p & dt_long$switch==-1,]
+  print(ggplot(no_switch_100, aes(x=variable, y=value, color=variable, shape=variable)) +
+          geom_point(size = 3,position=position_jitter(width = .1, height = .1))+ 
+          geom_line(aes(group=trial),position=position_jitter(width = .01, height = .01),col="gray")+
+          scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
+          xlab("decision")+ylab("Confidence level")+
+          ggtitle(paste0("Confidence with no switch - disagreement trials n.",as.character(p))))
+  ggsave(file=sprintf(paste0("%sconf_noSwitch_disagree ",as.character(p)," ",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+}
+
+X11();ggplot(switch_100, aes(x=trial, y=value, color=variable, shape=variable)) +
+  geom_point(aes(shape=variable, color=variable), size = 3,position=pd)
+X11();ggplot(no_switch_100, aes(x=trial, y=value, color=variable, shape=variable)) +
+  geom_point(aes(shape=variable, color=variable), size = 3,position=pd)
+
+########################################################################################
 
 ##################  RT and MT BY CONFIDENCE   ###################
 #"B_rt" and "Y_rt" (or as in an alternative version "A1_rt" or "A2_rt") are the reaction time calculated during acquisition (the same for mt). 
