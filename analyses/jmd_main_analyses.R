@@ -131,37 +131,48 @@ print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_
 ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 ########################################################
 
-############## SWITCHING AS A FUNCTION OF CONFIDENCE DIFF ##############################
+############## SWITCHING AS A FUNCTION OF CONFIDENCE DIFF (conf 1st decision and 2nd decision)##############################
+#Chek if there is switching in case of agreement (1st and 2nd decision)
+at        = curdat[curdat$agree==1,]
+at_switch = at[at$switch==1] ##Should be empty
+
 # Select only disagreement trials
 dt      = curdat[curdat$agree==-1,]
 perc_dt = round(100*(dim(dt)[1]/dim(curdat)[1]))
 # check the trend of disagreement according to target contrast
 hist(dt$targetContrast)
 
-dt_long=melt(dt[,c("group","trial","confidence1","confidence2","switch")], id=c("group","trial","switch"))  
+#Include the collective confidence 
+coll = TRUE
+if(coll){dt_long = melt(dt[,c("group","trial","confidence1","confidence2","Coll_conf","switch")], id=c("group","trial","switch"))
+          coll_lab = "_3conf"} else{
+         dt_long = melt(dt[,c("group","trial","confidence1","confidence2","switch")], id=c("group","trial","switch"))
+         coll_lab = ""}
 
-switch_100=dt_long[dt_long$switch==1,]
-
-
-#confidence 1/2 vs trial
-ggplot(switch_100, aes(x=variable, y=value, color=variable, shape=variable)) +
-  geom_point(size = 3,position=position_jitter(width = .1, height = .1))+ geom_line(aes(group=trial))
-
+#No switch - disagreement trials
 for(p in unique(dt_long$group)){
   no_switch_100=dt_long[dt_long$group==p & dt_long$switch==-1,]
-  print(ggplot(no_switch_100, aes(x=variable, y=value, color=variable, shape=variable)) +
-          geom_point(size = 3,position=position_jitter(width = .1, height = .1))+ 
-          geom_line(aes(group=trial),position=position_jitter(width = .01, height = .01),col="gray")+
+  print(ggplot(no_switch_100, aes(x=variable, y=value,shape=variable)) +
+          geom_line(aes(group=trial,color=as.factor(trial)),position=position_jitter(width = .01, height = .01))+
+          geom_point(size = 2, position=position_jitter(width = .1, height = .1)) +
           scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
           xlab("decision")+ylab("Confidence level")+
           ggtitle(paste0("Confidence with no switch - disagreement trials n.",as.character(p))))
-  ggsave(file=sprintf(paste0("%sconf_noSwitch_disagree ",as.character(p)," ",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  ggsave(file=sprintf(paste0("%sconf_noSwitch_disagree ",as.character(p),coll_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 }
 
-X11();ggplot(switch_100, aes(x=trial, y=value, color=variable, shape=variable)) +
-  geom_point(aes(shape=variable, color=variable), size = 3,position=pd)
-X11();ggplot(no_switch_100, aes(x=trial, y=value, color=variable, shape=variable)) +
-  geom_point(aes(shape=variable, color=variable), size = 3,position=pd)
+
+#switch
+for(p in unique(dt_long$group)){
+  switch_100=dt_long[dt_long$group==p & dt_long$switch==1,]
+  print(ggplot(switch_100, aes(x=variable, y=value,shape=variable)) +
+          geom_line(aes(group=trial,color=as.factor(trial)),position=position_jitter(width = .01, height = .01))+
+          geom_point(size = 2, position=position_jitter(width = .1, height = .1)) +
+          scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
+          xlab("decision")+ylab("Confidence level")+
+          ggtitle(paste0("Confidence with switch - disagreement trials n.",as.character(p))))
+  ggsave(file=sprintf(paste0("%sconf_Switch_disagree ",as.character(p),coll_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+}
 
 ########################################################################################
 
@@ -328,6 +339,46 @@ sinout$diff_mt_signed   = round(sinout$B_mtKin - sinout$Y_mtKin,2)
 sinout_1block = sinout[sinout$block_obs==1,] 
 
 
+############## SWITCHING AS A FUNCTION OF CONFIDENCE DIFF (conf 1st decision and inferred confidence) ##############################
+# Select only disagreement trials - use the conf 1st decision and inferred confidence
+dti            = sinout_1block[sinout_1block$agree==-1,]
+# Percentage of disagreement trials on the total amount of trials
+perc_dti       = round(100*(dim(dti)[1]/dim(sinout_1block)[1]))
+# Percentage of switched trials among the disagreement trials on the total amount of trials
+perc_dt_switch = round(100*(dim(dti[dti$switch==1,])[1]/dim(dti)[1]))
+
+
+if(coll){dti_long = melt(dti[,c("pair_obs","trial_exe","confidence1","conf_aveBlock","Coll_conf","switch")], id=c("pair_obs","trial_exe","switch"))
+         coll_lab = "_3conf"} else{
+         dti_long = melt(dti[,c("pair_obs","trial_exe","confidence1","conf_aveBlock","switch")], id=c("pair_obs","trial_exe","switch"))
+         coll_lab = ""}
+
+#no switch
+for(p in unique(dti_long$pair_obs)){
+  no_switch_100i = dti_long[dti_long$pair_obs==p & dti_long$switch==-1,]
+  print(ggplot(no_switch_100i, aes(x=variable, y=value, shape=variable)) +
+          geom_line(aes(group=trial_exe,color=as.factor(trial_exe)),position=position_jitter(width = .01, height = .01))+
+          geom_point(size = 2,position=position_jitter(width = .1, height = .1))+ 
+          scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
+          xlab("decision")+ylab("Confidence level")+
+          ggtitle(paste0("Confidence with no switch - disagreement trials n.",as.character(p))))
+  ggsave(file=sprintf(paste0("%siconf_noSwitch_disagree ",as.character(p),coll_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+}
+
+#switch
+for(p in unique(dti_long$pair_obs)){
+  switch_100i = dti_long[dti_long$pair_obs==p & dti_long$switch==1,]
+  print(ggplot(switch_100i, aes(x=variable, y=value, shape=variable)) +
+          geom_line(aes(group=trial_exe,color=as.factor(trial_exe)),position=position_jitter(width = .01, height = .01))+
+          geom_point(size = 2,position=position_jitter(width = .1, height = .1))+ 
+          scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
+          xlab("decision")+ylab("Confidence level")+
+          ggtitle(paste0("Confidence with switch - disagreement trials n.",as.character(p))))
+  ggsave(file=sprintf(paste0("%siconf_Switch_disagree ",as.character(p),coll_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+}
+
+########################################################################################
+
 ###################### RT and MT BY CONFIDENCE -OBSERVATION- ###################################
 #rt - calc the average, se, ci
 rt_confObs  = sinout[,c("observer_confidence","rt_final2")]; names(rt_confObs) = c("observer_confidence","time")
@@ -469,4 +520,18 @@ if(patel_mt){
   # scale_color_brewer(palette = "Paired"))
   ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 }
+
+
+
+
+
+################
+coll_conf=lmer(Coll_conf ~ confidence1 * switch + conf_aveBlock + (1|interaction(dti$Pagent,dti$pair_obs)), data=dti)
+summary(coll_conf)
+# emmeans(coll_conf,pairwise~confidence1|switch)
+
+
+
+
+
 
