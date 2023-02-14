@@ -197,7 +197,7 @@ mt_rt_conf_2d_sum$var_lab = c(replicate(length(rt_conf_2d_sum), "rt"),replicate(
 
 # plot - RT and MT as a function of confidence level (across participants)
 d          = mt_rt_conf_2d_sum
-time_scale = list("lim"=c(0,1.75),"breaks"=seq(0,1.75, by=0.25))
+time_scale = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
 
 print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
              colorvar=d$var_lab,shapevar=d$var_lab,
@@ -396,11 +396,10 @@ mt_rt_confObs_sum$var_lab = c(replicate(length(rt_confObs_sum), "rt"),replicate(
 
 
 # plot the rt/mt according to inferred confidence (observation task)
-time_scale = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
 print(plotSE(df=mt_rt_confObs_sum,xvar=mt_rt_confObs_sum$observer_confidence,yvar=mt_rt_confObs_sum$var,
              colorvar=mt_rt_confObs_sum$var_lab,shapevar=mt_rt_confObs_sum$var_lab,
              xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (individual 2nd) ",schon_lab),
-             manual_col=c("grey", "black"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=TRUE) +
+             manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
         xlab("observer confidence") + ylab("time [s]") + theme_custom())
 ggsave(file=sprintf(paste0("%stime_obs_conf",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
@@ -444,8 +443,8 @@ summary(fit1)
 ggplot(df,aes(y=ind_coll_benefit,x=r2,color=acc))+geom_point()+stat_smooth(method="lm",se=FALSE)
 # ggPredict(fit1,interactive=TRUE)
 
-plot(r2,ind_coll_benefit,xlim=c(0,0.5),ylim=c(0,2));abline(fit1)
-plot(r2,coll_benefit2,xlim=c(0,0.5),ylim=c(0,1.2))
+# plot(r2,ind_coll_benefit,xlim=c(0,0.5),ylim=c(0,2));abline(fit1)
+# plot(r2,coll_benefit2,xlim=c(0,0.5),ylim=c(0,1.2))
 #######################################################
 
 
