@@ -6,7 +6,7 @@ graphics.off()
 
 #Load necessary/useful libraries
 pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez","MuMIn","BayesFactor","permuco","RVAideMemoire","this.path",
-          "RColorBrewer","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr", "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl")
+          "ggiraphExtra","RColorBrewer","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr", "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl")
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)#Check how many packages failed the loading
 
 #Flags
@@ -233,7 +233,7 @@ for (v in 1:2){
                manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
           xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
   
-  ggsave(file=sprintf(paste0("%s",lab,"_ave",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  ggsave(file=sprintf(paste0("%s",lab,"_ave.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
   
 }
 
@@ -273,7 +273,7 @@ for (m in 1:2){
                  xscale=target_scale,yscale=mov_scale,titlestr=paste(as.character(g)," ",lab," as a function of task difficulty"),
                  manual_col=c("blue3", "gold2", "darkgreen"),linevar=c("dotted","dashed","solid"),sizevar=c(3,3,3),disco=FALSE)+
             xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
-    ggsave(file=sprintf(paste0("%s",as.character(g),"_",lab,"_ave",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+    ggsave(file=sprintf(paste0("%s",as.character(g),"_",lab,"_ave.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
   }
 }
 ########################################################
@@ -404,6 +404,7 @@ print(plotSE(df=mt_rt_confObs_sum,xvar=mt_rt_confObs_sum$observer_confidence,yva
         xlab("observer confidence") + ylab("time [s]") + theme_custom())
 ggsave(file=sprintf(paste0("%stime_obs_conf",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
+
 ## Scatterplot - average value of confidence for Observation
 # Linear regression: take observed conf. as predictor for subjective conf.
 fit_ave <- lm(sinout_1block$conf_aveBlock ~ sinout_1block$agent_confidence) 
@@ -417,6 +418,7 @@ conf_exe_obsAve = ggplot(sinout_1block, aes(x = agent_confidence, y = conf_aveBl
 print(conf_exe_obsAve + labs(y = "Mean observer confidence", x = "agent confidence"))
 ggsave(file=sprintf(paste0("%sexeconf_vs_obsconfAveraged",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
+
 # multiple facets with all the agents
 # https://r-graphics.org/recipe-annotate-facet
 mpg_plot <- ggplot(sinout, aes(x=agent_confidence, y=conf_aveBlock)) +
@@ -426,6 +428,26 @@ mpg_plot <- ggplot(sinout, aes(x=agent_confidence, y=conf_aveBlock)) +
   geom_smooth(method = lm, color = "blue", fill = "#69b3a2",se = TRUE) 
 print(mpg_plot)
 ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf_perPair_",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20*length(levels(interaction(sinout$pair_obs,sinout$Oagent))))
+
+#### COLLECTIVE AND INDIVIDUAL(COLLECTIVE) BENEFIT ####
+coll_benefit     = c(0.924,1.01,0.798)
+coll_benefit2    = c(0.924,0.924,1.01,1.01,0.798,0.798)
+ind_coll_benefit = c(1.9,0.86,1.12,1.45,0.89,1.46) #100:Blue, Yellow; 101:Blue, Yellow; 103:Blue, Yellow
+r2               = c(0.42,0.37,0.02,0.04,0.34,0.46)
+acc              = c(0.66,0.71,0.64,0.66,0.81,0.68) #100:Blue, Yellow; 101:Blue, Yellow; 103:Blue, Yellow
+df = as.data.frame(cbind(ind_coll_benefit,r2,acc))
+
+#multiple regression
+fit1=lm(ind_coll_benefit~(r2*acc))
+summary(fit1)
+
+ggplot(df,aes(y=ind_coll_benefit,x=r2,color=acc))+geom_point()+stat_smooth(method="lm",se=FALSE)
+# ggPredict(fit1,interactive=TRUE)
+
+plot(r2,ind_coll_benefit,xlim=c(0,0.5),ylim=c(0,2));abline(fit1)
+plot(r2,coll_benefit2,xlim=c(0,0.5),ylim=c(0,1.2))
+#######################################################
+
 
 #### Plot (averaged obs conf - agent conf) vs contrast level
 # (averaged obs conf - agent conf) vs contrast level - calc the average, se, ci
@@ -520,8 +542,6 @@ if(patel_mt){
   # scale_color_brewer(palette = "Paired"))
   ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 }
-
-
 
 
 
