@@ -30,8 +30,10 @@ source(paste0(DataDir,'final_rtmt_byAgent.R'))
 #Initialize variables
 decision1 = c()
 conf1     = c()
+acc1      = c()
 decision2 = c()
 conf2     = c()
+acc2      = c()
 
 ##############################################################################################################
 #                                     EXECUTION                                                              #
@@ -56,28 +58,40 @@ curdat    = cbind(group,trial,curdat) # added at the beginning of the dataframe
 #Add a column to express the agreement on the perceptual task between the 2 agents. [1=agreement, -1=disagreement]
 curdat$agree = as.integer(curdat$B_decision == curdat$Y_decision)
 curdat$agree[curdat$agree==0]=-1
-#Create additional columns in which there values of the 1st/2nd decisions and corresponding confidence 
+
+#Create additional columns in which there values of the 1st/2nd decisions and corresponding confidence and accuracy
 for (row in 1:dim(curdat)[1])
 {
   f_dec = curdat[row,AgentTakingFirstDecision]#agent taking first decision
   if (f_dec=="B"){decision1[row] = curdat[row,B_decision]
-  conf1[row]     = curdat[row,B_conf]}else{decision1[row] = curdat[row,Y_decision]
-  conf1[row]     = curdat[row,Y_conf]}
+  conf1[row]     = curdat[row,B_conf]
+  acc1[row]      = curdat[row,B_acc]}else{decision1[row] = curdat[row,Y_decision]
+  conf1[row]     = curdat[row,Y_conf]
+  acc1[row]      = curdat[row,Y_acc]}
   
   s_dec = curdat[row,AgentTakingSecondDecision]#agent taking second decision
   if (s_dec=="B"){decision2[row] = curdat[row,B_decision]
-  conf2[row]     = curdat[row,B_conf]}else{decision2[row] = curdat[row,Y_decision]
-  conf2[row]     = curdat[row,Y_conf]}
+  conf2[row]     = curdat[row,B_conf]
+  acc2[row]      = curdat[row,B_acc]}else{decision2[row] = curdat[row,Y_decision]
+  conf2[row]     = curdat[row,Y_conf]
+  acc2[row]      = curdat[row,Y_acc]}
 }
-#add the values of decision 1 and 2 to the dataframe (and relative confidence)
+#add the values of decision 1 and 2 to the dataframe (and relative confidence and accuracy)
 curdat$decision1   = decision1
 curdat$decision2   = decision2
 curdat$confidence1 = conf1
 curdat$confidence2 = conf2
+curdat$accuracy1   = acc1
+curdat$accuracy2   = acc2
 
 #Add a column to show if there was a switching in the collective decision respect to the first decision [1=switch, -1=no switch]
 curdat$switch    = as.integer(curdat$decision1 != curdat$Coll_decision)
 curdat$switch[curdat$switch==0]=-1
+
+
+### Sanity check 
+all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$decision1 == curdat$decision2))
+################
 
 #Remove pair 102 - didn't follow the instructions
 if(schon_data){curdat    = curdat[curdat$group!=102,]
@@ -126,13 +140,52 @@ levels(conf_all_sum_acc$Accuracy) <- c("incorrect", "correct")
 print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_all_sum_acc$Confidence,
              colorvar=conf_all_sum_acc$Accuracy,shapevar=conf_all_sum_acc$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("red", "green"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
+             manual_col=c("red", "green"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
+        scale_shape_manual()+
         xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 ########################################################
 
+
+############## ACCURACY AS A FUNCTION OF SWITCHING ##############
+# Select switched and disagreement trials
+sdt      = curdat[curdat$switch==1 & curdat$agree==-1,]
+perc_sdt = 100*(dim(sdt)[1]/dim(curdat)[1])
+
+#Show switch/no-switch trials and collective and 1st decision [only disagreement trials]
+acc_sw  = curdat[,c("targetContrast","switch","agree","accuracy1","Coll_acc")]
+conf_all_long_acc_sw = melt(acc_sw, id=c("targetContrast","switch","agree"))  # convert to long format
+conf_all_sum_acc_sw  = summarySE(conf_all_long_acc_sw,measurevar="value",groupvars=c("targetContrast","switch","agree","variable"))
+
+conf_all_sum_acc_sw$switch = as.factor(conf_all_sum_acc_sw$switch)
+levels(conf_all_sum_acc_sw$switch) = c("no_switch","switch")
+conf_all_sum_acc_sw$agree = as.factor(conf_all_sum_acc_sw$agree)
+levels(conf_all_sum_acc_sw$agree) = c("disagree","agree")
+
+acc_scale = list("lim"=c(0,1),"breaks"=seq(0,1, by=0.2))
+
+ggplot(conf_all_sum_acc_sw, aes(x=targetContrast, y=value, color=variable, shape=switch)) +
+  geom_errorbar(aes(ymin=value-se, ymax=value+se), size=0.7, width=.01, position=pd) +
+  geom_point(aes(shape=switch, color=variable), size = 5,position=pd) +
+  geom_line(aes(linetype=agree), size=1, position=pd) +
+  scale_color_manual(values=c("steelblue1", "darkgreen")) +
+  scale_linetype_manual(values=c("dotted","solid")) + 
+  ggtitle("Accuracy agreement and switch")+
+  scale_y_continuous(limits = acc_scale$lim, breaks=acc_scale$breaks)+
+  scale_x_continuous(breaks=target_scale$breaks, labels = target_scale$labels)+
+  xlab("Target contrasts") + ylab("Accuracy") + theme_custom()
+
+# print(plotSE(df=conf_all_sum_acc_sw,xvar=conf_all_sum_acc_sw$targetContrast,yvar=conf_all_sum_acc_sw$value,
+#              colorvar=conf_all_sum_acc_sw$variable,shapevar=as.factor(conf_all_sum_acc_sw$switch),
+#              xscale=target_scale,yscale=acc_scale,titlestr="Accuracy in switched decision (only disagreement)",
+#              manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
+#         geom_line(aes(linetype=as.factor(agree)))+
+#         xlab("Target contrasts") + ylab("Accuracy") + theme_custom())
+#################################################################
+
+
 ############## SWITCHING AS A FUNCTION OF CONFIDENCE DIFF (conf 1st decision and 2nd decision)##############################
-#Chek if there is switching in case of agreement (1st and 2nd decision)
+#Check if there is switching in case of agreement (1st and 2nd decision)
 at        = curdat[curdat$agree==1,]
 at_switch = at[at$switch==1] ##Should be empty
 
@@ -545,7 +598,7 @@ if(patel_mt){
 
 
 ################
-coll_conf=lmer(Coll_conf ~ confidence1 * switch + conf_aveBlock + (1|interaction(dti$Pagent,dti$pair_obs)), data=dti)
+coll_conf=lmer(Coll_conf ~ confidence1  switch + conf_aveBlock + (1|interaction(dti$Pagent,dti$pair_obs)), data=dti)
 summary(coll_conf)
 # emmeans(coll_conf,pairwise~confidence1|switch)
 
