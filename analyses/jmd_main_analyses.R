@@ -141,13 +141,13 @@ print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_
              colorvar=conf_all_sum_acc$Accuracy,shapevar=conf_all_sum_acc$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
              manual_col=c("red", "green"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
-        scale_shape_manual()+
+        scale_shape_manual(values=c(16,16))+
         xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 ########################################################
 
 
-############## ACCURACY AS A FUNCTION OF SWITCHING ##############
+############## ACCURACY (and confidence) AS A FUNCTION OF SWITCHING ##############
 # Select switched and disagreement trials
 sdt      = curdat[curdat$switch==1 & curdat$agree==-1,]
 perc_sdt = 100*(dim(sdt)[1]/dim(curdat)[1])
@@ -164,23 +164,43 @@ levels(conf_all_sum_acc_sw$agree) = c("disagree","agree")
 
 acc_scale = list("lim"=c(0,1),"breaks"=seq(0,1, by=0.2))
 
+# plot - accuracy as a function of agreement and switching
 ggplot(conf_all_sum_acc_sw, aes(x=targetContrast, y=value, color=variable, shape=switch)) +
   geom_errorbar(aes(ymin=value-se, ymax=value+se), size=0.7, width=.01, position=pd) +
   geom_point(aes(shape=switch, color=variable), size = 5,position=pd) +
   geom_line(aes(linetype=agree), size=1, position=pd) +
   scale_color_manual(values=c("steelblue1", "darkgreen")) +
   scale_linetype_manual(values=c("dotted","solid")) + 
+  scale_shape_manual(values=c(1,16)) +
   ggtitle("Accuracy agreement and switch")+
   scale_y_continuous(limits = acc_scale$lim, breaks=acc_scale$breaks)+
   scale_x_continuous(breaks=target_scale$breaks, labels = target_scale$labels)+
   xlab("Target contrasts") + ylab("Accuracy") + theme_custom()
+ggsave(file=paste0(PlotDir,"acc_agree_switch.png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
-# print(plotSE(df=conf_all_sum_acc_sw,xvar=conf_all_sum_acc_sw$targetContrast,yvar=conf_all_sum_acc_sw$value,
-#              colorvar=conf_all_sum_acc_sw$variable,shapevar=as.factor(conf_all_sum_acc_sw$switch),
-#              xscale=target_scale,yscale=acc_scale,titlestr="Accuracy in switched decision (only disagreement)",
-#              manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
-#         geom_line(aes(linetype=as.factor(agree)))+
-#         xlab("Target contrasts") + ylab("Accuracy") + theme_custom())
+#
+conf_sw  = curdat[,c("targetContrast","switch","agree","confidence1","Coll_conf")]
+conf_all_long_sw = melt(conf_sw, id=c("targetContrast","switch","agree"))  # convert to long format
+conf_all_sum_sw  = summarySE(conf_all_long_sw,measurevar="value",groupvars=c("targetContrast","switch","agree","variable"))
+
+conf_all_sum_sw$switch = as.factor(conf_all_sum_sw$switch)
+levels(conf_all_sum_sw$switch) = c("no_switch","switch")
+conf_all_sum_sw$agree = as.factor(conf_all_sum_sw$agree)
+levels(conf_all_sum_sw$agree) = c("disagree","agree")
+
+# plot - confidence as a function of agreement and switching
+ggplot(conf_all_sum_sw, aes(x=targetContrast, y=value, color=variable, shape=switch)) +
+  geom_errorbar(aes(ymin=value-se, ymax=value+se), size=0.7, width=.01, position=pd) +
+  geom_point(aes(shape=switch, color=variable), size = 5,position=pd) +
+  geom_line(aes(linetype=agree), size=1, position=pd) +
+  scale_color_manual(values=c("steelblue1", "darkgreen")) +
+  scale_linetype_manual(values=c("dotted","solid")) + 
+  scale_shape_manual(values=c(1,16)) +
+  ggtitle("Confidence agreement and switch")+
+  scale_y_continuous(limits = conf_scale$lim, breaks=conf_scale$breaks)+
+  scale_x_continuous(breaks=target_scale$breaks, labels = target_scale$labels)+
+  xlab("Target contrasts") + ylab("Confidence") + theme_custom()
+ggsave(file=paste0(PlotDir,"conf_agree_switch.png"), dpi = 300, units=c("cm"), height =20, width = 20)
 #################################################################
 
 
@@ -279,10 +299,11 @@ for (v in 1:2){
   names(all_sum)[names(all_sum)=='value'] <- lab
   names(all_sum)[names(all_sum)=='variable'] <- 'DecisionType'
   
-  # plot for each pair
+  # plot on average values
+  mov_scale = list("lim"=c(0.5,1.5),"breaks"=seq(0.5,1.5, by=0.25))
   print(plotSE(df=all_sum,xvar=all_sum$targetContrast,yvar=var,
                colorvar=all_sum$DecisionType,shapevar=all_sum$DecisionType,
-               xscale=target_scale,yscale=time_scale,titlestr=paste(lab," as a function of task difficulty"),
+               xscale=target_scale,yscale=mov_scale,titlestr=paste(lab," as a function of task difficulty"),
                manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
           xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
   
@@ -598,7 +619,7 @@ if(patel_mt){
 
 
 ################
-coll_conf=lmer(Coll_conf ~ confidence1  switch + conf_aveBlock + (1|interaction(dti$Pagent,dti$pair_obs)), data=dti)
+coll_conf=lmer(Coll_conf ~ confidence1 * switch + conf_aveBlock + (1|interaction(dti$Pagent,dti$pair_obs)), data=dti)
 summary(coll_conf)
 # emmeans(coll_conf,pairwise~confidence1|switch)
 
