@@ -2,7 +2,7 @@
 close all;
 clear all;
 % load('C:\Users\Laura\Sync\00_Research\2022_UKE\Confidence from motion\04_Analysis\pilotData\gID103_run1_jomode.mat');
-load('Y:\Datasets\JointMotorDecision\Static\Raw\P100\task\gID100_run1_jomode.mat');
+% load('Y:\Datasets\JointMotorDecision\Static\Raw\P100\task\gID100_run1_jomode.mat');
 
 ptc = [100,101,103];
 
@@ -190,11 +190,11 @@ for p=ptc
     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
     data.result.a1.mean = -bhat(1)/bhat(2);
     data.result.a1.sd   = 1/bhat(2);
-    plot(conSteps, y,['b' plotSym],'LineWidth',2);
+    plot(conSteps, y, plotSym,'Color',[30/255 60/255 190/255]);%blue
     hold on;
     C_a1 = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
     ps_a1 = cdf('norm',C_a1,data.result.a1.mean,data.result.a1.sd);
-    plot(C_a1,ps_a1,'b-','LineWidth',2)
+    plot(C_a1,ps_a1,'-','LineWidth',2,'Color',[30/255 60/255 190/255]);
     slope_a1 = max(diff(ps_a1)./diff(C_a1));
     clear bhat;
     hold on;
@@ -205,11 +205,11 @@ for p=ptc
     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
     data.result.a2.mean = -bhat(1)/bhat(2);
     data.result.a2.sd   = 1/bhat(2);
-    plot(conSteps, y,['y' plotSym],'LineWidth',2);
+    plot(conSteps, y, plotSym,'Color',[240/255 200/255 40/255]);%yellow
     hold on;
     C_a2 = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
     ps_a2 = cdf('norm',C_a2,data.result.a2.mean,data.result.a2.sd);
-    plot(C_a2,ps_a2,'y-','LineWidth',2)
+    plot(C_a2,ps_a2,'-','LineWidth',2,'Color',[240/255 200/255 40/255])
     slope_a2 = max(diff(ps_a2)./diff(C_a2));
     clear bhat;
     hold on;
@@ -220,11 +220,11 @@ for p=ptc
     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
     data.result.coll.mean = -bhat(1)/bhat(2);
     data.result.coll.sd   = 1/bhat(2);
-    plot(conSteps, y,['g' plotSym],'LineWidth',2);
+    plot(conSteps, y, plotSym,'Color',[17/255 105/255 40/255]);%green
     hold on;
     C_coll = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
     ps_coll = cdf('norm',C_coll,data.result.coll.mean,data.result.coll.sd);
-    plot(C_coll,ps_coll,'g-','LineWidth',2)
+    plot(C_coll,ps_coll,'-','LineWidth',2,'Color',[17/255 105/255 40/255])
     sdyad = max(diff(ps_coll)./diff(C_coll));
     clear bhat;
     hold on;
@@ -235,11 +235,11 @@ for p=ptc
     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
     data.result.collA1.mean = -bhat(1)/bhat(2);
     data.result.collA1.sd   = 1/bhat(2);
-    plot(conSteps, y,['b' plotSym],'LineWidth',2);
+    plot(conSteps, y, plotSym,'Color',[30/255 60/255 190/255]);%blue
     hold on;
     C_collA1 = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
     ps_collA1 = cdf('norm',C_collA1,data.result.collA1.mean,data.result.collA1.sd);
-    plot(C_collA1,ps_collA1,'b','LineWidth',2, 'LineStyle', '--')
+    plot(C_collA1,ps_collA1,'Color',[30/255 60/255 190/255],'LineWidth',2, 'LineStyle', '--')
     sdyadA1 = max(diff(ps_collA1)./diff(C_collA1));
     clear bhat;
     hold on;
@@ -250,12 +250,12 @@ for p=ptc
     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
     data.result.collA2.mean = -bhat(1)/bhat(2); %bias
     data.result.collA2.sd   = 1/bhat(2); %variance
-    plot(conSteps, y,['y' plotSym],'LineWidth',2);
+    plot(conSteps, y, plotSym,'Color',[240/255 200/255 40/255]);%yellow
     hold on;
     C_collA2 = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
     % ps = psychometric curve: x-axis steps, bias, variance
     ps_collA2 = cdf('norm',C_collA2,data.result.collA2.mean,data.result.collA2.sd);
-    plot(C_collA2,ps_collA2,'y','LineWidth',2, 'LineStyle', '--')
+    plot(C_collA2,ps_collA2,'Color',[240/255 200/255 40/255],'LineWidth',2, 'LineStyle', '--')
     sdyadA2 = max(diff(ps_collA2)./diff(C_collA2)); % compute slope / rate of change
     clear bhat;
     hold on;
