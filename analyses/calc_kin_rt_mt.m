@@ -101,18 +101,18 @@ for p = 1:length(SUBJECTS)
         %function to calculate the movement onset and kinematic variables
         %agent acting as first
         label_agent = 'FIRSTDecision';
-        [rt_final1,mt_final1]=movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre);
-        movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre);
+        [startFrame,rt_final1,mt_final1,endFrame]=movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre);
+        movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame,endFrame);
         faa = faa + 3;
         %agent acting as first
         label_agent = 'SECONDDecision';
-        [rt_final2,mt_final2]=movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre);
-        movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre);
+        [startFrame,rt_final2,mt_final2,endFrame]=movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre);
+        movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame,endFrame);
         saa = saa + 3;
         %agent acting as first
         label_agent = 'COLLECTIVEDecision';
-        [rt_finalColl,mt_finalColl]=movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre);
-        movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre);
+        [startFrame,rt_finalColl,mt_finalColl,endFrame]=movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre);
+        movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrame,endFrame);
         caa = caa +3;
         %%%
 
