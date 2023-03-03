@@ -70,7 +70,16 @@ for p = 1:length(SUBJECTS)
     % agent whose reaction time you need to use for the video.
     [~,txt_or,raw]    = xlsread(path_data_each);
     raw               = raw(2:end,:);%removed the header
-    txt               = [txt_or {'rt_final1' 'rt_final2' 'rt_finalColl' 'mt_final1' 'mt_final2' 'mt_finalColl'}];
+    txt               = [txt_or {'rt_final1' 'rt_final2' 'rt_finalColl' 'mt_final1' 'mt_final2' 'mt_finalColl' ...
+                                 'ave_vel_index1' 'ave_acc_index1' 'ave_jrk_index1' 'ave_vel_ulna1' 'ave_acc_ulna1' 'ave_jrk_ulna1'...
+                                 'peak_z_index1' 'min_z_index1' 'ave_z_index1' 'area_z_index1' 'peak_z_ulna1' 'min_z_ulna1' 'ave_z_ulna1' 'area_z_ulna1'...
+                                 'area_dev1' 'max_dev1' 'min_dev1' 'ave_area_dev1'...
+                                 'ave_vel_index2' 'ave_acc_index2' 'ave_jrk_index2' 'ave_vel_ulna2' 'ave_acc_ulna2' 'ave_jrk_ulna2'...
+                                 'peak_z_index2' 'min_z_index2' 'ave_z_index2' 'area_z_index2' 'peak_z_ulna2' 'min_z_ulna2' 'ave_z_ulna2' 'area_z_ulna2'...
+                                 'area_dev2' 'max_dev2' 'min_dev2' 'ave_area_dev2'...
+                                 'ave_vel_indexColl' 'ave_acc_indexColl' 'ave_jrk_indexColl' 'ave_vel_ulnaColl' 'ave_acc_ulnaColl' 'ave_jrk_ulnaColl'...
+                                 'peak_z_indexColl' 'min_z_indexColl' 'ave_z_indexColl' 'area_z_indexColl' 'peak_z_ulnaColl' 'min_z_ulnaColl' 'ave_z_ulnaColl' 'area_z_ulnaColl'...
+                                 'area_devColl' 'max_devColl' 'min_devColl' 'ave_area_devColl'}];
     data              = cell2table(raw);
     data.rt_final1    = zeros(length(raw),1);
     data.rt_final2    = zeros(length(raw),1);
@@ -101,34 +110,35 @@ for p = 1:length(SUBJECTS)
         %function to calculate the movement onset and kinematic variables
         %agent acting as first
         label_agent = 'FIRSTDecision';
-        [startFrame,rt_final1,mt_final1,endFrame]=movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre);
-        movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame,endFrame);
+        [startFrame1,rt_final1,mt_final1,endFrame1] = movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre);
+        if not(isnan(startFrame1))
+            [tindex1,tulna1,sindex1,sulna1,sdindex1]    = movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1);
+        else
+            tindex1=[NaN NaN NaN]; tulna1=[NaN NaN NaN]; sindex1=[NaN NaN NaN NaN]; sulna1=[NaN NaN NaN NaN]; sdindex1=[NaN NaN NaN NaN];
+        end
         faa = faa + 3;
-        %agent acting as first
+
+        %agent acting as second
         label_agent = 'SECONDDecision';
-        [startFrame,rt_final2,mt_final2,endFrame]=movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre);
-        movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame,endFrame);
+        [startFrame2,rt_final2,mt_final2,endFrame2] = movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre);
+        if not(isnan(startFrame2))
+            [tindex2,tulna2,sindex2,sulna2,sdindex2]    = movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2);
+        else
+            tindex2=[NaN NaN NaN]; tulna2=[NaN NaN NaN]; sindex2=[NaN NaN NaN NaN]; sulna2=[NaN NaN NaN NaN]; sdindex2=[NaN NaN NaN NaN];
+        end
         saa = saa + 3;
-        %agent acting as first
+
+        %collective decision
         label_agent = 'COLLECTIVEDecision';
-        [startFrame,rt_finalColl,mt_finalColl,endFrame]=movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre);
-        movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrame,endFrame);
+        [startFrameColl,rt_finalColl,mt_finalColl,endFrameColl] = movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre);
+        if not(isnan(startFrameColl))
+        [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl] = movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl);
+        else
+            tindexColl=[NaN NaN NaN]; tulnaColl=[NaN NaN NaN]; sindexColl=[NaN NaN NaN NaN]; sulnaColl=[NaN NaN NaN NaN]; sdindexColl=[NaN NaN NaN NaN];
+        end
         caa = caa +3;
         %%%
 
-        %function to calculate kinematic variables
-        %agent acting as first
-        label_agent = 'FIRSTDecision';
-        faa = faa + 3;
-        %agent acting as first
-        label_agent = 'SECONDDecision';
-        [rt_final2,mt_final2]=movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre);
-        saa = saa + 3;
-        %agent acting as first
-        label_agent = 'COLLECTIVEDecision';
-        [rt_finalColl,mt_finalColl]=movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre);
-        caa = caa +3;
-        %%%
 
         % Write the final rt in the excel file created during the
         % acquisition
@@ -143,11 +153,30 @@ for p = 1:length(SUBJECTS)
         data{t,ol+4} = mt_final1;
         data{t,ol+5} = mt_final2;
         data{t,ol+6} = mt_finalColl;
+        %kin agent 1
+        data{t,ol+7:ol+9}   = tindex1;
+        data{t,ol+10:ol+12} = tulna1;
+        data{t,ol+13:ol+16} = sindex1;
+        data{t,ol+17:ol+20} = sulna1;
+        data{t,ol+21:ol+24} = sdindex1;
+        %kin agent 2
+        data{t,ol+25:ol+27} = tindex2;
+        data{t,ol+28:ol+30} = tulna2;
+        data{t,ol+31:ol+34} = sindex2;
+        data{t,ol+35:ol+38} = sulna2;
+        data{t,ol+39:ol+42} = sdindex2;
+        %kin agent coll
+        data{t,ol+43:ol+45} = tindexColl;
+        data{t,ol+46:ol+48} = tulnaColl;
+        data{t,ol+49:ol+52} = sindexColl;
+        data{t,ol+53:ol+56} = sulnaColl;
+        data{t,ol+57:ol+60} = sdindexColl;
+        %title
         data.Properties.VariableNames = txt;
         if flag_pre
-            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_withPre.xlsx']));
+            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_withPre.xlsx']));
         else
-            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '.xlsx']));
+            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin.xlsx']));
         end
     end
 
