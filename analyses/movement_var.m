@@ -50,16 +50,19 @@ y1    = index.xyzf(startFrame,2);
 yend  = index.xyzf(endFrame-const,2);
 coefs = polyfit([x1, xend], [y1, yend], 1);
 sline = coefs(1).*index.xyzf((startFrame:endFrame-const),1) + coefs(2);
-%calculate the area of the trajectory deviation (x,y) - neg values? 
-xa    = abs(index.xyzf((startFrame:endFrame-const),1));
-ya    = abs(index.xyzf((startFrame:endFrame-const),2));
-y     = index.xyzf((startFrame:endFrame-const),2);
-ard   = trapz(xa,abs(sline-y)); %trapz(abs(x),abs(y1-y2))
 
-d     = sqrt(sum(([xa,ya]-[xa,abs(sline)]).^2,2));
+%calculate the area of the trajectory deviation (x,y) - neg values? 
+x     = index.xyzf((startFrame:endFrame-const),1);
+y     = index.xyzf((startFrame:endFrame-const),2);
+% ard   = trapz(xa,abs(sline-y)); % or trapz(abs(x),abs(y1-y2))
+
+d     = sqrt(sum(([x,y]-[x,sline]).^2,2));
 mxd   = max(d);
 mnd   = min(d);
 ad    = mean(d);
+ard   = trapz(d);
+
+figure();plot(x,sline,'r');hold on;plot(x,y,'b');hold off
 
 %group spatial deviation variables 
 sdindex = [ard mxd mnd ad];

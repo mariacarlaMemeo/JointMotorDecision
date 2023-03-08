@@ -9,7 +9,7 @@ close all
 path_data = 'Y:\Datasets\JointMotorDecision\Static\Raw';
 path_kin  = fullfile(path_data,'..\Processed');
 %%
-path_temp = 'C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecnologia\Desktop\jmd\';
+path_temp = 'Y:\Datasets\JointMotorDecision\Exported\behavioral_kin_data';
 flag_pre  = 0;
 %%
 
