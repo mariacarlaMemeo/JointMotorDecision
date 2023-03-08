@@ -62,7 +62,7 @@ mnd   = min(d);
 ad    = mean(d);
 ard   = trapz(d);
 
-figure();plot(x,sline,'r');hold on;plot(x,y,'b');hold off
+% figure();plot(x,sline,'r');hold on;plot(x,y,'b');hold off
 
 %group spatial deviation variables 
 sdindex = [ard mxd mnd ad];
