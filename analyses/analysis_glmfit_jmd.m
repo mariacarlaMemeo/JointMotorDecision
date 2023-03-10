@@ -1,6 +1,6 @@
 % analysis of perceptual sensitivity for oddball detection task
 close all;
-clear all;
+clear;
 % load('C:\Users\Laura\Sync\00_Research\2022_UKE\Confidence from motion\04_Analysis\pilotData\gID103_run1_jomode.mat');
 % load('Y:\Datasets\JointMotorDecision\Static\Raw\P100\task\gID100_run1_jomode.mat');
 
