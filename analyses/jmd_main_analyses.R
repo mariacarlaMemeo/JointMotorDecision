@@ -206,7 +206,28 @@ ggplot(conf_all_sum_sw, aes(x=targetContrast, y=value, color=variable, shape=swi
   scale_x_continuous(breaks=target_scale$breaks, labels = target_scale$labels)+
   xlab("Target contrasts") + ylab("Confidence") + theme_custom()
 ggsave(file=paste0(PlotDir,"conf_agree_switch.png"), dpi = 300, units=c("cm"), height =20, width = 20)
-#################################################################
+
+
+
+##barplot x: switch/no switch
+#         y:confidence
+#    colour:individual, collective
+#     shade:agreement
+conf_targ_sw  = curdat[,c("switch","agree","confidence1","Coll_conf")]
+conf_all_targ_long_sw = melt(conf_targ_sw, id=c("switch","agree"))  # convert to long format
+conf_all_targ_sum_acc_sw  = summarySE(conf_all_targ_long_sw,measurevar="value",groupvars=c("switch","agree","variable"))
+
+conf_all_targ_sum_acc_sw$switch = as.factor(conf_all_targ_sum_acc_sw$switch)
+levels(conf_all_targ_sum_acc_sw$switch) = c("no_switch","switch")
+conf_all_targ_sum_acc_sw$agree = as.factor(conf_all_targ_sum_acc_sw$agree)
+levels(conf_all_targ_sum_acc_sw$agree) = c("disagree","agree")
+
+ggplot(data=conf_all_targ_sum_acc_sw, aes(x=as.factor(variable), y=value, fill=as.factor(agree))) +
+  geom_rect(aes(fill=as.factor(switch)),xmin =-Inf,xmax=Inf,ymin=-Inf,ymax=Inf,alpha = 0.1) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  facet_wrap(~ as.factor(switch), nrow=1)
+  
+  #################################################################
 
 
 ############## SWITCHING AS A FUNCTION OF CONFIDENCE DIFF (conf 1st decision and 2nd decision)##############################

@@ -1,4 +1,4 @@
-function [rt_final,mt_final]=movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,flag_pre)
+function [startFrame,rt_final,mt_final,endFrame]=movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,flag_pre)
 
 % CHECK index and wrist velocity threshold
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:};
@@ -64,11 +64,14 @@ if flag_pre %include preAcq because participants released button before decision
     rt_ulna  = (ulnaTh(1))/frameRate;
     rt_final = (startFrame)/frameRate;%rt_final should be = to the minimum value between rt_index or rt_ulna
 else
-    rt_index = (indexTh(1)-preAcq)/frameRate;
-    rt_ulna  = (ulnaTh(1)-preAcq)/frameRate;
-    rt_final = (startFrame-preAcq)/frameRate;%rt_final= to the minimum value between rt_index or rt_ulna
+    startFrame = (startFrame-preAcq);
+    rt_index   = (indexTh(1)-preAcq)/frameRate;
+    rt_ulna    = (ulnaTh(1)-preAcq)/frameRate;
+    rt_final   = startFrame/frameRate;%rt_final= to the minimum value between rt_index or rt_ulna
 end
-mt_final = ((samp(end)-10)-(startFrame))/frameRate;%mt_final=recording end(includes the preAcq) - 10frames(post acquisition set in Vicon) - startFrame(includes the preAcq)
+endFrame = (samp(end)-10);
+mt_final = (endFrame-startFrame)/frameRate;%mt_final=recording end(includes the preAcq) - 10frames(post acquisition set in Vicon) - startFrame(includes the preAcq)
+
 
 %In case the video lasts only 20 or 52 frames there was an issue
 %in the acquisition: the trial is discarded
