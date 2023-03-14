@@ -1,4 +1,4 @@
-function [startFrame,rt_final,mt_final,endFrame]=movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,flag_pre)
+function [startFrame,rt_final,mt_final,endFrame]=movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,flag_pre,trial_plot)
 
 % CHECK index and wrist velocity threshold
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:};
@@ -31,20 +31,21 @@ ulnaZ      = sMarkers{t}.markers.([model_name '_ulna']).xyzf(:,3);% - mean(sMark
 %Plot the trajectories
 yPos_text   = max(ulna);
 
-v=figure('Name',['P' SUBJECTS{p}(2:end)]); set(v, 'WindowStyle', 'Docked');
-yyaxis left; plot(samp,index);hold on; plot(samp,indexZ); ylabel('Velocity [mm/s]');hold off;
-yyaxis right; plot(samp,ulna);hold on; plot(samp,ulnaZ); hold off;
-xline(preAcq);       t_pre=text(preAcq-plotxShift,yPos_text-300,' decisionPrompt (t0)');set(t_pre,'Rotation',90);
-xline(samp(end)-10); t_post=text((samp(end)-10)-plotxShift,yPos_text-300,' targetButtonPress');set(t_post,'Rotation',90);
-if ~isnan(indexTh(1))
-    xline(indexTh(1),'Color',[0 0.4470 0.7410]);t_ind=text(indexTh(1)-plotxShift,yPos_text-300,' Index>20[mm/s]','Color', [0 0.4470 0.7410]);set(t_ind,'Rotation',90);
+if trial_plot
+    v=figure('Name',['P' SUBJECTS{p}(2:end)]); set(v, 'WindowStyle', 'Docked');
+    yyaxis left; plot(samp,index);hold on; plot(samp,indexZ); ylabel('Velocity [mm/s]');hold off;
+    yyaxis right; plot(samp,ulna);hold on; plot(samp,ulnaZ); hold off;
+    xline(preAcq);       t_pre=text(preAcq-plotxShift,yPos_text-300,' decisionPrompt (t0)');set(t_pre,'Rotation',90);
+    xline(samp(end)-10); t_post=text((samp(end)-10)-plotxShift,yPos_text-300,' targetButtonPress');set(t_post,'Rotation',90);
+    if ~isnan(indexTh(1))
+        xline(indexTh(1),'Color',[0 0.4470 0.7410]);t_ind=text(indexTh(1)-plotxShift,yPos_text-300,' Index>20[mm/s]','Color', [0 0.4470 0.7410]);set(t_ind,'Rotation',90);
+    end
+    if ~isnan(ulnaTh(1))
+        xline(ulnaTh(1),'Color',[0.8500 0.3250 0.0980]);t_uln=text(ulnaTh(1)-plotxShift,yPos_text-350,' Ulna>20[mm/s]','Color', [0.8500 0.3250 0.0980]);set(t_uln,'Rotation',90);
+    end
+    title(['Pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
+    xlabel('Samples');
 end
-if ~isnan(ulnaTh(1))
-    xline(ulnaTh(1),'Color',[0.8500 0.3250 0.0980]);t_uln=text(ulnaTh(1)-plotxShift,yPos_text-350,' Ulna>20[mm/s]','Color', [0.8500 0.3250 0.0980]);set(t_uln,'Rotation',90);
-end
-title(['Pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
-xlabel('Samples');
-
 % As rt_final we choose the minimum value between index finger/ulna
 % reaction time
 startVector    = [indexTh(1),ulnaTh(1)]; % take the 10th value that has consecutively passed the threshold
@@ -86,10 +87,12 @@ elseif samp(end) < 55
 end
 
 %Plot rt_final
-if ind_start==1
-    xline(startFrame,'LineWidth',2,'Color',[0 0.4470 0.7410]);
-else
-    xline(startFrame,'LineWidth',2,'Color',[0.8500 0.3250 0.0980]);
+if trial_plot
+    if ind_start==1
+        xline(startFrame,'LineWidth',2,'Color',[0 0.4470 0.7410]);
+    else
+        xline(startFrame,'LineWidth',2,'Color',[0.8500 0.3250 0.0980]);
+    end
 end
 
 

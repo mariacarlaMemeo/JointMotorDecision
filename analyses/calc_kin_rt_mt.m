@@ -11,6 +11,7 @@ path_kin  = fullfile(path_data,'..\Processed');
 %%
 path_temp = 'Y:\Datasets\JointMotorDecision\Exported\behavioral_kin_data';
 flag_pre  = 0;
+trial_plot = 0;
 %%
 
 %% Load each processed mat file per subject
@@ -106,36 +107,62 @@ for p = 1:length(SUBJECTS)
         agentExec1    = ['a' num2str(at1stDec(t))]; %the first agent acting
         agentExec2    = ['a' num2str(at2ndDec(t))]; 
         agentExecColl = ['a' num2str(atCollDec(t))]; 
+        % Check if the agents taking 1st and 2nd decisions are different
+        if at1stDec(t)==at2ndDec(t)
+            warning('Agents taking 1st and 2nd decisions are the same! Check the data!');
+        end
 
         %function to calculate the movement onset and kinematic variables
         %agent acting as first
         label_agent = 'FIRSTDecision';
-        [startFrame1,rt_final1,mt_final1,endFrame1] = movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre);
+        [startFrame1,rt_final1,mt_final1,endFrame1] = movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre,trial_plot);
         if not(isnan(startFrame1))
-            [tindex1,tulna1,sindex1,sulna1,sdindex1]    = movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1);
+            [tindex1,tulna1,sindex1,sulna1,sdindex1,time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1]    = movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1);
         else
-            tindex1=[NaN NaN NaN]; tulna1=[NaN NaN NaN]; sindex1=[NaN NaN NaN NaN]; sulna1=[NaN NaN NaN NaN]; sdindex1=[NaN NaN NaN NaN];
+            tindex1=[NaN NaN NaN]; tulna1=[NaN NaN NaN]; sindex1=[NaN NaN NaN NaN]; sulna1=[NaN NaN NaN NaN]; sdindex1=[NaN NaN NaN NaN]; time_traj_index1 = ones(100,3)*NaN; time_traj_ulna1 = ones(100,3)*NaN; spa_traj_index1 = ones(100,3)*NaN; spa_traj_ulna1 = ones(100,3)*NaN;
+        end
+        if at1stDec(t) == 1
+            all_time_traj_index_b(:,:,t) = time_traj_index1;
+            all_time_traj_ulna_b(:,:,t) = time_traj_ulna1;
+            all_spa_traj_index_b(:,:,t) = spa_traj_index1;
+            all_spa_traj_ulna_b(:,:,t) = spa_traj_ulna1;
+        else
+            all_time_traj_index_y(:,:,t) = time_traj_index1;
+            all_time_traj_ulna_y(:,:,t) = time_traj_ulna1;
+            all_spa_traj_index_y(:,:,t) = spa_traj_index1;
+            all_spa_traj_ulna_y(:,:,t) = spa_traj_ulna1;
         end
         faa = faa + 3;
 
         %agent acting as second
         label_agent = 'SECONDDecision';
-        [startFrame2,rt_final2,mt_final2,endFrame2] = movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre);
+        [startFrame2,rt_final2,mt_final2,endFrame2] = movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre,trial_plot);
         if not(isnan(startFrame2))
-            [tindex2,tulna2,sindex2,sulna2,sdindex2]    = movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2);
+            [tindex2,tulna2,sindex2,sulna2,sdindex2,time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2]    = movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2);
         else
-            tindex2=[NaN NaN NaN]; tulna2=[NaN NaN NaN]; sindex2=[NaN NaN NaN NaN]; sulna2=[NaN NaN NaN NaN]; sdindex2=[NaN NaN NaN NaN];
+            tindex2=[NaN NaN NaN]; tulna2=[NaN NaN NaN]; sindex2=[NaN NaN NaN NaN]; sulna2=[NaN NaN NaN NaN]; sdindex2=[NaN NaN NaN NaN];time_traj_index2 = ones(100,3)*NaN; time_traj_ulna2 = ones(100,3)*NaN; spa_traj_index2 = ones(100,3)*NaN; spa_traj_ulna2 = ones(100,3)*NaN;
+        end
+        if at2ndDec(t) == 1
+            all_time_traj_index_b(:,:,t) = time_traj_index2;
+            all_time_traj_ulna_b(:,:,t) = time_traj_ulna2;
+            all_spa_traj_index_b(:,:,t) = spa_traj_index2;
+            all_spa_traj_ulna_b(:,:,t) = spa_traj_ulna2;
+        else
+            all_time_traj_index_y(:,:,t) = time_traj_index2;
+            all_time_traj_ulna_y(:,:,t) = time_traj_ulna2;
+            all_spa_traj_index_y(:,:,t) = spa_traj_index2;
+            all_spa_traj_ulna_y(:,:,t) = spa_traj_ulna2;
         end
         saa = saa + 3;
 
         %collective decision
         label_agent = 'COLLECTIVEDecision';
-        [startFrameColl,rt_finalColl,mt_finalColl,endFrameColl] = movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre);
+        [startFrameColl,rt_finalColl,mt_finalColl,endFrameColl] = movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre,trial_plot);
         if not(isnan(startFrameColl))
-        [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl] = movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl);
+        [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl,time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl);
         else
             tindexColl=[NaN NaN NaN]; tulnaColl=[NaN NaN NaN]; sindexColl=[NaN NaN NaN NaN]; sulnaColl=[NaN NaN NaN NaN]; sdindexColl=[NaN NaN NaN NaN];
-        end
+        end      
         caa = caa +3;
         %%%
 
@@ -180,6 +207,9 @@ for p = 1:length(SUBJECTS)
         end
     end
 
-
+    % Plot the average and standard deviation of values of resampled time vectors of Vm,Am,Jm and filter spatial
+    % coordinates x,y,z per subject, for index(tip) and ulna markers.
+    ave_subj_plotting;
+    
     clear sMarkers session
 end
