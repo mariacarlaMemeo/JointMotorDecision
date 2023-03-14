@@ -7,7 +7,7 @@ theme_custom <- function() {
           axis.text.y = element_text(size=12),
           axis.text.x = element_text(size=12),
           panel.border = element_blank(),
-          axis.line = element_line(color = 'black', linewidth=0.1),
+          # axis.line = element_line(color = 'black', linewidth=0.1),
           legend.title=element_blank(),
           legend.text = element_text(size=14),
           legend.position="top")

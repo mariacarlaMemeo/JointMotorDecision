@@ -14,8 +14,8 @@ schon_data = TRUE # if TRUE the dataset doesn't contain the 102 pair
 patel_mt   = FALSE # does diff in mt predict confidence?
 
 #Retrieve the directory of the current file and create the main directory path
-slash      = unlist(gregexpr("/", this.path()))
-DataDir    = substr(this.path(),1,slash[length(slash)])
+slash      = this.path()
+DataDir    = substr(slash,1,61)
 DataDirObs =  paste0(DataDir,"data_obs/")
 #Save plots here
 PlotDir = paste0(DataDir,"plot/")
@@ -115,11 +115,13 @@ names(conf_all_sum)[names(conf_all_sum)=='variable'] <- 'DecisionType'
 conf_all_sum$agree = as.factor(conf_all_sum$agree)
 levels(conf_all_sum$agree) <- c("disagree", "agree")
 
+###xxx
 # plot - Confidence level by target contrast and agreement 
 print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
              colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
+             manual_col=c("steelblue1", "darkgreen"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
+        scale_shape_manual(values=c(16,16))+
         xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
@@ -151,6 +153,9 @@ ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, u
 # Select switched and disagreement trials
 sdt      = curdat[curdat$switch==1 & curdat$agree==-1,]
 perc_sdt = 100*(dim(sdt)[1]/dim(curdat)[1])
+
+#Proportion of switching on the total number of disagreement trials
+perc_sondt = 100*(dim(curdat[curdat$switch==1,])[1]/dim(curdat[curdat$agree==-1,])[1])
 
 #Show switch/no-switch trials and collective and 1st decision [only disagreement trials]
 acc_sw  = curdat[,c("targetContrast","switch","agree","accuracy1","Coll_acc")]
@@ -228,6 +233,7 @@ ggplot(data=conf_all_targ_sum_acc_sw, aes(x=as.factor(variable), y=value, fill=a
 ############## SWITCHING AS A FUNCTION OF CONFIDENCE DIFF (conf 1st decision and 2nd decision)##############################
 #Check if there is switching in case of agreement (1st and 2nd decision)
 at        = curdat[curdat$agree==1,]
+perc_at   = 100*(dim(at)[1]/dim(curdat)[1])
 at_switch = at[at$switch==1] ##Should be empty
 
 # Select only disagreement trials

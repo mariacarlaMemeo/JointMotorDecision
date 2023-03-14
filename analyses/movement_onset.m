@@ -28,7 +28,7 @@ end
 indexZ     = sMarkers{t}.markers.([model_name '_index']).xyzf(:,3);%-  mean(sMarkers{t}.markers.([model_name '_index']).xyzf(1:preAcq,3));
 ulnaZ      = sMarkers{t}.markers.([model_name '_ulna']).xyzf(:,3);% - mean(sMarkers{t}.markers.([model_name '_ulna']).xyzf(1:preAcq,3));
 
-%Plot the trajectories
+% Plot the trajectories
 yPos_text   = max(ulna);
 
 if trial_plot
