@@ -32,7 +32,7 @@ SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 % - ODD TRIAL  - agent1(individual decision)-agent2(individual decision)-agent1(collective decision)
 % - EVEN TRIAL - agent2-agent1-agent2
 
-for p = 1:length(SUBJECTS)
+for p = length(SUBJECTS)%1:
 
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear v raw_clm
@@ -89,14 +89,25 @@ for p = 1:length(SUBJECTS)
     data.mt_final2    = zeros(length(raw),1);
     data.mt_finalColl = zeros(length(raw),1);
 
-    %Retrieve the agents acting for each decision
+    % Retrieve the agents acting for each decision
     at1stDec_ind   = strcmp('AgentTakingFirstDecision',txt);
     at1stDec       = cell2mat(raw(:,at1stDec_ind));
     at2ndDec_ind   = strcmp('AgentTakingSecondDecision',txt);
     at2ndDec       = cell2mat(raw(:,at2ndDec_ind));
     atCollDec_ind  = strcmp('AgentTakingCollDecision',txt);
     atCollDec      = cell2mat(raw(:,atCollDec_ind));
-
+    % Retrieve the confidence of each agent. A1 and A2 in these Excel files
+    % (pilot data) refer to blue and yellow agents respectively.
+    blue_Conf_ind   = strcmp('A1_conf',txt);
+    blue_Conf       = cell2mat(raw(:,blue_Conf_ind));
+    yell_Conf_ind   = strcmp('A2_conf',txt);
+    yell_Conf       = cell2mat(raw(:,yell_Conf_ind));
+    %Retrieve the choice of each agent 
+    blue_Dec_ind   = strcmp('A1_decision',txt);
+    blue_Dec       = cell2mat(raw(:,blue_Dec_ind));
+    yell_Dec_ind   = strcmp('A2_decision',txt);
+    yell_Dec       = cell2mat(raw(:,yell_Dec_ind));
+    
     %
     faa = 1;
     saa = 2;
@@ -209,7 +220,14 @@ for p = 1:length(SUBJECTS)
 
     % Plot the average and standard deviation of values of resampled time vectors of Vm,Am,Jm and filter spatial
     % coordinates x,y,z per subject, for index(tip) and ulna markers.
-    ave_subj_plotting;
+
+    %classify confidence as high and low
+    bConf=blue_Conf;yConf=yell_Conf;
+    bConf(bConf<4)=1;bConf(bConf>=4)=2;
+    yConf(yConf<4)=1;yConf(yConf>=4)=2;
     
+    ave_subj_plotting;
+
+
     clear sMarkers session
 end
