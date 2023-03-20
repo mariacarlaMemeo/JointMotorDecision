@@ -32,7 +32,7 @@ SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 % - ODD TRIAL  - agent1(individual decision)-agent2(individual decision)-agent1(collective decision)
 % - EVEN TRIAL - agent2-agent1-agent2
 
-for p = length(SUBJECTS)%1:
+for p = 1:length(SUBJECTS)%
 
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear v raw_clm
@@ -48,7 +48,10 @@ for p = length(SUBJECTS)%1:
 
     % set the path for the rt and mt variables
     path_task      = fullfile(path_data,SUBJECTS{p},'task');
-    path_data_each = fullfile(path_data,SUBJECTS{p},['task\pilotData_' SUBJECTS{p}(2:end) '.xlsx'] );
+    path_data_each = fullfile(path_data,SUBJECTS{p},['task\pilotData_' SUBJECTS{p}(2:end) '.xlsx']);
+    if str2double(SUBJECTS{p}(2:end))==101
+        path_data_each = fullfile(path_data,SUBJECTS{p},'task\pilotData_101_true3rdtrial.xlsx');
+    end
 
     %It loads the 'session' struct for each pair of participants
     path_kin_each  = fullfile(path_kin,[SUBJECTS{p},'.mat']);
@@ -227,7 +230,6 @@ for p = length(SUBJECTS)%1:
     yConf(yConf<4)=1;yConf(yConf>=4)=2;
     
     ave_subj_plotting;
-
-
-    clear sMarkers session
+    clear sMarkers session bConf yConf blue_Dec yell_Dec
+ 
 end

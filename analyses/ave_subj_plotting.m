@@ -1,5 +1,6 @@
 %Script to plot random things noone will need
 
+%%Temporal coordinates
 %Module of velocity(1st column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker
 threshold  = 2500;
 %blue
@@ -22,6 +23,8 @@ title_plot = ['INDEX - Acceleration module of YELLOW agent, pair' SUBJECTS{p}(2:
 title_fig  = ['y' SUBJECTS{p}(2:end) '_am_index.png'];
 ave_subj_plotting_fun(all_time_traj_index_y,2,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
 
+
+%%Spatial coordinates
 %Height coordinate (z) of blue/yellow agent for index marker
 threshold = [-50 200];
 %blue
@@ -46,16 +49,16 @@ ave_subj_plotting_fun(all_spa_traj_ulna_y,3,yConf,yell_Dec,title_plot,title_fig,
 
 
 %XY plane blue/yellow agent for index marker
-threshold  = [-1050 -750 50 500];%[xleft xright ylow yhigh]
+threshold  = [-1050 -750 50 550];%[xleft xright ylow yhigh]
 %blue
 title_plot = ['INDEX - XY index trajectory of BLUE agent, pair' SUBJECTS{p}(2:end)];
 title_fig  = ['b' SUBJECTS{p}(2:end) '_xy_index.png'];
 ave_subj_plotting_fun(all_spa_traj_index_b,[],bConf,blue_Dec,title_plot,title_fig,path_temp,2,threshold)
 %yellow
-threshold  = [700 1000 50 500];
+threshold  = [700 1100 50 500];
 title_plot = ['INDEX - XY index trajectory of YELLOW agent, pair' SUBJECTS{p}(2:end)];
 title_fig  = ['y' SUBJECTS{p}(2:end) '_xy_index.png'];
-ave_subj_plotting_fun(all_spa_traj_index_y,[],bConf,blue_Dec,title_plot,title_fig,path_temp,2,threshold)
+ave_subj_plotting_fun(all_spa_traj_index_y,[],yConf,yell_Dec,title_plot,title_fig,path_temp,2,threshold)
 
 
 
