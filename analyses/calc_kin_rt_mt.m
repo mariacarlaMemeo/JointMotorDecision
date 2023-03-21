@@ -9,7 +9,7 @@ close all
 path_data = 'Y:\Datasets\JointMotorDecision\Static\Raw';
 path_kin  = fullfile(path_data,'..\Processed');
 %%
-path_temp = 'Y:\Datasets\JointMotorDecision\Exported\behavioral_kin_data';
+path_temp = fullfile(pwd,'data\');
 flag_pre  = 0;
 trial_plot = 0;
 %%
