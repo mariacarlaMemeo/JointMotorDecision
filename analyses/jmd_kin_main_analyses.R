@@ -17,15 +17,15 @@ patel_mt   = FALSE # does diff in mt predict confidence? (see Patel et al., 2012
 
 # ***Note: the following should be adjusted so that the script works on different computers!***
 #Retrieve the directory of the current file and create the main directory path
-# slash = this.path()
-# DataDir = substr(slash,1,61)
-# DataDirObs = paste0(DataDir,"data_obs/") # path for observation data
-# PlotDir = paste0(DataDir,"plot/") # path for saving plots
+slash = this.path()
+DataDir = substr(slash,1,114)
+DataDirObs = paste0(DataDir,"data_obs/") # path for observation data
+PlotDir = paste0(DataDir,"plot/") # path for saving plots
 
 # Define directories manually (just for now)
-DataDir    = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/"
-DataDirObs = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/data_obs/"
-PlotDir    = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/plot/"
+# DataDir    = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/"
+# DataDirObs = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/data_obs/"
+# PlotDir    = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/plot/"
 
 #Call needed functions 
 source(paste0(DataDir,'read_all_sheets.R'))
@@ -97,6 +97,7 @@ curdat$switch[curdat$switch==0]=-1
 
 
 ### Sanity check 
+# Check whether 1st and 2nd decision agree/disagree
 all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$decision1 == curdat$decision2))
 ################
 
@@ -126,9 +127,11 @@ levels(conf_all_sum$agree) <- c("disagree", "agree")
 print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
              colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
+             manual_col=c("steelblue1", "darkgreen"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
+        scale_shape_manual(values=c(16,16))+
         xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+
 
 #According to the level of agreement and accuracy (only collective decision)
 conf_all_acc <- curdat[,c("targetContrast","Coll_acc","Coll_conf","agree")]
@@ -399,7 +402,7 @@ for (v in 1:2){
   names(all_sum)[names(all_sum)=='variable'] <- 'DecisionType'
   
   # plot on average values
-  mov_scale = list("lim"=c(0.5,1.5),"breaks"=seq(0.5,1.5, by=0.25))
+  mov_scale = list("lim"=c(0.5,1.75),"breaks"=seq(0.5,1.75, by=0.25))
   print(plotSE(df=all_sum,xvar=all_sum$targetContrast,yvar=var,
                colorvar=all_sum$DecisionType,shapevar=all_sum$DecisionType,
                xscale=target_scale,yscale=mov_scale,titlestr=paste(lab," as a function of task difficulty"),
@@ -418,7 +421,7 @@ for (m in 1:2){
   ################## plot RT and MT as a function of target contrast/per agent  ################## 
   if (m==1){lab ="RT"
   all <- curdat[,c("targetContrast","B_rtKin","Y_rtKin","rt_finalColl","group")]
-  mov_scale = list("lim"=c(0,1.6),"breaks"=seq(0,1.6, by=0.2))} else {lab="MT"
+  mov_scale = list("lim"=c(0,1.8),"breaks"=seq(0,1.8, by=0.2))} else {lab="MT"
   all <- curdat[,c("targetContrast","B_mtKin","Y_mtKin","mt_finalColl","group")]
   mov_scale = list("lim"=c(0.5,2.5),"breaks"=seq(0.5,2.5, by=0.25))}# 
   
@@ -550,7 +553,7 @@ for(p in unique(dti_long$pair_obs)){
           scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
           xlab("decision")+ylab("Confidence level")+
           ggtitle(paste0("Confidence with no switch - disagreement trials n.",as.character(p))))
-  ggsave(file=sprintf(paste0("%siconf_noSwitch_disagree ",as.character(p),coll_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  # ggsave(file=sprintf(paste0("%siconf_noSwitch_disagree ",as.character(p),coll_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 }
 
 #switch
@@ -585,7 +588,7 @@ switch_sum$variable = as.factor(switch_sum$variable)
 levels(switch_sum$variable) = c("Conf. 2 - Conf. 1","inferred Conf. - Conf. 1")
 
 # scale for confidence delta
-delta_scale = list("lim"=c(-1.5,2.5),"breaks"=seq(-1.5,2.5, by=0.5))
+delta_scale = list("lim"=c(-2,2.5),"breaks"=seq(-2,2.5, by=0.5))
 # colors
 delta_colors = c("springgreen4", "springgreen")
 

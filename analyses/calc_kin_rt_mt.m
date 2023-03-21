@@ -181,12 +181,12 @@ for p = 1:length(SUBJECTS)%
         %%%
 
 
-        % Write the final rt in the excel file created during the
-        % acquisition
-        if p==2 && t==115 %participant moved before decision prompt
-            rt_final1 = NaN;
-            mt_final1 = NaN;
-        end
+%         % Write the final rt in the excel file created during the
+%         % acquisition
+%         if p==2 && t==115 %participant moved before decision prompt
+%             rt_final1 = NaN;
+%             mt_final1 = NaN;
+%         end
         ol           = length(txt_or);
         data{t,ol+1} = rt_final1;
         data{t,ol+2} = rt_final2;

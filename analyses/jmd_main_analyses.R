@@ -15,8 +15,8 @@ patel_mt   = FALSE # does diff in mt predict confidence?
 
 #Retrieve the directory of the current file and create the main directory path
 slash      = this.path()
-DataDir    = substr(slash,1,61)
-DataDirObs =  paste0(DataDir,"data_obs/")
+DataDir    = substr(slash,1,114)
+DataDirObs = paste0(DataDir,"data_obs/")
 #Save plots here
 PlotDir = paste0(DataDir,"plot/")
 
