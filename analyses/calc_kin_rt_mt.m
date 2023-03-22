@@ -3,10 +3,17 @@
 clear
 close all
 
+% Check the hard drive
+flag_hd = 1;
 
 %% Script to calculate the reaction time and movement time from kinematic data. Files from the pilot data acquired the 3-4 Nov 2022. Pairs from P100 to P103 - all the trials
 %path
-path_data = 'Y:\Datasets\JointMotorDecision\Static\Raw';
+if flag_hd
+    path_data = 'D:\JointMotorDecision\Static\Raw';
+else
+    path_data = 'Y:\Datasets\JointMotorDecision\Static\Raw';
+end
+
 path_kin  = fullfile(path_data,'..\Processed');
 %%
 path_temp = fullfile(pwd,'data\');
@@ -23,6 +30,8 @@ SUBJECT_LIST = cellfun(@(s) find(contains(s,'P1')),SUBJECTS,'uni',0);
 SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 
+% DON'T LOOK AT PAIR 102
+SUBJECTS = [SUBJECTS(1) SUBJECTS(2) SUBJECTS(4)];
 %%
 % The information we need to calculate is the reaction time and movement time. They are already in the
 % excel file and they depend on the agent that is performing the decision: they were calculated according to the buttons release(rt) and press(mt).
@@ -56,9 +65,9 @@ for p = 1:length(SUBJECTS)%
     %It loads the 'session' struct for each pair of participants
     path_kin_each  = fullfile(path_kin,[SUBJECTS{p},'.mat']);
 
-    if p==3%we need to replace the following excel file in the repo
-        path_data_each = 'C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecnologia\Desktop\pilotData_102.xlsx';
-    end
+%     if p==3%we need to replace the following excel file in the repo
+%         path_data_each = 'C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecnologia\Desktop\pilotData_102.xlsx';
+%     end
 
     tic
     load(path_kin_each);

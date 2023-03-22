@@ -4,8 +4,8 @@ wd = 4; ls =':';
 b_dashed = [0.1176 0.2353 0.7451];
 y_solid  = [0.8 0.4667 0.1333];
 y_dashed = [0.9412 0.7843 0.1569];
-hConf_col = [.1 .1 .1];
-lConf_col = [.4 .4 .4];
+hConf_col = [.6 0 0];
+lConf_col = [0 .6 .6];
 %plot 1 var
 if n_var==1
     %remove outliers
