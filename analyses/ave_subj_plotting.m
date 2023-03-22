@@ -5,22 +5,22 @@
 threshold  = 2500;
 %blue
 title_plot = ['INDEX - Velocity module of BLUE agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['b' SUBJECTS{p}(2:end) '_vm_index.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'B_vm_index.png'];
 ave_subj_plotting_fun(all_time_traj_index_b,1,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
 %yellow
 title_plot = ['INDEX - Velocity module of YELLOW agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['y' SUBJECTS{p}(2:end) '_vm_index.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_vm_index.png'];
 ave_subj_plotting_fun(all_time_traj_index_y,1,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
 
 %Module of acceleration(2nd column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker
 threshold  = 20000;
 %blue
 title_plot = ['INDEX - Acceleration module of BLUE agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['b' SUBJECTS{p}(2:end) '_am_index.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'B_am_index.png'];
 ave_subj_plotting_fun(all_time_traj_index_b,2,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
 %yellow
 title_plot = ['INDEX - Acceleration module of YELLOW agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['y' SUBJECTS{p}(2:end) '_am_index.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_am_index.png'];
 ave_subj_plotting_fun(all_time_traj_index_y,2,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
 
 
@@ -29,22 +29,22 @@ ave_subj_plotting_fun(all_time_traj_index_y,2,yConf,yell_Dec,title_plot,title_fi
 threshold = [-50 200];
 %blue
 title_plot = ['INDEX - Z coordinate of BLUE agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['b' SUBJECTS{p}(2:end) '_zcoord_index.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'B_zcoord_index.png'];
 ave_subj_plotting_fun(all_spa_traj_index_b,3,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
 %yellow
 title_plot = ['INDEX - Z coordinate of YELLOW agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['y' SUBJECTS{p}(2:end) '_zcoord_index.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_zcoord_index.png'];
 ave_subj_plotting_fun(all_spa_traj_index_y,3,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
 
 %Height coordinate (z) of blue/yellow agent for ulna marker
 %blue
 threshold = -20;
 title_plot = ['ULNA - Z coordinate of BLUE agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['b' SUBJECTS{p}(2:end) '_zcoord_ulna.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'B_zcoord_ulna.png'];
 ave_subj_plotting_fun(all_spa_traj_ulna_b,3,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
 %yellow
 title_plot = ['ULNA - Z coordinate of YELLOW agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['y' SUBJECTS{p}(2:end) '_zcoord_ulna.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_zcoord_ulna.png'];
 ave_subj_plotting_fun(all_spa_traj_ulna_y,3,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
 
 
@@ -52,20 +52,13 @@ ave_subj_plotting_fun(all_spa_traj_ulna_y,3,yConf,yell_Dec,title_plot,title_fig,
 threshold  = [-1050 -750 50 550];%[xleft xright ylow yhigh]
 %blue
 title_plot = ['INDEX - XY index trajectory of BLUE agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['b' SUBJECTS{p}(2:end) '_xy_index.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'B_xy_index.png'];
 ave_subj_plotting_fun(all_spa_traj_index_b,[],bConf,blue_Dec,title_plot,title_fig,path_temp,2,threshold)
 %yellow
 threshold  = [700 1100 50 500];
 title_plot = ['INDEX - XY index trajectory of YELLOW agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = ['y' SUBJECTS{p}(2:end) '_xy_index.png'];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_xy_index.png'];
 ave_subj_plotting_fun(all_spa_traj_index_y,[],yConf,yell_Dec,title_plot,title_fig,path_temp,2,threshold)
-
-
-
-
-
-
-
 
 
 
