@@ -36,18 +36,19 @@ elseif n_var==2 %only for xy plots
     ave_y_all = squeeze(matrix_3d(:,2,:));%here I want always the SECOND COLUMN because it represents y
 
     %remove outliers
-    [~,cx]=find(ave_x_all<threshold(1) | ave_x_all>threshold(2));
-    [~,cy]=find(ave_y_all<threshold(3) | ave_y_all>threshold(4));
-
-    matrix_3d(:,1,unique(cx)) = nan;
-    matrix_3d(:,2,unique(cy)) = nan;
-    ave_x_all(:,unique(cx)) = nan;
-    ave_y_all(:,unique(cy)) = nan;
+    [~,cx] = find(ave_x_all<threshold(1) | ave_x_all>threshold(2));
+    [~,cy] = find(ave_y_all<threshold(3) | ave_y_all>threshold(4));
+    c_out  = unique([unique(cx); unique(cy)]);
+    matrix_3d(:,1,c_out) = nan;
+    matrix_3d(:,2,c_out) = nan;
+    ave_x_all(:,c_out) = nan;
+    ave_y_all(:,c_out) = nan;
 
     yiz=figure();set(yiz, 'WindowStyle', 'Docked');
     plot(ave_x_all(:,ag_Conf==2),ave_y_all(:,ag_Conf==2),'color',hConf_col);hold on;
     plot(ave_x_all(:,ag_Conf==1),ave_y_all(:,ag_Conf==1),'color',lConf_col+.2);
     title(title_plot);
+    
     %high conf (left and right targets)
     plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==1),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==1),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
     plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==2),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==2),3,'omitnan'),'LineWidth',wd,'color',hConf_col);

@@ -84,13 +84,13 @@ for p = 1:length(SUBJECTS)%
     [~,txt_or,raw]    = xlsread(path_data_each);
     raw               = raw(2:end,:);%removed the header
     txt               = [txt_or {'rt_final1' 'rt_final2' 'rt_finalColl' 'mt_final1' 'mt_final2' 'mt_finalColl' ...
-                                 'ave_vel_index1' 'ave_acc_index1' 'ave_jrk_index1' 'ave_vel_ulna1' 'ave_acc_ulna1' 'ave_jrk_ulna1'...
+                                 'ave_vel_index1' 'ave_acc_index1' 'ave_jrk_index1' 'ave_vel_y_index1' 'ave_acc_y_index1' 'ave_jrk_y_index1' 'ave_vel_ulna1' 'ave_acc_ulna1' 'ave_jrk_ulna1' 'ave_vel_y_ulna1' 'ave_acc_y_ulna1' 'ave_jrk_y_ulna1'...
                                  'peak_z_index1' 'min_z_index1' 'ave_z_index1' 'area_z_index1' 'peak_z_ulna1' 'min_z_ulna1' 'ave_z_ulna1' 'area_z_ulna1'...
                                  'area_dev1' 'max_dev1' 'min_dev1' 'ave_dev1'...
-                                 'ave_vel_index2' 'ave_acc_index2' 'ave_jrk_index2' 'ave_vel_ulna2' 'ave_acc_ulna2' 'ave_jrk_ulna2'...
+                                 'ave_vel_index2' 'ave_acc_index2' 'ave_jrk_index2' 'ave_vel_y_index2' 'ave_acc_y_index2' 'ave_jrk_y_index2' 'ave_vel_ulna2' 'ave_acc_ulna2' 'ave_jrk_ulna2' 'ave_vel_y_ulna2' 'ave_acc_y_ulna2' 'ave_jrk_y_ulna2'...
                                  'peak_z_index2' 'min_z_index2' 'ave_z_index2' 'area_z_index2' 'peak_z_ulna2' 'min_z_ulna2' 'ave_z_ulna2' 'area_z_ulna2'...
                                  'area_dev2' 'max_dev2' 'min_dev2' 'ave_dev2'...
-                                 'ave_vel_indexColl' 'ave_acc_indexColl' 'ave_jrk_indexColl' 'ave_vel_ulnaColl' 'ave_acc_ulnaColl' 'ave_jrk_ulnaColl'...
+                                 'ave_vel_indexColl' 'ave_acc_indexColl' 'ave_jrk_indexColl' 'ave_vel_y_indexColl' 'ave_acc_y_indexColl' 'ave_jrk_y_indexColl' 'ave_vel_ulnaColl' 'ave_acc_ulnaColl' 'ave_jrk_ulnaColl' 'ave_vel_y_ulnaColl' 'ave_acc_y_ulnaColl' 'ave_jrk_y_ulnaColl'...
                                  'peak_z_indexColl' 'min_z_indexColl' 'ave_z_indexColl' 'area_z_indexColl' 'peak_z_ulnaColl' 'min_z_ulnaColl' 'ave_z_ulnaColl' 'area_z_ulnaColl'...
                                  'area_devColl' 'max_devColl' 'min_devColl' 'ave_devColl'}];
     data              = cell2table(raw);
@@ -142,7 +142,7 @@ for p = 1:length(SUBJECTS)%
         if not(isnan(startFrame1))
             [tindex1,tulna1,sindex1,sulna1,sdindex1,time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1]    = movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1);
         else
-            tindex1=[NaN NaN NaN]; tulna1=[NaN NaN NaN]; sindex1=[NaN NaN NaN NaN]; sulna1=[NaN NaN NaN NaN]; sdindex1=[NaN NaN NaN NaN]; time_traj_index1 = ones(100,3)*NaN; time_traj_ulna1 = ones(100,3)*NaN; spa_traj_index1 = ones(100,3)*NaN; spa_traj_ulna1 = ones(100,3)*NaN;
+            tindex1=[NaN NaN NaN NaN NaN NaN]; tulna1=[NaN NaN NaN NaN NaN NaN]; sindex1=[NaN NaN NaN NaN]; sulna1=[NaN NaN NaN NaN]; sdindex1=[NaN NaN NaN NaN]; time_traj_index1 = ones(100,6)*NaN; time_traj_ulna1 = ones(100,6)*NaN; spa_traj_index1 = ones(100,3)*NaN; spa_traj_ulna1 = ones(100,3)*NaN;
         end
         if at1stDec(t) == 1
             all_time_traj_index_b(:,:,t) = time_traj_index1;
@@ -163,7 +163,7 @@ for p = 1:length(SUBJECTS)%
         if not(isnan(startFrame2))
             [tindex2,tulna2,sindex2,sulna2,sdindex2,time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2]    = movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2);
         else
-            tindex2=[NaN NaN NaN]; tulna2=[NaN NaN NaN]; sindex2=[NaN NaN NaN NaN]; sulna2=[NaN NaN NaN NaN]; sdindex2=[NaN NaN NaN NaN];time_traj_index2 = ones(100,3)*NaN; time_traj_ulna2 = ones(100,3)*NaN; spa_traj_index2 = ones(100,3)*NaN; spa_traj_ulna2 = ones(100,3)*NaN;
+            tindex2=[NaN NaN NaN NaN NaN NaN]; tulna2=[NaN NaN NaN NaN NaN NaN]; sindex2=[NaN NaN NaN NaN]; sulna2=[NaN NaN NaN NaN]; sdindex2=[NaN NaN NaN NaN];time_traj_index2 = ones(100,6)*NaN; time_traj_ulna2 = ones(100,6)*NaN; spa_traj_index2 = ones(100,3)*NaN; spa_traj_ulna2 = ones(100,3)*NaN;
         end
         if at2ndDec(t) == 1
             all_time_traj_index_b(:,:,t) = time_traj_index2;
@@ -184,7 +184,7 @@ for p = 1:length(SUBJECTS)%
         if not(isnan(startFrameColl))
         [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl,time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl);
         else
-            tindexColl=[NaN NaN NaN]; tulnaColl=[NaN NaN NaN]; sindexColl=[NaN NaN NaN NaN]; sulnaColl=[NaN NaN NaN NaN]; sdindexColl=[NaN NaN NaN NaN];
+            tindexColl=[NaN NaN NaN NaN NaN NaN]; tulnaColl=[NaN NaN NaN NaN NaN NaN]; sindexColl=[NaN NaN NaN NaN]; sulnaColl=[NaN NaN NaN NaN]; sdindexColl=[NaN NaN NaN NaN]; time_traj_ulnaColl = ones(100,6)*NaN; spa_traj_indexColl = ones(100,3)*NaN; spa_traj_ulnaColl = ones(100,3)*NaN;
         end      
         caa = caa +3;
         %%%
@@ -204,23 +204,23 @@ for p = 1:length(SUBJECTS)%
         data{t,ol+5} = mt_final2;
         data{t,ol+6} = mt_finalColl;
         %kin agent 1
-        data{t,ol+7:ol+9}   = tindex1;
-        data{t,ol+10:ol+12} = tulna1;
-        data{t,ol+13:ol+16} = sindex1;
-        data{t,ol+17:ol+20} = sulna1;
-        data{t,ol+21:ol+24} = sdindex1;
+        data{t,ol+7:ol+12}  = tindex1;%it was going till 9
+        data{t,ol+13:ol+18} = tulna1;
+        data{t,ol+19:ol+22} = sindex1;
+        data{t,ol+23:ol+26} = sulna1;
+        data{t,ol+27:ol+30} = sdindex1;
         %kin agent 2
-        data{t,ol+25:ol+27} = tindex2;
-        data{t,ol+28:ol+30} = tulna2;
-        data{t,ol+31:ol+34} = sindex2;
-        data{t,ol+35:ol+38} = sulna2;
-        data{t,ol+39:ol+42} = sdindex2;
+        data{t,ol+31:ol+36} = tindex2;
+        data{t,ol+37:ol+42} = tulna2;
+        data{t,ol+43:ol+46} = sindex2;
+        data{t,ol+47:ol+50} = sulna2;
+        data{t,ol+51:ol+54} = sdindex2;
         %kin agent coll
-        data{t,ol+43:ol+45} = tindexColl;
-        data{t,ol+46:ol+48} = tulnaColl;
-        data{t,ol+49:ol+52} = sindexColl;
-        data{t,ol+53:ol+56} = sulnaColl;
-        data{t,ol+57:ol+60} = sdindexColl;
+        data{t,ol+55:ol+60} = tindexColl;
+        data{t,ol+61:ol+66} = tulnaColl;
+        data{t,ol+67:ol+70} = sindexColl;
+        data{t,ol+71:ol+74} = sulnaColl;
+        data{t,ol+75:ol+78} = sdindexColl;
         %title
         data.Properties.VariableNames = txt;
         if flag_pre
