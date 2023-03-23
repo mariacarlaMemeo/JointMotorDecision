@@ -18,6 +18,8 @@ if n_var==1
         end
     elseif length(threshold)==2
         [~,c]=find(ave_all<threshold(1) | ave_all>threshold(2));
+    elseif isempty(threshold)
+        c=[];
     end
     matrix_3d(:,clm,unique(c)) = nan;
     ave_all(:,unique(c)) = nan;
