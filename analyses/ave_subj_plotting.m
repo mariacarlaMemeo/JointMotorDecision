@@ -15,13 +15,24 @@ ave_subj_plotting_fun(all_time_traj_index_y,4,yConf,yell_Dec,title_plot,title_fi
 %Acceleration on y axis(5th column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker
 threshold  = [-30000 20000];
 %blue
-title_plot = ['INDEX - Acceleration on y axis of BLUE agent, pair' SUBJECTS{p}(2:end)];
+title_plot = ['INDEX - Acceleration y-axis of BLUE agent, pair' SUBJECTS{p}(2:end)];
 title_fig  = [SUBJECTS{p}(2:end) 'B_ay_index.png'];
 ave_subj_plotting_fun(all_time_traj_index_b,5,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
 %yellow
-title_plot = ['INDEX - Acceleration on y axis of YELLOW agent, pair' SUBJECTS{p}(2:end)];
+title_plot = ['INDEX - Acceleration y-axis of YELLOW agent, pair' SUBJECTS{p}(2:end)];
 title_fig  = [SUBJECTS{p}(2:end) 'Y_ay_index.png'];
 ave_subj_plotting_fun(all_time_traj_index_y,5,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
+
+%Jerk on y axis(6th column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker
+threshold  = [-5*10^5 7*10^5];
+%blue
+title_plot = ['INDEX - Jerk y-axis of BLUE agent, pair' SUBJECTS{p}(2:end)];
+title_fig  = [SUBJECTS{p}(2:end) 'B_jy_index.png'];
+ave_subj_plotting_fun(all_time_traj_index_b,6,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
+%yellow
+title_plot = ['INDEX - Jerk y-axis of YELLOW agent, pair' SUBJECTS{p}(2:end)];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_jy_index.png'];
+ave_subj_plotting_fun(all_time_traj_index_y,6,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
 
 
 

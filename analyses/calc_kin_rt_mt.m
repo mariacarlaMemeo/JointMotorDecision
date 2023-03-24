@@ -4,7 +4,7 @@ clear
 close all
 
 % Check the hard drive
-flag_hd = 1;
+flag_hd = 0;
 
 %% Script to calculate the reaction time and movement time from kinematic data. Files from the pilot data acquired the 3-4 Nov 2022. Pairs from P100 to P103 - all the trials
 %path
