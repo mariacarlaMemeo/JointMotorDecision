@@ -305,6 +305,9 @@ ggsave(file=paste0(PlotDir,"Accuracy_Agree+Switch.png"), dpi = 300, units=c("cm"
 
 ############## SWITCHING AS A FUNCTION OF CONFIDENCE DIFF ######################
 #################### (conf 1st and 2nd decision) ###############################
+#Check high/low confidence trial numerosity. Select high/low confidence trials for each agent and average the values
+perc_conf_lo  = 100*(dim(curdat[(curdat$B_conf==c(1) | curdat$B_conf==c(2) | curdat$B_conf==c(3))])[1]+dim(curdat[(curdat$Y_conf==c(1) | curdat$Y_conf==c(2) | curdat$Y_conf==c(3))])[1])/(2*dim(curdat)[1])
+perc_conf_hi = 100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1])
 
 #Select only agreement/disagreement trials
 at      = curdat[curdat$agree==1,]
