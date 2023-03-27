@@ -4,12 +4,15 @@ clear
 close all
 
 % Check the hard drive
-flag_hd = 0;
+flag_hd = 1;
+% Check 2nd decision only
+flag_2nd = 0;
 
 %% Script to calculate the reaction time and movement time from kinematic data. Files from the pilot data acquired the 3-4 Nov 2022. Pairs from P100 to P103 - all the trials
 %path
 if flag_hd
     path_data = 'D:\JointMotorDecision\Static\Raw';
+    %path_data = 'C:\Users\Laura\Desktop\Backups\jmd_local@IIT_01-2023\repo_JointMotorDecision\Static\Raw';
 else
     path_data = 'Y:\Datasets\JointMotorDecision\Static\Raw';
 end
@@ -223,11 +226,11 @@ for p = 1:length(SUBJECTS)%
         data{t,ol+75:ol+78} = sdindexColl;
         %title
         data.Properties.VariableNames = txt;
-        if flag_pre
-            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_withPre.xlsx']));
-        else
-            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin.xlsx']));
-        end
+%         if flag_pre
+%             writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_withPre.xlsx']));
+%         else
+%             writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin.xlsx']));
+%         end
     end
 
     % Plot the average and standard deviation of values of resampled time vectors of Vm,Am,Jm and filter spatial
@@ -237,6 +240,9 @@ for p = 1:length(SUBJECTS)%
     bConf=blue_Conf;yConf=yell_Conf;
     bConf(bConf<4)=1;bConf(bConf>=4)=2;
     yConf(yConf<4)=1;yConf(yConf>=4)=2;
+
+    %vector specifying the agent who took the 2nd decision (1=blue Agent, 2=yellow Agent)
+    SecondDec = at2ndDec;
     
     ave_subj_plotting;
     clear sMarkers session bConf yConf blue_Dec yell_Dec
