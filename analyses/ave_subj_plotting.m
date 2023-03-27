@@ -4,6 +4,42 @@
 %Velocity on y axis(4th column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker
 threshold  = [-1000 3500];
 %blue
+title_plot = ['ULNA - Velocity y-axis of BLUE agent, pair' SUBJECTS{p}(2:end)];
+title_fig  = [SUBJECTS{p}(2:end) 'B_vy_ULNA.png'];
+ave_subj_plotting_fun(all_time_traj_ulna_b,4,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
+%yellow
+title_plot = ['ULNA - Velocity y-axis of YELLOW agent, pair' SUBJECTS{p}(2:end)];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_vy_ULNA.png'];
+ave_subj_plotting_fun(all_time_traj_ulna_y,4,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
+
+%Acceleration on y axis(5th column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker
+threshold  = [-30000 20000];
+%blue
+title_plot = ['ULNA - Acceleration y-axis of BLUE agent, pair' SUBJECTS{p}(2:end)];
+title_fig  = [SUBJECTS{p}(2:end) 'B_ay_ULNA.png'];
+ave_subj_plotting_fun(all_time_traj_ulna_b,5,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
+%yellow
+title_plot = ['ULNA - Acceleration y-axis of YELLOW agent, pair' SUBJECTS{p}(2:end)];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_ay_ULNA.png'];
+ave_subj_plotting_fun(all_time_traj_ulna_y,5,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
+
+%Jerk on y axis(6th column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker
+threshold  = [-5*10^5 7*10^5];
+%blue
+title_plot = ['ULNA - Jerk y-axis of BLUE agent, pair' SUBJECTS{p}(2:end)];
+title_fig  = [SUBJECTS{p}(2:end) 'B_jy_ULNA.png'];
+ave_subj_plotting_fun(all_time_traj_ulna_b,6,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
+%yellow
+title_plot = ['ULNA - Jerk y-axis of YELLOW agent, pair' SUBJECTS{p}(2:end)];
+title_fig  = [SUBJECTS{p}(2:end) 'Y_jy_ULNA.png'];
+ave_subj_plotting_fun(all_time_traj_ulna_y,6,yConf,yell_Dec,title_plot,title_fig,path_temp,1,threshold)
+
+
+
+%%Temporal coordinates
+%Velocity on y axis(4th column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker
+threshold  = [-1000 3500];
+%blue
 title_plot = ['INDEX - Velocity y-axis of BLUE agent, pair' SUBJECTS{p}(2:end)];
 title_fig  = [SUBJECTS{p}(2:end) 'B_vy_index.png'];
 ave_subj_plotting_fun(all_time_traj_index_b,4,bConf,blue_Dec,title_plot,title_fig,path_temp,1,threshold)
