@@ -1,6 +1,6 @@
 %% Joint motor decision exp. Pilot data Nov 2022.
 % Calculate the reaction time and movement time from kinematic data - wrist and index velocity
-% 28.03.23
+% 28.03.2023
 clear
 close all
 

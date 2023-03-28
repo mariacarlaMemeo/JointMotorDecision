@@ -1,5 +1,5 @@
 %Script to plot kinematic variables trial-by-trial, per agent
-% 28.03.23 (@@ -1,5 +1,41 @@)
+% 28.03.2023 (@@ -1,5 +1,41 @@)
 
 %% Temporal coordinates
 %Velocity on y axis(4th column in the of matrix 'all_time_traj_index') blue/yellow agent for index marker

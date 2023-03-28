@@ -15,6 +15,7 @@ sum(lapply(pckgs, require, character.only = TRUE)==FALSE)#Check how many package
 schon_data = TRUE # if TRUE the data set doesn't contain the 102 pair (because 102 is not schön)
 patel_mt   = FALSE # does diff in mt predict confidence? (see Patel et al., 2012)
 
+# UPDATE PATH HERE, DEPENDING ON LOCAL COMPUTER
 # ***Note: the following should be adjusted so that the script works on different computers!***
 #Retrieve the directory of the current file and create the main directory path
 # slash = this.path()
