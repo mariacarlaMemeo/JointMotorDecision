@@ -17,15 +17,15 @@ patel_mt   = FALSE # does diff in mt predict confidence? (see Patel et al., 2012
 
 # ***Note: the following should be adjusted so that the script works on different computers!***
 #Retrieve the directory of the current file and create the main directory path
-slash = this.path()
-DataDir = substr(slash,1,114)
-DataDirObs = paste0(DataDir,"data_obs/") # path for observation data
-PlotDir = paste0(DataDir,"plot/") # path for saving plots
+# slash = this.path()
+# DataDir = substr(slash,1,114)
+# DataDirObs = paste0(DataDir,"data_obs/") # path for observation data
+# PlotDir = paste0(DataDir,"plot/") # path for saving plots
 
 # Define directories manually (just for now)
-# DataDir    = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/"
-# DataDirObs = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/data_obs/"
-# PlotDir    = "C:/Users/Laura/Sync/00_Research/UKE/JointMotorDecisions/04_Analysis/analyses_GitHub/plot/"
+DataDir    = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/"
+DataDirObs = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/data_obs/"
+PlotDir    = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/plot/"
 
 #Call needed functions 
 source(paste0(DataDir,'read_all_sheets.R'))
@@ -314,11 +314,19 @@ at      = curdat[curdat$agree==1,]
 dt      = curdat[curdat$agree==-1,]
 
 #Do some initial checks:
+#Check the percentage of (dis)agreement trials relative to all trials
+perc_dt   = round(100*(dim(dt)[1]/dim(curdat)[1])) #39%
+perc_at   = round(100*(dim(at)[1]/dim(curdat)[1])) #61%
 #Check if there is switching in case of agreement (1st = 2nd decision)
 at_switch = at[at$switch==1] #Should be empty (no switch if agreement)
-#Check the percentage of disagreement trials relative to all trials
-perc_dt   = round(100*(dim(dt)[1]/dim(curdat)[1]))
-hist(dt$targetContrast) # plot disagreement according to target contrast
+#Check percentage of switch/noswitch in case of disagreement
+dt_switch        = dt[dt$switch==1]
+dt_noswitch      = dt[dt$switch==-1]
+perc_dt_switch   = round(100*(dim(dt_switch)[1]/dim(dt)[1]))    #64%
+perc_dt_noswitch = round(100*(dim(dt_noswitch)[1]/dim(dt)[1]))  #36%
+# plot disagreement according to target contrast
+hist(dt$targetContrast) 
+
 
 #Include the collective confidence 
 coll = FALSE
@@ -489,7 +497,7 @@ names(exedat_yb)[names(exedat_yb)=="trial"] <- "trial_exe"
 names(exedat_yb)[names(exedat_yb)=="group"] <- "pair_exe"
 
 #Check if the order of agents is the same
-all(exedat_yb$asec==curdatObs$Pagent)
+all(exedat_yb$asec==curdatObs$Pagent) #THIS CHECK FAILS - because we didn't update the obs results file (curobs); it's wrong because of P101
 afirst        = as.factor(exedat$AgentTakingFirstDecision);levels(afirst) = c(1,2)
 exedat$afirst = as.numeric(afirst)
 all(exedat_yb$afirst==curdatObs$Oagent)
