@@ -48,8 +48,11 @@ if trial_plot
 end
 % As rt_final we choose the minimum value between index finger/ulna
 % reaction time
-startVector    = [indexTh(1),ulnaTh(1)]; % take the 10th value that has consecutively passed the threshold
+%WARNING - from meeting of 24th of March we decided to take only the ulna
+%threshold -> 'startVector    = [indexTh(1),ulnaTh(1)];' becomes %'startVector    = ulnaTh(1);'
+startVector    = ulnaTh(1); % take the 10th value that has consecutively passed the threshold
 [startFrame,ind_start] = min(startVector); % [min value, index of the minimum value]
+ind_start = 2;
 
 %select the startframe
 if p==3 && t==17

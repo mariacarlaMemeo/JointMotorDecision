@@ -19,39 +19,24 @@ i_ulna      = linspace(range_ulna(1),range_ulna(end));
 %average speed
 va_index = mean(index.Vm(range_index));% 
 va_ulna  = mean(ulna.Vm(range_ulna));% 
-%average acceleration (magnitude - xyz)
-aa_index = mean(index.Am(range_index));% 
-aa_ulna  = mean(ulna.Am(range_ulna));% 
-%average jerk
-ja_index = index.Jmean;
-ja_ulna  = ulna.Jmean;
 
-%average speed (y)
-vay_index = mean(index.Vxyzf(range_index,2));% 
-vay_ulna  = mean(ulna.Vxyzf(range_ulna,2));% 
-%average acceleration (y)
-aay_index = mean(index.Axyzf(range_index,2));
-aay_ulna  = mean(ulna.Axyzf(range_ulna,2));
-%average jerk(y)
-jay_index = mean(index.Jxyzf(range_index,2));
-jay_ulna  = mean(ulna.Jxyzf(range_ulna,2));
+%average acceleration
+aa_index = mean(index.A(range_index));
+aa_ulna  = mean(ulna.A(range_ulna));
+%average jerk
+ja_index = mean(index.J(range_index));
+ja_ulna  = mean(ulna.J(range_ulna));
 
 %group time variables 
-tindex = [va_index aa_index ja_index vay_index aay_index jay_index];
-tulna  = [va_ulna aa_ulna ja_ulna vay_ulna aay_ulna jay_ulna];
+tindex = [va_index aa_index ja_index];
+tulna  = [va_ulna aa_ulna ja_ulna];
 % group time variables - all the trajectory
 time_traj_index = [interp1(range_index,index.Vm(range_index),i_index)'...
-                    interp1(range_index,index.Am(range_index),i_index)'...
-                    interp1(range_index,index.Jm(range_index),i_index)'...
-                    interp1(range_index,index.Vxyzf(range_index,2),i_index)'...
-                    interp1(range_index,index.Axyzf(range_index,2),i_index)'...
-                    interp1(range_index,index.Jxyzf(range_index,2),i_index)'];
+                    interp1(range_index,index.A(range_index),i_index)'...
+                    interp1(range_index,index.J(range_index),i_index)'];
 time_traj_ulna  = [interp1(range_ulna,ulna.Vm(range_ulna),i_ulna)'...
-                    interp1(range_ulna,ulna.Am(range_ulna),i_ulna)'...
-                    interp1(range_ulna,ulna.Jm(range_ulna),i_ulna)'...
-                    interp1(range_ulna,ulna.Vxyzf(range_ulna,2),i_ulna)'...
-                    interp1(range_ulna,ulna.Axyzf(range_ulna,2),i_ulna)'...
-                    interp1(range_ulna,ulna.Jxyzf(range_ulna,2),i_ulna)'];
+                    interp1(range_ulna,ulna.A(range_ulna),i_ulna)'...
+                    interp1(range_ulna,ulna.J(range_ulna),i_ulna)'];
 
 %Calc kin vars - spatial variables
 %peak hight (z coord)

@@ -1,17 +1,26 @@
 %% Joint motor decision exp. Pilot data Nov 2022.
 % Calculate the reaction time and movement time from kinematic data - wrist and index velocity
+% 28.03.2023
 clear
 close all
 
 % Check the hard drive
 flag_hd = 0;
+% Check 2nd decision only
+flag_2nd = 1;
+% Display plots
+flag_plot = 0;
+
+%% Data format - normalization of each trajectory to 100 samples (for now). 
+bin = 100;
 
 %% Script to calculate the reaction time and movement time from kinematic data. Files from the pilot data acquired the 3-4 Nov 2022. Pairs from P100 to P103 - all the trials
 %path
 if flag_hd
-    path_data = 'D:\JointMotorDecision\Static\Raw';
+    path_data = 'F:\JointMotorDecision\Static\Raw';
+    %path_data = 'C:\Users\Laura\Desktop\Backups\jmd_local@IIT_01-2023\repo_JointMotorDecision\Static\Raw';
 else
-    path_data = 'Y:\Datasets\JointMotorDecision\Static\Raw';
+    path_data = 'X:\Datasets\JointMotorDecision\Static\Raw';
 end
 
 path_kin  = fullfile(path_data,'..\Processed');
@@ -31,7 +40,7 @@ SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 
 % DON'T LOOK AT PAIR 102
-SUBJECTS = [SUBJECTS(1) SUBJECTS(2) SUBJECTS(4)];
+SUBJECTS = [SUBJECTS(1) SUBJECTS(2) SUBJECTS(4)];%
 %%
 % The information we need to calculate is the reaction time and movement time. They are already in the
 % excel file and they depend on the agent that is performing the decision: they were calculated according to the buttons release(rt) and press(mt).
@@ -83,16 +92,23 @@ for p = 1:length(SUBJECTS)%
     % agent whose reaction time you need to use for the video.
     [~,txt_or,raw]    = xlsread(path_data_each);
     raw               = raw(2:end,:);%removed the header
-    txt               = [txt_or {'rt_final1' 'rt_final2' 'rt_finalColl' 'mt_final1' 'mt_final2' 'mt_finalColl' ...
-                                 'ave_vel_index1' 'ave_acc_index1' 'ave_jrk_index1' 'ave_vel_y_index1' 'ave_acc_y_index1' 'ave_jrk_y_index1' 'ave_vel_ulna1' 'ave_acc_ulna1' 'ave_jrk_ulna1' 'ave_vel_y_ulna1' 'ave_acc_y_ulna1' 'ave_jrk_y_ulna1'...
-                                 'peak_z_index1' 'min_z_index1' 'ave_z_index1' 'area_z_index1' 'peak_z_ulna1' 'min_z_ulna1' 'ave_z_ulna1' 'area_z_ulna1'...
-                                 'area_dev1' 'max_dev1' 'min_dev1' 'ave_dev1'...
-                                 'ave_vel_index2' 'ave_acc_index2' 'ave_jrk_index2' 'ave_vel_y_index2' 'ave_acc_y_index2' 'ave_jrk_y_index2' 'ave_vel_ulna2' 'ave_acc_ulna2' 'ave_jrk_ulna2' 'ave_vel_y_ulna2' 'ave_acc_y_ulna2' 'ave_jrk_y_ulna2'...
-                                 'peak_z_index2' 'min_z_index2' 'ave_z_index2' 'area_z_index2' 'peak_z_ulna2' 'min_z_ulna2' 'ave_z_ulna2' 'area_z_ulna2'...
-                                 'area_dev2' 'max_dev2' 'min_dev2' 'ave_dev2'...
-                                 'ave_vel_indexColl' 'ave_acc_indexColl' 'ave_jrk_indexColl' 'ave_vel_y_indexColl' 'ave_acc_y_indexColl' 'ave_jrk_y_indexColl' 'ave_vel_ulnaColl' 'ave_acc_ulnaColl' 'ave_jrk_ulnaColl' 'ave_vel_y_ulnaColl' 'ave_acc_y_ulnaColl' 'ave_jrk_y_ulnaColl'...
-                                 'peak_z_indexColl' 'min_z_indexColl' 'ave_z_indexColl' 'area_z_indexColl' 'peak_z_ulnaColl' 'min_z_ulnaColl' 'ave_z_ulnaColl' 'area_z_ulnaColl'...
-                                 'area_devColl' 'max_devColl' 'min_devColl' 'ave_devColl'}];
+    txt               = [txt_or {'rt_final1' 'rt_final2' 'rt_finalColl' 'mt_final1' 'mt_final2' 'mt_finalColl'} ...
+                         cellstr(strcat('vel_ind2_',string(1:bin))), cellstr(strcat('acc_ind2_',string(1:bin))),...
+                         cellstr(strcat('jrk_ind2_',string(1:bin))), cellstr(strcat('z_uln2_',string(1:bin)))];
+
+
+    % Previous variables 
+%     txt               = [txt_or {'rt_final1' 'rt_final2' 'rt_finalColl' 'mt_final1' 'mt_final2' 'mt_finalColl' ...
+%                                  'ave_vel_index1' 'ave_acc_index1' 'ave_jrk_index1' 'ave_vel_y_index1' 'ave_acc_y_index1' 'ave_jrk_y_index1' 'ave_vel_ulna1' 'ave_acc_ulna1' 'ave_jrk_ulna1' 'ave_vel_y_ulna1' 'ave_acc_y_ulna1' 'ave_jrk_y_ulna1'...
+%                                  'peak_z_index1' 'min_z_index1' 'ave_z_index1' 'area_z_index1' 'peak_z_ulna1' 'min_z_ulna1' 'ave_z_ulna1' 'area_z_ulna1'...
+%                                  'area_dev1' 'max_dev1' 'min_dev1' 'ave_dev1'...
+%                                  'ave_vel_index2' 'ave_acc_index2' 'ave_jrk_index2' 'ave_vel_y_index2' 'ave_acc_y_index2' 'ave_jrk_y_index2' 'ave_vel_ulna2' 'ave_acc_ulna2' 'ave_jrk_ulna2' 'ave_vel_y_ulna2' 'ave_acc_y_ulna2' 'ave_jrk_y_ulna2'...
+%                                  'peak_z_index2' 'min_z_index2' 'ave_z_index2' 'area_z_index2' 'peak_z_ulna2' 'min_z_ulna2' 'ave_z_ulna2' 'area_z_ulna2'...
+%                                  'area_dev2' 'max_dev2' 'min_dev2' 'ave_dev2'...
+%                                  'ave_vel_indexColl' 'ave_acc_indexColl' 'ave_jrk_indexColl' 'ave_vel_y_indexColl' 'ave_acc_y_indexColl' 'ave_jrk_y_indexColl' 'ave_vel_ulnaColl' 'ave_acc_ulnaColl' 'ave_jrk_ulnaColl' 'ave_vel_y_ulnaColl' 'ave_acc_y_ulnaColl' 'ave_jrk_y_ulnaColl'...
+%                                  'peak_z_indexColl' 'min_z_indexColl' 'ave_z_indexColl' 'area_z_indexColl' 'peak_z_ulnaColl' 'min_z_ulnaColl' 'ave_z_ulnaColl' 'area_z_ulnaColl'...
+%                                  'area_devColl' 'max_devColl' 'min_devColl' 'ave_devColl'}];
+
     data              = cell2table(raw);
     data.rt_final1    = zeros(length(raw),1);
     data.rt_final2    = zeros(length(raw),1);
@@ -142,7 +158,7 @@ for p = 1:length(SUBJECTS)%
         if not(isnan(startFrame1))
             [tindex1,tulna1,sindex1,sulna1,sdindex1,time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1]    = movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1);
         else
-            tindex1=[NaN NaN NaN NaN NaN NaN]; tulna1=[NaN NaN NaN NaN NaN NaN]; sindex1=[NaN NaN NaN NaN]; sulna1=[NaN NaN NaN NaN]; sdindex1=[NaN NaN NaN NaN]; time_traj_index1 = ones(100,6)*NaN; time_traj_ulna1 = ones(100,6)*NaN; spa_traj_index1 = ones(100,3)*NaN; spa_traj_ulna1 = ones(100,3)*NaN;
+            tindex1=[NaN NaN NaN]; tulna1=[NaN NaN NaN]; sindex1=[NaN NaN NaN NaN]; sulna1=[NaN NaN NaN NaN]; sdindex1=[NaN NaN NaN NaN]; time_traj_index1 = ones(100,3)*NaN; time_traj_ulna1 = ones(100,3)*NaN; spa_traj_index1 = ones(100,3)*NaN; spa_traj_ulna1 = ones(100,3)*NaN;
         end
         if at1stDec(t) == 1
             all_time_traj_index_b(:,:,t) = time_traj_index1;
@@ -163,7 +179,7 @@ for p = 1:length(SUBJECTS)%
         if not(isnan(startFrame2))
             [tindex2,tulna2,sindex2,sulna2,sdindex2,time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2]    = movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2);
         else
-            tindex2=[NaN NaN NaN NaN NaN NaN]; tulna2=[NaN NaN NaN NaN NaN NaN]; sindex2=[NaN NaN NaN NaN]; sulna2=[NaN NaN NaN NaN]; sdindex2=[NaN NaN NaN NaN];time_traj_index2 = ones(100,6)*NaN; time_traj_ulna2 = ones(100,6)*NaN; spa_traj_index2 = ones(100,3)*NaN; spa_traj_ulna2 = ones(100,3)*NaN;
+            tindex2=[NaN NaN NaN]; tulna2=[NaN NaN NaN]; sindex2=[NaN NaN NaN NaN]; sulna2=[NaN NaN NaN NaN]; sdindex2=[NaN NaN NaN NaN];time_traj_index2 = ones(100,3)*NaN; time_traj_ulna2 = ones(100,3)*NaN; spa_traj_index2 = ones(100,3)*NaN; spa_traj_ulna2 = ones(100,3)*NaN;
         end
         if at2ndDec(t) == 1
             all_time_traj_index_b(:,:,t) = time_traj_index2;
@@ -184,7 +200,7 @@ for p = 1:length(SUBJECTS)%
         if not(isnan(startFrameColl))
         [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl,time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl);
         else
-            tindexColl=[NaN NaN NaN NaN NaN NaN]; tulnaColl=[NaN NaN NaN NaN NaN NaN]; sindexColl=[NaN NaN NaN NaN]; sulnaColl=[NaN NaN NaN NaN]; sdindexColl=[NaN NaN NaN NaN]; time_traj_ulnaColl = ones(100,6)*NaN; spa_traj_indexColl = ones(100,3)*NaN; spa_traj_ulnaColl = ones(100,3)*NaN;
+            tindexColl=[NaN NaN NaN]; tulnaColl=[NaN NaN NaN]; sindexColl=[NaN NaN NaN NaN]; sulnaColl=[NaN NaN NaN NaN]; sdindexColl=[NaN NaN NaN NaN]; time_traj_indexColl = ones(100,3)*NaN; time_traj_ulnaColl = ones(100,3)*NaN; spa_traj_indexColl = ones(100,3)*NaN; spa_traj_ulnaColl = ones(100,3)*NaN;
         end      
         caa = caa +3;
         %%%
@@ -203,30 +219,37 @@ for p = 1:length(SUBJECTS)%
         data{t,ol+4} = mt_final1;
         data{t,ol+5} = mt_final2;
         data{t,ol+6} = mt_finalColl;
-        %kin agent 1
-        data{t,ol+7:ol+12}  = tindex1;%it was going till 9
-        data{t,ol+13:ol+18} = tulna1;
-        data{t,ol+19:ol+22} = sindex1;
-        data{t,ol+23:ol+26} = sulna1;
-        data{t,ol+27:ol+30} = sdindex1;
-        %kin agent 2
-        data{t,ol+31:ol+36} = tindex2;
-        data{t,ol+37:ol+42} = tulna2;
-        data{t,ol+43:ol+46} = sindex2;
-        data{t,ol+47:ol+50} = sulna2;
-        data{t,ol+51:ol+54} = sdindex2;
-        %kin agent coll
-        data{t,ol+55:ol+60} = tindexColl;
-        data{t,ol+61:ol+66} = tulnaColl;
-        data{t,ol+67:ol+70} = sindexColl;
-        data{t,ol+71:ol+74} = sulnaColl;
-        data{t,ol+75:ol+78} = sdindexColl;
+        % Kin data of the normalized 100 samples
+        data{t,ol+7:ol+106}   = time_traj_index2(:,1)';%velocity index
+        data{t,ol+107:ol+206} = time_traj_index2(:,2)';%acceleration index
+        data{t,ol+207:ol+306} = time_traj_index2(:,3)';%jerk index
+        data{t,ol+307:ol+406} = spa_traj_ulna2(:,3)';%z coordinate ulna
+
+%         %kin agent 1
+%         data{t,ol+7:ol+9}   = tindex1;
+%         data{t,ol+10:ol+12} = tulna1;
+%         data{t,ol+13:ol+16} = sindex1;
+%         data{t,ol+17:ol+20} = sulna1;
+%         data{t,ol+21:ol+24} = sdindex1;
+%         %kin agent 2
+%         data{t,ol+25:ol+27} = tindex2;
+%         data{t,ol+28:ol+30} = tulna2;
+%         data{t,ol+31:ol+34} = sindex2;
+%         data{t,ol+35:ol+38} = sulna2;
+%         data{t,ol+39:ol+42} = sdindex2;
+%         %kin agent coll
+%         data{t,ol+43:ol+45} = tindexColl;
+%         data{t,ol+46:ol+48} = tulnaColl;
+%         data{t,ol+49:ol+52} = sindexColl;
+%         data{t,ol+53:ol+56} = sulnaColl;
+%         data{t,ol+57:ol+60} = sdindexColl;
+        
         %title
         data.Properties.VariableNames = txt;
         if flag_pre
-            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_withPre.xlsx']));
+            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model_withPre.xlsx']));
         else
-            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin.xlsx']));
+            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
         end
     end
 
@@ -237,8 +260,37 @@ for p = 1:length(SUBJECTS)%
     bConf=blue_Conf;yConf=yell_Conf;
     bConf(bConf<4)=1;bConf(bConf>=4)=2;
     yConf(yConf<4)=1;yConf(yConf>=4)=2;
+
+    %vector specifying the agent who took the 2nd decision (1=blue Agent, 2=yellow Agent)
+    SecondDec = at2ndDec;
+
+    % Remove one ugly trajectory from Yellow agent pair 101. Take the
+    % max of velocity.
+    if strcmp(SUBJECTS{p}(2:end),'101')%yellow participant /vel and acceleration
+        fdec2     = find(at2ndDec==2);
+        [my_vel_dec2,ind_vel_dec2] = max(max(all_time_traj_index_y(:,1,fdec2)));
+        all_time_traj_index_y(:,:,fdec2(ind_vel_dec2)) = nan;
+
+        [my_acc_dec2,ind_acc_dec2] = max(max(all_time_traj_index_y(:,2,fdec2)));
+        all_time_traj_index_y(:,:,fdec2(ind_acc_dec2)) = nan;
     
-    ave_subj_plotting;
+        [my_z_dec2,ind_z_dec2] = min(min(all_spa_traj_index_y(:,3,fdec2)));
+        all_spa_traj_index_y(:,:,fdec2(ind_z_dec2)) = nan;
+
+    elseif strcmp(SUBJECTS{p}(2:end),'100')%blue participant /acceleration
+        fdec2     = find(at2ndDec==1);
+      
+        [mb_acc_dec2,ind_acc_dec2] = max(max(all_time_traj_index_b(:,2,fdec2)));
+        all_time_traj_index_b(:,:,fdec2(ind_acc_dec2)) = nan;
+
+        [mb_z_dec2,ind_z_dec2] = min(min(all_spa_traj_index_b(:,3,fdec2)));
+        all_spa_traj_index_b(:,:,fdec2(ind_z_dec2)) = nan;
+    end
+    
+    % display exploratory plots
+    if flag_plot
+        ave_subj_plotting;
+    end
     clear sMarkers session bConf yConf blue_Dec yell_Dec
  
 end
