@@ -7,9 +7,9 @@ close all
 % Check the hard drive
 flag_hd = 0;
 % Check 2nd decision only
-flag_2nd = 1;
+flag_2nd = 0;
 % Display plots
-flag_plot = 0;
+flag_plot = 1;
 
 %% Data format - normalization of each trajectory to 100 samples (for now). 
 bin = 100;
@@ -246,11 +246,11 @@ for p = 1:length(SUBJECTS)%
         
         %title
         data.Properties.VariableNames = txt;
-        if flag_pre
-            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model_withPre.xlsx']));
-        else
-            writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
-        end
+%         if flag_pre
+%             writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model_withPre.xlsx']));
+%         else
+%             writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
+%         end
     end
 
     % Plot the average and standard deviation of values of resampled time vectors of Vm,Am,Jm and filter spatial

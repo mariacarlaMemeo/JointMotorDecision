@@ -25,7 +25,7 @@ pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Flags
-local_user = 2;    # set current user (1=MC, 2=LA)
+local_user = 1;    # set current user (1=MC, 2=LA)
 schon_data = TRUE  # if TRUE: EXCLUDE pair 102 (because 102 is not schön)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (see Patel et al., 2012)
 
