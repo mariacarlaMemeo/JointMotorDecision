@@ -43,7 +43,7 @@ if (local_user == 1) {
   PlotDir    = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/plot/"
 }
 
-# Call needed functions 
+# Call needed functions/scripts 
 source(paste0(DataDir,'read_all_sheets.R'))
 source(paste0(DataDir,'summarySE.R'))
 source(paste0(DataDir,'theme_custom.R'))
@@ -174,6 +174,12 @@ if (nrow(at_switch) == 0) {
 } else {
   print("WHAAAT? Switches even if agreement?")
 }
+
+
+# Comparisons between more vs. less sensitive dyad members
+# --------------------------------------------------------
+source(paste0(DataDir,'goodVSbadGuys.R')) # call separate script
+
 
 # Configure plot parameters
 # -------------------------
