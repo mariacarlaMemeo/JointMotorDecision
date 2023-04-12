@@ -121,7 +121,9 @@ for p=ptc
     y       = [data.result.a1.fs' data.result.a2.fs' data.result.coll.fs'...
                 data.result.collA1.fs' data.result.collA2.fs'];
     plotSym = {'s' 'o' '*' '+' '+'};
-    color   = [[30 60 190]' [240 200 40]' [17 105 40]' [30 60 190]' [240 200 40]']./255;%blue yellow, gree, blue yellow
+    color   = [[30 60 190]; [240 200 40]; [17 105 40];...
+                [30 60 190]; [240 200 40]; [51 51 51];...
+                [80 200 120]; [0 165 114]; [1 121 111]]./255;%blue, yellow, dark green, blue, yellow,gray, emerald green, persian green, pine green
     
     h3=figure(3);set(h3, 'WindowStyle', 'Docked');
     % slope: [a1(blue), a2(yellow), sdyady(coll), sdyadA1(coll blue), sdyadA2(colle yellow)]
@@ -159,9 +161,23 @@ for p=ptc
     slope_wcoll(pr,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full);
     slope_wcoll(pr,:) = slope_wcoll(pr,:)/smax;
     
-    plot(slope_wcoll(pr,:),['-' plotSym{3}],'Color',color(:,3)); title(['Coll benefit - ','P' num2str(ptc(pr)) ' wnd'])
-
+    plot(slope_wcoll(pr,:),['-' plotSym{3}],'Color',color(3,:)); title(['Coll benefit - ','P' num2str(ptc(pr)) ' wnd'])
 end
+
+% Average across pairs
+h4=figure();set(h4, 'WindowStyle', 'Docked');
+errorbar(1:default.w_lgt/default.step,mean(slope_wcoll),-std(slope_wcoll)/sqrt(length((slope_wcoll))),+std(slope_wcoll)/sqrt(length((slope_wcoll))),'Color', color(3,:),'LineWidth',1);hold on;
+line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
+axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);title('Average values across pairs - coll. benefit');
+
+% coll ben for each pair
+h5=figure();set(h5, 'WindowStyle', 'Docked');
+colororder(color(end-2:end,:));
+plot(slope_wcoll',['-' plotSym{3}],'LineWidth',1); 
+line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
+axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);legend({'P100','P101','P103','1'},'Location','best'); hold on;
+title('Coll. benefit - each pair');
+
 
 
 %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
