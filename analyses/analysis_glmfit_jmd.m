@@ -170,92 +170,14 @@ errorbar(1:default.w_lgt/default.step,mean(slope_wcoll),-std(slope_wcoll)/sqrt(l
 line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
 axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);title('Average values across pairs - coll. benefit');
 
-% coll ben for each pair
+% 
 h5=figure();set(h5, 'WindowStyle', 'Docked');
 colororder(color(end-2:end,:));
-plot(slope_wcoll',['-' plotSym{3}],'LineWidth',1); 
-line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
-axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);legend({'P100','P101','P103','1'},'Location','best'); hold on;
+plot(slope_wcoll',['-' plotSym{3}]); hold on;
+line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:),'LineWidth',1); hold off
+axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);legend({'P100','P101','P103','1'},'location','best'); 
 title('Coll. benefit - each pair');
 
-
-
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     % plot A1 in blue
-%     plotSym = 's';
-%     y = data.result.a1.fs';
-%     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
-%     data.result.a1.mean = -bhat(1)/bhat(2);
-%     data.result.a1.sd   = 1/bhat(2);
-%     plot(conSteps, y, plotSym,'Color',[30/255 60/255 190/255]);%blue
-%     hold on;
-%     C_a1 = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
-%     ps_a1 = cdf('norm',C_a1,data.result.a1.mean,data.result.a1.sd);
-%     plot(C_a1,ps_a1,'-','LineWidth',2,'Color',[30/255 60/255 190/255]);
-%     slope_a1 = max(diff(ps_a1)./diff(C_a1));
-%     clear bhat;
-%     hold on;
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     % plot A2 in yellow
-%     plotSym = 'o';
-%     y = data.result.a2.fs';
-%     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
-%     data.result.a2.mean = -bhat(1)/bhat(2);
-%     data.result.a2.sd   = 1/bhat(2);
-%     plot(conSteps, y, plotSym,'Color',[240/255 200/255 40/255]);%yellow
-%     hold on;
-%     C_a2 = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
-%     ps_a2 = cdf('norm',C_a2,data.result.a2.mean,data.result.a2.sd);
-%     plot(C_a2,ps_a2,'-','LineWidth',2,'Color',[240/255 200/255 40/255])
-%     slope_a2 = max(diff(ps_a2)./diff(C_a2));
-%     clear bhat;
-%     hold on;
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     % plot Collective in green
-%     plotSym = '*';
-%     y = data.result.coll.fs';
-%     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
-%     data.result.coll.mean = -bhat(1)/bhat(2);
-%     data.result.coll.sd   = 1/bhat(2);
-%     plot(conSteps, y, plotSym,'Color',[17/255 105/255 40/255]);%green
-%     hold on;
-%     C_coll = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
-%     ps_coll = cdf('norm',C_coll,data.result.coll.mean,data.result.coll.sd);
-%     plot(C_coll,ps_coll,'-','LineWidth',2,'Color',[17/255 105/255 40/255])
-%     sdyad = max(diff(ps_coll)./diff(C_coll));
-%     clear bhat;
-%     hold on;
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     % plot Collective A1 in blue
-%     plotSym = '+';
-%     y = data.result.collA1.fs';
-%     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
-%     data.result.collA1.mean = -bhat(1)/bhat(2);
-%     data.result.collA1.sd   = 1/bhat(2);
-%     plot(conSteps, y, plotSym,'Color',[30/255 60/255 190/255]);%blue
-%     hold on;
-%     C_collA1 = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
-%     ps_collA1 = cdf('norm',C_collA1,data.result.collA1.mean,data.result.collA1.sd);
-%     plot(C_collA1,ps_collA1,'Color',[30/255 60/255 190/255],'LineWidth',2, 'LineStyle', '--')
-%     sdyadA1 = max(diff(ps_collA1)./diff(C_collA1));
-%     clear bhat;
-%     hold on;
-%     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%     % plot Collective A2 in yellow
-%     plotSym = '+';
-%     y = data.result.collA2.fs'; % 8 values (per contrast): P(2nd interval)
-%     bhat = glmfit(conSteps,[y ones(size(y))],'binomial','link','probit');
-%     data.result.collA2.mean = -bhat(1)/bhat(2); %bias
-%     data.result.collA2.sd   = 1/bhat(2); %variance
-%     plot(conSteps, y, plotSym,'Color',[240/255 200/255 40/255]);%yellow
-%     hold on;
-%     C_collA2 = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
-%     % ps = psychometric curve: x-axis steps, bias, variance
-%     ps_collA2 = cdf('norm',C_collA2,data.result.collA2.mean,data.result.collA2.sd);
-%     plot(C_collA2,ps_collA2,'Color',[240/255 200/255 40/255],'LineWidth',2, 'LineStyle', '--')
-%     sdyadA2 = max(diff(ps_collA2)./diff(C_collA2)); % compute slope / rate of change
-%     clear bhat;
-%     hold on;
 
 
    
