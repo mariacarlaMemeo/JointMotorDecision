@@ -1,4 +1,4 @@
-function slope_pair=plot_psy(conSteps,y,plotSym,color,default,full)
+function slope_pair=plot_psy(conSteps,y,plotSym,color,default,full,coll_calc)
 if full
     %collect the slopes: [blue, yellow, coll, coll blue, colle yellow]
     slope_pair = zeros(1,width(y));
@@ -10,8 +10,12 @@ if full
         hold on;
         C = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
         ps = cdf('norm',C,d_mean,d_sd);
-        plot(C,ps,'-','LineWidth',2,'Color',color(plt,:));
-        slope_pair(:,plt) = max(diff(ps)./diff(C));
+        if plt<=3
+            plot(C,ps,'-','LineWidth',2,'Color',color(plt,:));
+        else
+            plot(C,ps,'--','LineWidth',2,'Color',color(plt,:));
+        end
+        slope_pair(:,plt) = eval([coll_calc '(diff(ps)./diff(C))']);%%EDIT mean instead of max
         clear bhat d_mean d_sd C ps
         hold on;
     end
@@ -30,7 +34,7 @@ else
         C = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
         ps = cdf('norm',C,d_mean,d_sd);
         %         plot(C,ps,'-','LineWidth',2,'Color',color(:,3));
-        slope_pair(:,cnt) = max(diff(ps)./diff(C));
+        slope_pair(:,cnt) = eval([coll_calc '(diff(ps)./diff(C))']); %%EDIT mean instead of max
         clear bhat d_mean d_sd C ps
         cnt = cnt + 1;
     end

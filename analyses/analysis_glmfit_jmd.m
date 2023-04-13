@@ -1,14 +1,20 @@
-% analysis of perceptual sensitivity for oddball detection task
+% JMD - Analysis of perceptual sensitivity for oddball detection task
 close all;
 clear;
-% load('C:\Users\Laura\Sync\00_Research\2022_UKE\Confidence from motion\04_Analysis\pilotData\gID103_run1_jomode.mat');
-% load('Y:\Datasets\JointMotorDecision\Static\Raw\P100\task\gID100_run1_jomode.mat');
 
-%Prepare variables
+% Prepare variables
 ptc       = [100,101,103];
 slope     = zeros(length(ptc),5); 
 coll_ben  = zeros(length(ptc),3);%3=collective benefit; 1=coll A1(blue); 2=coll A2(yellow)
-%windowing
+% Calculate collective benefit with 'max' or 'mean' function 
+fcalc     = input('Choose the function to calculate collective benefit:\n 1 = max\n 2 = mean\n');
+if fcalc==1
+    coll_calc = 'max';
+elseif fcalc==2
+    coll_calc = 'mean';
+end
+
+% Windowing (length: default.w_lgt)
 default.step      = 4;
 default.w_lgt     = 80;
 default.w         = zeros(default.w_lgt/default.step,default.w_lgt);
@@ -125,11 +131,11 @@ for p=ptc
                 [30 60 190]; [240 200 40]; [51 51 51];...
                 [80 200 120]; [0 165 114]; [1 121 111]]./255;%blue, yellow, dark green, blue, yellow,gray, emerald green, persian green, pine green
     
-    h3=figure(3);set(h3, 'WindowStyle', 'Docked');
+    cb=figure('Name',['CB_P' num2str(ptc(pr)) '_wnd']);set(cb, 'WindowStyle', 'Docked');
     % slope: [a1(blue), a2(yellow), sdyady(coll), sdyadA1(coll blue), sdyadA2(colle yellow)]
     % Each row is a pair
     full=1;
-    slope(pr,:) = plot_psy(conSteps,y,plotSym,color,default,full);
+    slope(pr,:) = plot_psy(conSteps,y,plotSym,color,default,full,coll_calc);
 
     %%%%%Collective benefit
     smax  = max(slope(pr,1:2));
@@ -158,7 +164,7 @@ for p=ptc
     % Each row is a pair - here the y is different!!!
     full=0;
     coll_prtc = [coll_fs_v C2_C1_v];
-    slope_wcoll(pr,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full);
+    slope_wcoll(pr,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full,coll_calc);
     slope_wcoll(pr,:) = slope_wcoll(pr,:)/smax;
     
     plot(slope_wcoll(pr,:),['-' plotSym{3}],'Color',color(3,:)); title(['Coll benefit - ','P' num2str(ptc(pr)) ' wnd'])
