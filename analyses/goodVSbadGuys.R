@@ -1,11 +1,18 @@
-# Comparisons between less and more sensitive dyad member
-# Import sensitivities from Matlab:
+# Comparisons between less vs. more sensitive dyad member
+# -------------------------------------------------------
+# The following analyses are based on Figure 2 A-C in:
+# Mahmoodi et al. (2015). Equality bias impairs collective decision-making across cultures.
+# (less sensitive = "min"; more sensitive = "max")
+
+# Step 1:
+# Manually import sensitivities from Matlab:
 # P100: B=2.57, Y=4.85; P101: B=1.89, Y=2.97; P103: B=7.58, Y=3.8
 
-# Note: The following should be improved by creating a loop!!!
-# Also: Add nice plots!!!
+# To do: creating a loop, add nice plots!
 
-# Confidence
+
+# A. Confidence
+# Compare average confidence of less vs. more confident members
 p100_max     = mean(curdat$Y_conf[curdat$group==100], na.rm = TRUE)
 p100_min     = mean(curdat$B_conf[curdat$group==100], na.rm = TRUE)
 p101_max     = mean(curdat$Y_conf[curdat$group==101], na.rm = TRUE)
@@ -20,20 +27,8 @@ if (meanMax_Conf > meanMin_Conf) {
   sprintf("The bad guys are overconfident: %.2f %s %.2f", meanMax_Conf, " vs. ", meanMin_Conf)
 }
 
-# check which trials are high vs. low confidence (high means < than the mean)
-# CONTINUE WORKING ON THIS; it's wrong in the current form...
-p100_max_HiConf_ind       = which(curdat$Y_conf[curdat$group==100]>=p100_max)
-p100_max_LoConf_ind       = which(curdat$Y_conf[curdat$group==100]<p100_max)
-p100_max_Conf_correct     = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==1]
-p100_max_Conf_incorrect   = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==0]
-# the following is wrong -----
-p100_max_HiConf_correct   = p100_max_Conf_correct[c(p100_max_HiConf_ind),]
-p100_max_LoConf_correct   = p100_max_Conf_correct[p100_max_LoConf_ind]
-p100_max_HiConf_incorrect = p100_max_Conf_incorrect[p100_max_HiConf_ind]
-p100_max_LoConf_incorrect = p100_max_Conf_incorrect[p100_max_LoConf_ind]
-# ------------------------------
-
-# Switch (only check disagreement trials)
+# B. Switch (only check disagreement trials)
+# Check whether less or more sensitive members are more likely to "confirm the other" (= switch)
 p100_max_switch_col = curdat$switch[curdat$group==100 & curdat$AgentTakingFirstDecision=="Y" & curdat$agree==-1]
 p100_max_switch_per = round(length(which(1 == p100_max_switch_col))/length(p100_max_switch_col),2)
 p100_min_switch_col = curdat$switch[curdat$group==100 & curdat$AgentTakingFirstDecision=="B" & curdat$agree==-1]
@@ -53,3 +48,46 @@ if (meanMax_Switch < meanMin_Switch) {
 } else {
   sprintf("The bad guys don't show switchin' respect: %.2f %s %.2f", meanMax_Switch, " vs. ", meanMin_Switch)
 }
+
+
+# C. Probability of high confidence
+# Compare percentage of high confidence for accurate/inaccurate decisions
+# Note: high confidence means > than the individual's average confidence
+p100_max_HiConf_correct   = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==1 & curdat$Y_conf>=p100_max]
+p100_max_LoConf_correct   = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==1 & curdat$Y_conf<p100_max]
+p100_max_HiConf_incorrect = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==0 & curdat$Y_conf>=p100_max]
+p100_max_LoConf_incorrect = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==0 & curdat$Y_conf<p100_max]
+p100_min_HiConf_correct   = curdat$B_conf[curdat$group==100 & curdat$B_acc==1 & curdat$B_conf>=p100_max]
+p100_min_LoConf_correct   = curdat$B_conf[curdat$group==100 & curdat$B_acc==1 & curdat$B_conf<p100_max]
+p100_min_HiConf_incorrect = curdat$B_conf[curdat$group==100 & curdat$B_acc==0 & curdat$B_conf>=p100_max]
+p100_min_LoConf_incorrect = curdat$B_conf[curdat$group==100 & curdat$B_acc==0 & curdat$B_conf<p100_max]
+
+p101_max_HiConf_correct   = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==1 & curdat$Y_conf>=p100_max]
+p101_max_LoConf_correct   = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==1 & curdat$Y_conf<p100_max]
+p101_max_HiConf_incorrect = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==0 & curdat$Y_conf>=p100_max]
+p101_max_LoConf_incorrect = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==0 & curdat$Y_conf<p100_max]
+p101_min_HiConf_correct   = curdat$B_conf[curdat$group==100 & curdat$B_acc==1 & curdat$B_conf>=p100_max]
+p101_min_LoConf_correct   = curdat$B_conf[curdat$group==100 & curdat$B_acc==1 & curdat$B_conf<p100_max]
+p101_min_HiConf_incorrect = curdat$B_conf[curdat$group==100 & curdat$B_acc==0 & curdat$B_conf>=p100_max]
+p101_min_LoConf_incorrect = curdat$B_conf[curdat$group==100 & curdat$B_acc==0 & curdat$B_conf<p100_max]
+
+p103_min_Conf_correct     = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==1 & curdat$Y_conf>=p100_max]
+p103_min_LoConf_correct   = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==1 & curdat$Y_conf<p100_max]
+p103_min_HiConf_incorrect = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==0 & curdat$Y_conf>=p100_max]
+p103_min_LoConf_incorrect = curdat$Y_conf[curdat$group==100 & curdat$Y_acc==0 & curdat$Y_conf<p100_max]
+p103_max_HiConf_correct   = curdat$B_conf[curdat$group==100 & curdat$B_acc==1 & curdat$B_conf>=p100_max]
+p103_max_LoConf_correct   = curdat$B_conf[curdat$group==100 & curdat$B_acc==1 & curdat$B_conf<p100_max]
+p103_max_HiConf_incorrect = curdat$B_conf[curdat$group==100 & curdat$B_acc==0 & curdat$B_conf>=p100_max]
+p103_max_LoConf_incorrect = curdat$B_conf[curdat$group==100 & curdat$B_acc==0 & curdat$B_conf<p100_max]
+
+# averages for max
+meanMax_HiConf_correct    = round(mean(c(p100_max_HiConf_correct, p101_max_HiConf_correct, p103_max_HiConf_correct)),2)
+meanMax_LoConf_correct    = round(mean(c(p100_max_LoConf_correct, p101_max_LoConf_correct, p103_max_LoConf_correct)),2)
+meanMax_HiConf_incorrect  = round(mean(c(p100_max_HiConf_incorrect, p101_max_HiConf_incorrect, p103_max_HiConf_incorrect)),2)
+meanMax_LoConf_incorrect  = round(mean(c(p100_max_LoConf_incorrect, p101_max_LoConf_incorrect, p103_max_LoConf_incorrect)),2)
+# averages for min
+meanMin_HiConf_correct    = round(mean(c(p100_min_HiConf_correct, p101_min_HiConf_correct, p103_min_HiConf_correct)),2)
+meanMin_LoConf_correct    = round(mean(c(p100_min_LoConf_correct, p101_min_LoConf_correct, p103_min_LoConf_correct)),2)
+meanMin_HiConf_incorrect  = round(mean(c(p100_min_HiConf_incorrect, p101_min_HiConf_incorrect, p103_min_HiConf_incorrect)),2)
+meanMin_LoConf_incorrect  = round(mean(c(p100_min_LoConf_incorrect, p101_min_LoConf_incorrect, p103_min_LoConf_incorrect)),2)
+

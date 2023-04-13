@@ -178,7 +178,7 @@ if (nrow(at_switch) == 0) {
 
 # Comparisons between more vs. less sensitive dyad members
 # --------------------------------------------------------
-source(paste0(DataDir,'goodVSbadGuys.R')) # call separate script
+source(paste0(DataDir,'goodVSbadGuys.R')) # call separate script good vs. bad
 
 
 # Configure plot parameters
