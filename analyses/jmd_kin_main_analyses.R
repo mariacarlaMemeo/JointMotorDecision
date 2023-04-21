@@ -25,7 +25,7 @@ pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Flags
-local_user = 1;    # set current user (1=MC, 2=LA)
+local_user = 2;    # set current user (1=MC, 2=LA)
 schon_data = TRUE  # if TRUE: EXCLUDE pair 102 (because 102 is not schön)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (see Patel et al., 2012)
 
@@ -138,19 +138,64 @@ if (schon_data) {
 }
 
 
+# Configure plot parameters
+# -------------------------
+pd            = position_dodge(0.001)
+acc_scale     = list("lim"=c(0,1),"breaks"=seq(0,1, by=0.2))
+acc_scale2    = list("lim"=c(0,0.85),"breaks"=seq(0,0.85, by=0.1)) # for mean values up to ~0.8
+target_scale  = list("breaks"=unique(curdat$targetContrast),"labels"=unique(curdat$targetContrast))
+conf_scale    = list("lim"=c(1,6),"breaks"=seq(1,6, by=1))
+conf_scale2   = list("lim"=c(1,4.5),"breaks"=seq(1,4.5, by=1)) # for mean values up to ~4
+time_scale    = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
+mov_scale     = list("lim"=c(0.5,1.75),"breaks"=seq(0.5,1.75, by=0.25))
+switch_colors = c("lightcoral", "lightgreen")
+
 # Check PROPORTIONS: high/low confidence, agreement/disagreement, switch/no switch
 # --------------------------------------------------------------------------------
 # High/low confidence: Select high/low confidence trials for each agent and average the values
 perc_conf_lo = round(100*(dim(curdat[(curdat$B_conf==c(1) | curdat$B_conf==c(2) | curdat$B_conf==c(3))])[1]+dim(curdat[(curdat$Y_conf==c(1) | curdat$Y_conf==c(2) | curdat$Y_conf==c(3))])[1])/(2*dim(curdat)[1]))
 perc_conf_hi = round(100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1]))
-sprintf("Low confidence trials: %d %s", perc_conf_lo, "%")
-sprintf("High confidence trials: %d %s", perc_conf_hi, "%")
+sprintf("Low confidence trials (1-3): %d %s", perc_conf_lo, "%")
+sprintf("High confidence trials (4-6): %d %s", perc_conf_hi, "%")
 
 # Sub-select agreement/disagreement trials
 at      = curdat[curdat$agree==1,]
 dt      = curdat[curdat$agree==-1,]
-# plot disagreement according to target contrast
-hist(dt$targetContrast) 
+# Plot disagreement according to target contrast
+# agreement: 1=agreement, -1=disagreement; contrasts = c(0.115, 0.135, 0.170, 0.250)
+# hist(at$targetContrast)
+contrastData_all  = curdat[,c('group','targetContrast','agree','switch')]
+contrastData_indi = contrastData_all[contrastData_all$group==103]
+indi = 0; # select whether to plot aggregate or individual data ((indi=0 vs. indi=1)
+if (indi==1) {
+  contrastD      = contrastData_indi
+  count_scale    = list("lim"=c(0,40),"breaks"=seq(0,40, by=10))
+  count_scale_dt = list("lim"=c(0,20),"breaks"=seq(0,20, by=5))
+} else {
+  contrastD = contrastData_all
+  count_scale = list("lim"=c(0,100),"breaks"=seq(0,100, by=20))
+  count_scale_dt = list("lim"=c(0,50),"breaks"=seq(0,50, by=10))
+}
+contrastD$agree          = as.factor(contrastD$agree)
+levels(contrastD$agree)  = c("disagree", "agree")
+contrastD$switch         = as.factor(contrastD$switch)
+levels(contrastD$switch) = c("no switch", "switch")
+# plot agreement as a function of target contrast
+ggplot(contrastD, aes(x=contrastD$targetContrast, fill=contrastD$agree)) +
+  stat_count(geom = "bar", position="dodge2") +
+  scale_y_continuous(limits = count_scale$lim, breaks = count_scale$breaks) +
+  scale_x_continuous(breaks = target_scale$breaks, labels = target_scale$labels) +
+    xlab("Target contrasts") + ylab("Count") + theme_custom()
+ggsave(file=paste0(PlotDir,"hist_agree_contrast.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+# plot switch as a function of target contrast (only disagreement!)
+contrastD_dt = contrastD[contrastD$agree=="disagree"]
+ggplot(contrastD_dt, aes(x=contrastD_dt$targetContrast, fill=contrastD_dt$switch)) +
+  stat_count(geom = "bar", position="dodge2") + scale_fill_manual(values=switch_colors) +
+  scale_y_continuous(limits = count_scale_dt$lim, breaks = count_scale_dt$breaks) +
+  scale_x_continuous(breaks = target_scale$breaks, labels = target_scale$labels) +
+  xlab("Target contrasts") + ylab("Count") + theme_custom()
+ggsave(file=paste0(PlotDir,"hist_contrast_switch_dt.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+
 # Percentage of (dis)agreement trials relative to all trials
 perc_dt          = round(100*(dim(dt)[1]/dim(curdat)[1])) #39%
 perc_at          = round(100*(dim(at)[1]/dim(curdat)[1])) #61%
@@ -181,16 +226,6 @@ if (nrow(at_switch) == 0) {
 source(paste0(DataDir,'goodVSbadGuys.R')) # call separate script good vs. bad
 
 
-# Configure plot parameters
-# -------------------------
-pd           = position_dodge(0.001)
-acc_scale    = list("lim"=c(0,1),"breaks"=seq(0,1, by=0.2))
-acc_scale2   = list("lim"=c(0,0.85),"breaks"=seq(0,0.85, by=0.1)) # for mean values up to ~0.8
-target_scale = list("breaks"=unique(curdat$targetContrast),"labels"=unique(curdat$targetContrast))
-conf_scale   = list("lim"=c(1,6),"breaks"=seq(1,6, by=1))
-conf_scale2  = list("lim"=c(1,4.5),"breaks"=seq(1,4.5, by=1)) # for mean values up to ~4
-time_scale   = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
-mov_scale    = list("lim"=c(0.5,1.75),"breaks"=seq(0.5,1.75, by=0.25))
 
 
 # List of plots
