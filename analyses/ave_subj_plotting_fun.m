@@ -26,6 +26,13 @@ if n_var==1
     matrix_3d(:,clm,unique(c)) = nan;
     ave_all(:,unique(c)) = nan;
 
+    %Remove the trial in which the index marker is not found in the first n
+    %samples, where n=20. P103, yellow 153 trial
+    if all(title_fig(1:4)=='103Y')
+        ave_all(:,153) = nan;
+    end
+
+
     biv=figure();set(biv, 'WindowStyle', 'Docked');
     if flag_2nd
         % plot single trials

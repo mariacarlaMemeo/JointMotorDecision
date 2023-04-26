@@ -7,7 +7,7 @@ close all
 % Check the hard drive
 flag_hd = 0;
 % Check 2nd decision only
-flag_2nd = 0;
+flag_2nd = 1;
 % Display plots
 flag_plot = 1;
 
@@ -20,7 +20,7 @@ if flag_hd
     path_data = 'F:\JointMotorDecision\Static\Raw';
     %path_data = 'C:\Users\Laura\Desktop\Backups\jmd_local@IIT_01-2023\repo_JointMotorDecision\Static\Raw';
 else
-    path_data = 'X:\Datasets\JointMotorDecision\Static\Raw';
+    path_data = 'Y:\Datasets\JointMotorDecision\Static\Raw';
 end
 
 path_kin  = fullfile(path_data,'..\Processed');
