@@ -4,14 +4,22 @@ clear;
 
 % Prepare variables
 ptc       = [100,101,103];
-slope     = zeros(length(ptc),5); 
+slope     = zeros(length(ptc),5);
 coll_ben  = zeros(length(ptc),3);%3=collective benefit; 1=coll A1(blue); 2=coll A2(yellow)
-% Calculate collective benefit with 'max' or 'mean' function 
+% Calculate collective benefit with 'max' or 'mean' function
 fcalc     = input('Choose the function to calculate collective benefit:\n 1 = max\n 2 = mean\n');
 if fcalc==1
     coll_calc = 'max';
 elseif fcalc==2
     coll_calc = 'mean';
+end
+
+% Subselect target number for highest contrast (0.25, if you subtract the baseline the value in C2_C1_v var should be abs(0.15)), from 40(maximum) to 20
+sub_con     = input('Choose to subselect highest contrast:\n 1 = yes\n 2 = no\n');
+if sub_con==1
+    subcon_calc = 1;
+elseif sub_con==2
+    subcon_calc = 0;
 end
 
 % Windowing (length: default.w_lgt)
@@ -24,12 +32,20 @@ default.slope_wcoll = [];
 for p=ptc
     % Index of the participant
     pr = find(p==ptc);
-    
+
     % Load each participant's data
-    path_to_edit = ['Y:\Datasets\JointMotorDecision\Static\Raw\P',num2str(p),'\task\'];
+    %     path_to_edit = ['Y:\Datasets\JointMotorDecision\Static\Raw\P',num2str(p),'\task\'];
+    %     each = dir([path_to_edit,'*.mat']);
+    path_to_edit = ['C:\Users\Laura\Sync\00_Research\UKE\JointMotorDecisions\04_Analysis\pilotData\',num2str(p),'\'];
     each = dir([path_to_edit,'*.mat']);
     load([path_to_edit,each.name])
     disp(['Loading ',each.name]);
+
+    % Subselect or not
+    if subcon_calc
+        subcon_ind = find(data.output(:,4)==0.15);
+        data.output(subcon_ind(21:end),:) = [];
+    end
 
     % define variables
     asymp_limits    = [0 0.5];
@@ -94,6 +110,7 @@ for p=ptc
     coll_fs_vA2       = coll_fs_v(agentExecColl_clmn==2);
 
     for cI = 1 : size(conSteps,1)
+
         c                           = conSteps(cI);
         data.result.a1.fs(cI)   = mean(a1_fs_v(C2_C1_v==c & ~isnan(a1_fs_v)));
         data.result.a2.fs(cI)   = mean(a2_fs_v(C2_C1_v==c & ~isnan(a2_fs_v)));
@@ -125,12 +142,12 @@ for p=ptc
     % 5 output values: [blue agent(here a1), yellow agent(here a2),
     % collective global, collective only blue, collective only yellow]
     y       = [data.result.a1.fs' data.result.a2.fs' data.result.coll.fs'...
-                data.result.collA1.fs' data.result.collA2.fs'];
+        data.result.collA1.fs' data.result.collA2.fs'];
     plotSym = {'s' 'o' '*' '+' '+'};
     color   = [[30 60 190]; [240 200 40]; [17 105 40];...
-                [30 60 190]; [240 200 40]; [51 51 51];...
-                [80 200 120]; [0 165 114]; [1 121 111]]./255;%blue, yellow, dark green, blue, yellow,gray, emerald green, persian green, pine green
-    
+        [30 60 190]; [240 200 40]; [51 51 51];...
+        [80 200 120]; [0 165 114]; [1 121 111]]./255;%blue, yellow, dark green, blue, yellow,gray, emerald green, persian green, pine green
+
     cb=figure('Name',['CB_P' num2str(ptc(pr)) '_wnd']);set(cb, 'WindowStyle', 'Docked');
     % slope: [a1(blue), a2(yellow), sdyady(coll), sdyadA1(coll blue), sdyadA2(colle yellow)]
     % Each row is a pair
@@ -157,33 +174,36 @@ for p=ptc
     ratio = smin/smax;
 
     % Calculate collective benefit in windows of 80 elements each 4 trials
-    % use the same smax found before. 
+    % use the same smax found before.
     % collective decision and relative signed contrast
-    ws=figure('Name',['P' num2str(ptc(pr)) '_wnd']);set(ws, 'WindowStyle', 'Docked');
+    if not(subcon_calc)
+        ws=figure('Name',['P' num2str(ptc(pr)) '_wnd']);set(ws, 'WindowStyle', 'Docked');
 
-    % Each row is a pair - here the y is different!!!
-    full=0;
-    coll_prtc = [coll_fs_v C2_C1_v];
-    slope_wcoll(pr,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full,coll_calc);
-    slope_wcoll(pr,:) = slope_wcoll(pr,:)/smax;
-    
-    plot(slope_wcoll(pr,:),['-' plotSym{3}],'Color',color(3,:)); title(['Coll benefit - ','P' num2str(ptc(pr)) ' wnd'])
+        % Each row is a pair - here the y is different!!!
+
+        full=0;
+        coll_prtc = [coll_fs_v C2_C1_v];
+        slope_wcoll(pr,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full,coll_calc);
+        slope_wcoll(pr,:) = slope_wcoll(pr,:)/smax;
+
+        plot(slope_wcoll(pr,:),['-' plotSym{3}],'Color',color(3,:)); title(['Coll benefit - ','P' num2str(ptc(pr)) ' wnd'])
+    end
 end
 
 % Average across pairs
-h4=figure();set(h4, 'WindowStyle', 'Docked');
-errorbar(1:default.w_lgt/default.step,mean(slope_wcoll),-std(slope_wcoll)/sqrt(length((slope_wcoll))),+std(slope_wcoll)/sqrt(length((slope_wcoll))),'Color', color(3,:),'LineWidth',1);hold on;
-line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
-axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);title('Average values across pairs - coll. benefit');
+if not(subcon_calc)
+    h4=figure();set(h4, 'WindowStyle', 'Docked');
+    errorbar(1:default.w_lgt/default.step,mean(slope_wcoll),-std(slope_wcoll)/sqrt(length((slope_wcoll))),+std(slope_wcoll)/sqrt(length((slope_wcoll))),'Color', color(3,:),'LineWidth',1);hold on;
+    line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
+    axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);title('Average values across pairs - coll. benefit');
 
-% 
-h5=figure();set(h5, 'WindowStyle', 'Docked');
-colororder(color(end-2:end,:));
-plot(slope_wcoll',['-' plotSym{3}]); hold on;
-line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:),'LineWidth',1); hold off
-axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);legend({'P100','P101','P103','1'},'location','best'); 
-title('Coll. benefit - each pair');
+    %
+    h5=figure();set(h5, 'WindowStyle', 'Docked');
+    colororder(color(end-2:end,:));
+    plot(slope_wcoll',['-' plotSym{3}]); hold on;
+    line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:),'LineWidth',1); hold off
+    axis([0 (default.w_lgt/default.step)+1 0.6 1.3]);legend({'P100','P101','P103','1'},'location','best');
+    title('Coll. benefit - each pair');
+end
 
 
-
-   
