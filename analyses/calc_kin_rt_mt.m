@@ -50,7 +50,7 @@ SUBJECTS = [SUBJECTS(1) SUBJECTS(2) SUBJECTS(4)];%
 % - ODD TRIAL  - agent1(individual decision)-agent2(individual decision)-agent1(collective decision)
 % - EVEN TRIAL - agent2-agent1-agent2
 
-for p = 1:length(SUBJECTS)%
+for p = 1:length(SUBJECTS)
 
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear v raw_clm
@@ -289,7 +289,7 @@ for p = 1:length(SUBJECTS)%
     
     % display exploratory plots
     if flag_plot
-        ave_subj_plotting;
+        ave_subj_plotting_ULNA;
     end
     clear sMarkers session bConf yConf blue_Dec yell_Dec
  

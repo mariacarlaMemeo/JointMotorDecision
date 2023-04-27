@@ -50,7 +50,7 @@ end
 % reaction time
 %WARNING - from meeting of 24th of March we decided to take only the ulna
 %threshold -> 'startVector    = [indexTh(1),ulnaTh(1)];' becomes %'startVector    = ulnaTh(1);'
-startVector    = ulnaTh(1); % take the 10th value that has consecutively passed the threshold
+startVector    = ulnaTh(1); % take the 1st value that has passed the threshold
 [startFrame,ind_start] = min(startVector); % [min value, index of the minimum value]
 ind_start = 2;
 
@@ -68,7 +68,8 @@ if flag_pre %include preAcq because participants released button before decision
     rt_ulna  = (ulnaTh(1))/frameRate;
     rt_final = (startFrame)/frameRate;%rt_final should be = to the minimum value between rt_index or rt_ulna
 else
-    startFrame = (startFrame-preAcq);
+    
+    startFrame = (startFrame);%(startFrame-preAcq);
     rt_index   = (indexTh(1)-preAcq)/frameRate;
     rt_ulna    = (ulnaTh(1)-preAcq)/frameRate;
     rt_final   = startFrame/frameRate;%rt_final= to the minimum value between rt_index or rt_ulna
