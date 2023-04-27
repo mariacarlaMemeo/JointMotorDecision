@@ -72,7 +72,7 @@ else
     startFrame = (startFrame);%(startFrame-preAcq);
     rt_index   = (indexTh(1)-preAcq)/frameRate;
     rt_ulna    = (ulnaTh(1)-preAcq)/frameRate;
-    rt_final   = startFrame/frameRate;%rt_final= to the minimum value between rt_index or rt_ulna
+    rt_final   = (startFrame-preAcq)/frameRate;%rt_final= to the minimum value between rt_index or rt_ulna
 end
 endFrame = (samp(end)-10);
 mt_final = (endFrame-startFrame)/frameRate;%mt_final=recording end(includes the preAcq) - 10frames(post acquisition set in Vicon) - startFrame(includes the preAcq)

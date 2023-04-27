@@ -29,7 +29,7 @@ threshold  = [];%[-30000 20000];
 agent2ndDec = 1;
 title_plot = ['ULNA - Acceleration of BLUE agent, pair' SUBJECTS{p}(2:end)];
 if flag_2nd
-    title_fig  = [SUBJECTS{p}(2:end) 'B_a_ulna__dec2.png'];
+    title_fig  = [SUBJECTS{p}(2:end) 'B_a_ulna_dec2.png'];
 else
     title_fig  = [SUBJECTS{p}(2:end) 'B_a_ulna_.png'];
 end
@@ -38,7 +38,7 @@ ave_subj_plotting_fun(all_time_traj_ulna_b,2,bConf,blue_Dec,SecondDec,agent2ndDe
 agent2ndDec = 2;
 title_plot = ['ULNA - Acceleration of YELLOW agent, pair' SUBJECTS{p}(2:end)];
 if flag_2nd
-    title_fig  = [SUBJECTS{p}(2:end) 'Y_a_ulna__dec2.png'];
+    title_fig  = [SUBJECTS{p}(2:end) 'Y_a_ulna_dec2.png'];
 else
     title_fig  = [SUBJECTS{p}(2:end) 'Y_a_ulna_.png'];
 end
@@ -50,7 +50,7 @@ threshold  = [];%[-5*10^5 7*10^5];
 agent2ndDec = 1;
 title_plot = ['ULNA - Jerk of BLUE agent, pair' SUBJECTS{p}(2:end)];
 if flag_2nd
-    title_fig  = [SUBJECTS{p}(2:end) 'B_j_ulna__dec2.png'];
+    title_fig  = [SUBJECTS{p}(2:end) 'B_j_ulna_dec2.png'];
 else
     title_fig  = [SUBJECTS{p}(2:end) 'B_j_ulna_.png'];
 end
@@ -59,7 +59,7 @@ ave_subj_plotting_fun(all_time_traj_ulna_b,3,bConf,blue_Dec,SecondDec,agent2ndDe
 agent2ndDec = 2;
 title_plot = ['ULNA - Jerk of YELLOW agent, pair' SUBJECTS{p}(2:end)];
 if flag_2nd
-    title_fig  = [SUBJECTS{p}(2:end) 'Y_j_ulna__dec2.png'];
+    title_fig  = [SUBJECTS{p}(2:end) 'Y_j_ulna_dec2.png'];
 else
     title_fig  = [SUBJECTS{p}(2:end) 'Y_j_ulna_.png'];
 end
