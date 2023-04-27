@@ -10,6 +10,8 @@ flag_hd = 0;
 flag_2nd = 1;
 % Display plots
 flag_plot = 1;
+%median split
+med_split = 1;
 
 %% Data format - normalization of each trajectory to 100 samples (for now). 
 bin = 100;
@@ -256,11 +258,16 @@ for p = 1:length(SUBJECTS)
     % Plot the average and standard deviation of values of resampled time vectors of Vm,Am,Jm and filter spatial
     % coordinates x,y,z per subject, for index(tip) and ulna markers.
 
-    %classify confidence as high and low
-    bConf=blue_Conf;yConf=yell_Conf;
-    bConf(bConf<4)=1;bConf(bConf>=4)=2;
-    yConf(yConf<4)=1;yConf(yConf>=4)=2;
-
+    %Classify confidence as high and low
+    if med_split
+        bConf = blue_Conf; yConf = yell_Conf;
+        bConf(bConf<=median(bConf))=1; bConf(bConf>median(bConf))=2; 
+        yConf(yConf<=median(yConf))=1; yConf(yConf>median(yConf))=2; 
+    else
+        bConf = blue_Conf; yConf = yell_Conf; %#ok<UNRCH>
+        bConf(bConf<4)=1; bConf(bConf>=4)=2;
+        yConf(yConf<4)=1; yConf(yConf>=4)=2;
+    end
     %vector specifying the agent who took the 2nd decision (1=blue Agent, 2=yellow Agent)
     SecondDec = at2ndDec;
 
@@ -289,7 +296,7 @@ for p = 1:length(SUBJECTS)
     
     % display exploratory plots
     if flag_plot
-        ave_subj_plotting_ULNA;
+        ave_subj_plotting;
     end
     clear sMarkers session bConf yConf blue_Dec yell_Dec
  
