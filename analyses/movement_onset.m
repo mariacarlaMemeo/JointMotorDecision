@@ -1,4 +1,4 @@
-function [startFrame,rt_final,mt_final,endFrame]=movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,flag_pre,trial_plot)
+function [startFrame,rt_final,mt_final,endFrame]=movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,flag_pre,trial_plot,figurepath)
 
 % CHECK index and wrist velocity threshold
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:};
@@ -33,17 +33,30 @@ yPos_text   = max(ulna);
 
 if trial_plot
     v=figure('Name',['P' SUBJECTS{p}(2:end)]); set(v, 'WindowStyle', 'Docked');
-    yyaxis left; plot(samp,index);hold on; plot(samp,indexZ); ylabel('Velocity [mm/s]');hold off;
-    yyaxis right; plot(samp,ulna);hold on; plot(samp,ulnaZ); hold off;
-    xline(preAcq);       t_pre=text(preAcq-plotxShift,yPos_text-300,' decisionPrompt (t0)');set(t_pre,'Rotation',90);
-    xline(samp(end)-10); t_post=text((samp(end)-10)-plotxShift,yPos_text-300,' targetButtonPress');set(t_post,'Rotation',90);
-    if ~isnan(indexTh(1))
-        xline(indexTh(1),'Color',[0 0.4470 0.7410]);t_ind=text(indexTh(1)-plotxShift,yPos_text-300,' Index>20[mm/s]','Color', [0 0.4470 0.7410]);set(t_ind,'Rotation',90);
-    end
+
+    yyaxis left; plot(samp,ulna);hold on; plot(samp,ulnaZ); ylabel('Velocity [mm/s]');
     if ~isnan(ulnaTh(1))
-        xline(ulnaTh(1),'Color',[0.8500 0.3250 0.0980]);t_uln=text(ulnaTh(1)-plotxShift,yPos_text-350,' Ulna>20[mm/s]','Color', [0.8500 0.3250 0.0980]);set(t_uln,'Rotation',90);
+        xline(ulnaTh(1),'Color',[0 0.4470 0.7410]);t_uln=text(ulnaTh(1)-plotxShift,yPos_text-350,' tstartUlna','Color', [0 0.4470 0.7410]);set(t_uln,'Rotation',90);
+        plot(ulnaTh(1):(samp(end)-10),ulna(ulnaTh(1):(samp(end)-10)),'-','Color', [0 0.4470 0.7410],'LineWidth',3);
     end
-    title(['Pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
+    hold off;
+
+    yline(vel_th, '-', [num2str(vel_th) ' mm/s'], 'LineWidth', 1, 'LabelVerticalAlignment', 'top','LabelHorizontalAlignment', 'left');
+    yyaxis right; plot(samp,index);hold on; plot(samp,indexZ); hold off;
+    xline(preAcq);       t_pre=text(preAcq-plotxShift,yPos_text-300,' decisionPrompt (t0)');set(t_pre,'Rotation',90);
+    xline(samp(end)-10); t_post=text((samp(end)-10)-plotxShift,yPos_text-300,' tstop');set(t_post,'Rotation',90); %tstop refers to targetbuttonpress (computed by Matlab)
+
+    %     if ~isnan(indexTh(1))
+    %         xline(indexTh(1),'Color',[0 0.4470 0.7410]);t_ind=text(indexTh(1)-plotxShift,yPos_text-300,' tstart_index','Color', [0 0.4470 0.7410]);set(t_ind,'Rotation',90);
+    %     end
+
+    if agentExec(2)=='1'
+        agent_name = 'B';
+    elseif  agentExec(2)=='2'
+        agent_name = 'Y';
+    end
+
+    title(['Pair: ' SUBJECTS{p} '; agent: ' agent_name '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
     xlabel('Samples');
 end
 % As rt_final we choose the minimum value between index finger/ulna
@@ -68,7 +81,7 @@ if flag_pre %include preAcq because participants released button before decision
     rt_ulna  = (ulnaTh(1))/frameRate;
     rt_final = (startFrame)/frameRate;%rt_final should be = to the minimum value between rt_index or rt_ulna
 else
-    
+
     startFrame = (startFrame);%(startFrame-preAcq);
     rt_index   = (indexTh(1)-preAcq)/frameRate;
     rt_ulna    = (ulnaTh(1)-preAcq)/frameRate;
@@ -93,11 +106,46 @@ end
 %Plot rt_final
 if trial_plot
     if ind_start==1
-        xline(startFrame,'LineWidth',2,'Color',[0 0.4470 0.7410]);
-    else
         xline(startFrame,'LineWidth',2,'Color',[0.8500 0.3250 0.0980]);
+    else
+        xline(startFrame,'LineWidth',2,'Color',[0 0.4470 0.7410]);
     end
 end
 
+%% Add the possibility to change the tstart and tstop of the script
+visual_check;
 
+% we potentially could have new start/endFrame
+if visual_change
+    v=figure('Name',['P' SUBJECTS{p}(2:end)]); set(v, 'WindowStyle', 'Docked');
+    yyaxis left; plot(samp,ulna);hold on; plot(samp,ulnaZ); ylabel('Velocity [mm/s]');
+    if ~isnan(startFrame)
+        xline(startFrame,'Color',[0 0.4470 0.7410]);t_uln=text(startFrame-plotxShift,yPos_text-350,' tstartUlna','Color', [0 0.4470 0.7410]);set(t_uln,'Rotation',90);
+        plot(startFrame:endFrame,sMarkers{t}.markers.(mainmarker).Vm(startFrame:endFrame),'-','Color', [0 0.4470 0.7410],'LineWidth',3);
+    end
+    hold off;
+    yline(vel_th, '-', [num2str(vel_th) ' mm/s'], 'LineWidth', 1, 'LabelVerticalAlignment', 'top','LabelHorizontalAlignment', 'left');
+    yyaxis right; plot(samp,index);hold on; plot(samp,indexZ); hold off;
+    xline(preAcq);       t_pre=text(preAcq-plotxShift,yPos_text-300,' decisionPrompt (t0)');set(t_pre,'Rotation',90);
+    xline(endFrame); t_post=text(endFrame-plotxShift,yPos_text-300,' tstop');set(t_post,'Rotation',90); %tstop refers to targetbuttonpress (computed by Matlab)
+
+    if agentExec(2)==1
+        agent_name = 'B';
+    elseif  agentExec(2)==2
+        agent_name = 'Y';
+    end
+
+    title(['Pair: ' SUBJECTS{p} '; agent: ' agent_name '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
+    xlabel('Samples');
+
+    %save the new figure
+    saveas(gcf,[fullfile(figurepath,SUBJECTS{p}) '/' agent_name, '_trial_' num2str(t) '_v1.png'])
+
+
+    %Calculate the new rt and mt
+    rt_final   = (startFrame-preAcq)/frameRate;%rt_final= to the minimum value between rt_index or rt_ulna
+    mt_final   = (endFrame-startFrame)/frameRate;%
+end
+
+close all
 end

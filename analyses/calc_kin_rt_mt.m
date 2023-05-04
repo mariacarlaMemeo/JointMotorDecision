@@ -29,7 +29,7 @@ path_kin  = fullfile(path_data,'..\Processed');
 %%
 path_temp = fullfile(pwd,'data\');
 flag_pre  = 0;
-trial_plot = 0;
+trial_plot = 1;
 %%
 
 %% Load each processed mat file per subject
@@ -42,7 +42,8 @@ SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 
 % DON'T LOOK AT PAIR 102
-SUBJECTS = [SUBJECTS(1) SUBJECTS(2) SUBJECTS(4)];%
+%SUBJECTS = [SUBJECTS(1) SUBJECTS(2) SUBJECTS(4)];%
+SUBJECTS = [SUBJECTS(4)];%
 %%
 % The information we need to calculate is the reaction time and movement time. They are already in the
 % excel file and they depend on the agent that is performing the decision: they were calculated according to the buttons release(rt) and press(mt).
@@ -57,7 +58,7 @@ for p = 1:length(SUBJECTS)
     disp(['Start ' SUBJECTS{p}(2:end)])
     clear v raw_clm
     close all
-
+    
     % Create a table
     raw_clm      = table();
     varName_exp  = {'targetContrast','firstSecondInterval','targetLoc',...
@@ -83,6 +84,10 @@ for p = 1:length(SUBJECTS)
     tic
     load(path_kin_each);
     toc
+
+    % Add path to store figures from cisual check cut
+    figurepath = 'Y:\Datasets\JointMotorDecision\Exported\behavioral_kin_data\tstart_tstop';
+    mkdir(fullfile(figurepath,SUBJECTS{p}))
 
     %Remove trials in 'session' cell to avoid inserting the (last?) trials in
     %which there's no 'marker' field
@@ -156,7 +161,7 @@ for p = 1:length(SUBJECTS)
         %function to calculate the movement onset and kinematic variables
         %agent acting as first
         label_agent = 'FIRSTDecision';
-        [startFrame1,rt_final1,mt_final1,endFrame1] = movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre,trial_plot);
+        [startFrame1,rt_final1,mt_final1,endFrame1] = movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent,flag_pre,trial_plot,figurepath);
         if not(isnan(startFrame1))
             [tindex1,tulna1,sindex1,sulna1,sdindex1,time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1]    = movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1);
         else
@@ -177,7 +182,7 @@ for p = 1:length(SUBJECTS)
 
         %agent acting as second
         label_agent = 'SECONDDecision';
-        [startFrame2,rt_final2,mt_final2,endFrame2] = movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre,trial_plot);
+        [startFrame2,rt_final2,mt_final2,endFrame2] = movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent,flag_pre,trial_plot,figurepath);
         if not(isnan(startFrame2))
             [tindex2,tulna2,sindex2,sulna2,sdindex2,time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2]    = movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2);
         else
@@ -198,7 +203,7 @@ for p = 1:length(SUBJECTS)
 
         %collective decision
         label_agent = 'COLLECTIVEDecision';
-        [startFrameColl,rt_finalColl,mt_finalColl,endFrameColl] = movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre,trial_plot);
+        [startFrameColl,rt_finalColl,mt_finalColl,endFrameColl] = movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent,flag_pre,trial_plot,figurepath);
         if not(isnan(startFrameColl))
         [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl,time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl);
         else
