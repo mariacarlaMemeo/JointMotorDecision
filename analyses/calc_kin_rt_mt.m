@@ -5,7 +5,7 @@ clear
 close all
 
 % Check the hard drive
-flag_hd = 0;
+flag_hd = 1;
 % Check 2nd decision only
 flag_2nd = 1;
 % Display plots

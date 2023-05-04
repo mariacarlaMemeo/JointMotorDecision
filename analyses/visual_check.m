@@ -1,6 +1,7 @@
 
 %% SHOW FIGURES AND ASK FOR USER INPUT
-visual_change = [];
+visual_change = [];%flag to know if there was a change in the time indeces due to visual inspection
+eliminate     = [];%flag to know if there we need to eliminate the trial
 
 drawnow
 % show question about correct tstart and tstop identification
@@ -25,6 +26,7 @@ switch str2double(mod)
         plot([1,sMarkers{t}.info.nSamples],[-20 1700], 'r', 'LineWidth',5)
         saveas(gcf,[fullfile(figurepath,SUBJECTS{p}) '\' agent_name, '_trial_' num2str(t) '_elim.png'])
         visual_change = 0;
+        eliminate     = 1;
        
     case 1
         % if mod = 1, change tstart and save the new

@@ -10,6 +10,12 @@ model_name = [SUBJECTS{p} '_' agentExec(2) '_' agentExec];%name of the model in 
 samp       = 1:sMarkers{t}.info.nSamples;
 index      = sMarkers{t}.markers.([model_name '_index']).Vm;% - mean(sMarkers{t}.markers.([model_name '_index']).Vm(1:preAcq));
 ulna       = sMarkers{t}.markers.([model_name '_ulna']).Vm;% - mean(sMarkers{t}.markers.([model_name '_ulna']).Vm(1:preAcq));
+
+%Find velocity peaks and minima ONLY in ulna marker. The function select
+%the max peak, the minimum preceding it and gives as output the position of
+%the minimum: tmove. This is the beginning of the reaching movement 
+tmove = find_tmove(ulna);
+
 % Use the function findTh_cons to find out when the velocity threshold is passed
 % start checking from the appearance of the decision prompt onwards
 % (i.e., after the preAcqu of 200 ms)
@@ -67,7 +73,7 @@ startVector    = ulnaTh(1); % take the 1st value that has passed the threshold
 [startFrame,ind_start] = min(startVector); % [min value, index of the minimum value]
 ind_start = 2;
 
-%select the startframe
+%select the startframe %%%EDIT
 if p==3 && t==17
     startFrame = 58;
 elseif p==3 && t==18
@@ -145,6 +151,11 @@ if visual_change
     %Calculate the new rt and mt
     rt_final   = (startFrame-preAcq)/frameRate;%rt_final= to the minimum value between rt_index or rt_ulna
     mt_final   = (endFrame-startFrame)/frameRate;%
+end
+
+%In case we decide to eliminate the trial
+if eliminate
+    startFrame=NaN; rt_final=NaN; mt_final=NaN; endFrame=NaN;
 end
 
 close all
