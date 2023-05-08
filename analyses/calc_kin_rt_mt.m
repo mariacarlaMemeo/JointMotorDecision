@@ -10,7 +10,7 @@ path_trial_traj = 'C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecno
 crash = input('do you want to start from backup? (1/0)\n','s');
 if str2num(crash)
     [filename, pathname, filterindex] = uigetfile(path_trial_traj,'.mat');
-    load(filename);
+    load(fullfile(pathname,filename));
     % Change name to the 'data' variable to not overwrite it after in the
     % script
     data_bkp        = data;
@@ -125,6 +125,7 @@ for p = 1:length(SUBJECTS)
     data       = [data table_zero];
     if str2num(crash)
         data(1:trialstart_num-1,:) = data_bkp(1:trialstart_num-1,:);
+        crash = '0';
     end
 
     % Retrieve the agents acting for each decision
@@ -231,16 +232,15 @@ for p = 1:length(SUBJECTS)
         %%%
 
 
-        % Write the final excel file created during the
-        % acquisition
+        % Write the final excel file, merging the new parameters with the excel file created during the acquisition 
         ol                = length(txt_or);
         data{t,ol+1:ol+10} = [changeMind(t) rt_final1 rt_final2 rt_finalColl dt_final1 dt_final2 dt_finalColl mt_final1 mt_final2 mt_finalColl];
 
         % Kin data of the normalized 100 samples for index and ulna: ONLY 2nd DECISION
         data{t,ol+11:ol+719} = [time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' spa_traj_ulna2(:,3)'...
-                                startFrame1 tmove1 stopFrame1 startFrame2 tmove2 stopFrame2 startFrameColl tmoveColl stopFrameColl];
+            startFrame1 tmove1 endFrame1 startFrame2 tmove2 endFrame2 startFrameColl tmoveColl endFrameColl];
         
-        %title
+        % table header
         data.Properties.VariableNames = txt;
         if flag_pre
             writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model_withPre.xlsx']));
@@ -250,7 +250,7 @@ for p = 1:length(SUBJECTS)
     end
 
     % Save after each pair
-    save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',num2str(sMarkers{t}.info.trial_id),'_tilltrialMat_',num2str(t)])
+    save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',caa-3,'_tilltrialMat_',num2str(t)])
 
 
     % Plot the average and standard deviation of values of resampled time vectors of Vm,Am,Jm and filter spatial
@@ -302,5 +302,5 @@ end
 
 catch me 
     % Save mat file as a backup
-        save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',num2str(sMarkers{t}.info.trial_id),'_tilltrialMat_',num2str(t)])
+        save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',caa-3,'_tilltrialMat_',num2str(t)])
 end
