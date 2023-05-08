@@ -4,7 +4,7 @@
 clear
 close all
 %% Initial trial
-trialstart_num = 19;
+trialstart_num = 48;
 
 % Check the hard drive
 flag_hd = 0;
