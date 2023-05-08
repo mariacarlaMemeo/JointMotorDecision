@@ -3,6 +3,8 @@
 % 28.03.2023
 clear
 close all
+%% Initial trial
+trialstart_num = 19;
 
 % Check the hard drive
 flag_hd = 0;
@@ -129,11 +131,11 @@ for p = 1:length(SUBJECTS)
     Coll_Dec       = cell2mat(raw(:,Coll_Dec_ind));
     
     % Indeces for 1st, 2nd and 3rd decision
-    faa = 1;
-    saa = 2;
-    caa = 3;
+    faa = trialstart_num *3 - 2;
+    saa = trialstart_num *3 - 1;
+    caa = trialstart_num *3;
 
-    for t = 1:length(raw)
+    for t = trialstart_num:length(raw)%%EDIT % trial loop which goes through all three decisions
 
         % Create the switch column
         if at1stDec(t) == 1

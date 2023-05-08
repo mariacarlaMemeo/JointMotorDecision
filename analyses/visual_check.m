@@ -1,7 +1,7 @@
 
 %% SHOW FIGURES AND ASK FOR USER INPUT
 visual_change = [];%flag to know if there was a change in the time indeces due to visual inspection
-eliminate     = [];%flag to know if there we need to eliminate the trial
+del_fig         = [];%flag to know if there we need to eliminate the trial
 
 drawnow
 % figure name
@@ -18,6 +18,7 @@ switch str2double(mod)
         disp('Good');
         visual_change = 0;
         saveas(gcf,strcat(jpg_title,'_v0.png'))
+        del_fig         = 0; 
     case 0
         % if mod is = 0
         % then save the figure anyway but with a
@@ -26,7 +27,7 @@ switch str2double(mod)
         plot([1,sMarkers{t}.info.nSamples],[-20 1700], 'r', 'LineWidth',5)
         saveas(gcf,strcat(jpg_title,'_elim.png'))
         visual_change = 0;
-        eliminate     = 1;
+        del_fig         = 1;
 
     case 1
         % if mod = 1, change tstart and save the new
@@ -42,6 +43,7 @@ switch str2double(mod)
         rangex = [(round(x)-3):(round(x)+3)];
         startFrame = rangex(sMarkers{t}.markers.(mainmarker).Vm(rangex)==min(sMarkers{t}.markers.(mainmarker).Vm(rangex)));
         visual_change = 1;
+        del_fig         = 0;
 
     case 2
         % if mod = 2, change tmove and save the new
@@ -57,6 +59,7 @@ switch str2double(mod)
         rangex = [(round(x)-3):(round(x)+3)];
         tmove = rangex(sMarkers{t}.markers.(mainmarker).Vm(rangex)==min(sMarkers{t}.markers.(mainmarker).Vm(rangex)));
         visual_change = 1;
+        del_fig         = 0;
 
     case 3
         % if mod = 3, change tstop and save the new
@@ -72,6 +75,7 @@ switch str2double(mod)
         rangex = [(round(x)-3):(round(x)+3)];
         endFrame = rangex(sMarkers{t}.markers.(mainmarker).Vm(rangex)==min(sMarkers{t}.markers.(mainmarker).Vm(rangex)));
         visual_change = 1;
+        del_fig         = 0;
 
     case 4
         % if mod = 4, then change tstart, tmove and tstop
@@ -95,5 +99,6 @@ switch str2double(mod)
         endFrame = rangex3(sMarkers{t}.markers.(mainmarker).Vm(rangex3)==min(sMarkers{t}.markers.(mainmarker).Vm(rangex3)));
 
         visual_change = 1;
+        del_fig         = 0;
 end
 

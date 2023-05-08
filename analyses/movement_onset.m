@@ -133,7 +133,7 @@ if ~isnan(tmove)
     end
 end
 % we potentially could have new start/endFrame
-if visual_change
+if visual_change && not(del_fig)
     v=figure('Name',['P' SUBJECTS{p}(2:end)]); set(v, 'WindowStyle', 'Docked');
     yyaxis left; plot(samp,ulna);hold on; plot(samp,ulnaY); ylabel('Velocity [mm/s]');
     xlim([0 samp(end)]);
@@ -178,7 +178,7 @@ end
 dt_final = (tmove-startFrame)/frameRate;
 
 %In case we decide to eliminate the trial
-if eliminate
+if del_fig
     startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;
 end
 
