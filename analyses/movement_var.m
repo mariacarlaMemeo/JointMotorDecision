@@ -1,6 +1,6 @@
 function [tindex,tulna,sindex,sulna,sdindex,...
     time_traj_index,time_traj_ulna,...
-    spa_traj_index,spa_traj_ulna]=movement_var(sMarkers,t,SUBJECTS,p,agentExec,startFrame,endFrame)
+    spa_traj_index,spa_traj_ulna]=movement_var(sMarkers,t,SUBJECTS,p,agentExec,tmove,endFrame)
 
 % CHECK index and wrist velocity threshold
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:};
@@ -10,11 +10,11 @@ index      = sMarkers{t}.markers.([model_name '_index']);
 ulna       = sMarkers{t}.markers.([model_name '_ulna']);
 
 const = 0;%%remove last 'const' frames for index values
-if endFrame > startFrame
-    range_index = startFrame:endFrame-const;
+if endFrame > tmove
+    range_index = tmove:endFrame-const;
 
     i_index     = linspace(range_index(1),range_index(end));
-    range_ulna  = startFrame:endFrame;
+    range_ulna  = tmove:endFrame;
     i_ulna      = linspace(range_ulna(1),range_ulna(end));
 
     %Calc kin vars - temporal variables
@@ -68,9 +68,9 @@ if endFrame > startFrame
 
     %average deviation from straight line (queer spectrum)
     %calculate coeffs of the straight line - only for index marker
-    x1    = index.xyzf(startFrame,1);
+    x1    = index.xyzf(tmove,1);
     xend  = index.xyzf(endFrame-const,1);
-    y1    = index.xyzf(startFrame,2);
+    y1    = index.xyzf(tmove,2);
     yend  = index.xyzf(endFrame-const,2);
     coefs = polyfit([x1, xend], [y1, yend], 1);
     sline = coefs(1).*index.xyzf((range_index),1) + coefs(2);
