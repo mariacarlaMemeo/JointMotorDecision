@@ -3,8 +3,24 @@
 % 28.03.2023
 clear
 close all
+
+try 
 %% Initial trial
-trialstart_num = 131;
+path_trial_traj = 'C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecnologia\Documents\GitHub\joint-motor-decision\analyses\data\trial_trajectories\';
+crash = input('do you want to start from backup? (1/0)\n','s');
+if str2num(crash)
+    [filename, pathname, filterindex] = uigetfile(path_trial_traj,'.mat');
+    load(filename);
+    % Change name to the 'data' variable to not overwrite it after in the
+    % script
+    data_bkp        = data;
+    file_split      = split(filename,'_');
+    trial_crash_str = cell2mat(file_split(end));
+    trialstart_num  = str2num(trial_crash_str(1:end-4));
+else
+    trialstart_num = 1;
+end
+
 
 % Check the hard drive
 flag_hd = 0;
@@ -99,15 +115,17 @@ for p = 1:length(SUBJECTS)
     txt               = [txt_or {'switch' 'rt_final1' 'rt_final2' 'rt_finalColl' 'dt_final1' 'dt_final2' 'dt_finalColl' 'mt_final1' 'mt_final2' 'mt_finalColl'} ...
                          cellstr(strcat('vel_ind2_',string(1:bin))), cellstr(strcat('acc_ind2_',string(1:bin))),cellstr(strcat('jrk_ind2_',string(1:bin))),...
                          cellstr(strcat('vel_uln2_',string(1:bin))), cellstr(strcat('acc_uln2_',string(1:bin))),cellstr(strcat('jrk_uln2_',string(1:bin))),...
-                         cellstr(strcat('z_uln2_',string(1:bin)))];
-
+                         cellstr(strcat('z_uln2_',string(1:bin))),...
+                         'tstart1' 'tmove1' 'tstop1' 'tstart2' 'tmove2' 'tstop2' 'tstartColl' 'tmoveColl' 'tstopColl' ];
+    % File created during acquisition
     data              = cell2table(raw);
-    data.rt_final1    = zeros(length(raw),1);
-    data.rt_final2    = zeros(length(raw),1);
-    data.rt_finalColl = zeros(length(raw),1);
-    data.mt_final1    = zeros(length(raw),1);
-    data.mt_final2    = zeros(length(raw),1);
-    data.mt_finalColl = zeros(length(raw),1);
+    
+    % Fill the data with 0s for all the additional columns (txt)
+    table_zero = array2table(zeros(size(data,1),length(txt)-size(data,2)));
+    data       = [data table_zero];
+    if str2num(crash)
+        data(1:trialstart_num-1,:) = data_bkp(1:trialstart_num-1,:);
+    end
 
     % Retrieve the agents acting for each decision
     at1stDec_ind   = strcmp('AgentTakingFirstDecision',txt);
@@ -219,7 +237,8 @@ for p = 1:length(SUBJECTS)
         data{t,ol+1:ol+10} = [changeMind(t) rt_final1 rt_final2 rt_finalColl dt_final1 dt_final2 dt_finalColl mt_final1 mt_final2 mt_finalColl];
 
         % Kin data of the normalized 100 samples for index and ulna: ONLY 2nd DECISION
-        data{t,ol+11:ol+710} = [time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' spa_traj_ulna2(:,3)'];
+        data{t,ol+11:ol+719} = [time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' spa_traj_ulna2(:,3)'...
+                                startFrame1 tmove1 stopFrame1 startFrame2 tmove2 stopFrame2 startFrameColl tmoveColl stopFrameColl];
         
         %title
         data.Properties.VariableNames = txt;
@@ -229,6 +248,10 @@ for p = 1:length(SUBJECTS)
             writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
         end
     end
+
+    % Save after each pair
+    save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',num2str(sMarkers{t}.info.trial_id),'_tilltrialMat_',num2str(t)])
+
 
     % Plot the average and standard deviation of values of resampled time vectors of Vm,Am,Jm and filter spatial
     % coordinates x,y,z per subject, for index(tip) and ulna markers.
@@ -271,8 +294,13 @@ for p = 1:length(SUBJECTS)
     
     % display exploratory plots
     if flag_plot
-        ave_subj_plotting;
+        ave_subj_plotting_ULNA;
     end
     clear sMarkers session bConf yConf blue_Dec yell_Dec
  
+end
+
+catch me 
+    % Save mat file as a backup
+        save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',num2str(sMarkers{t}.info.trial_id),'_tilltrialMat_',num2str(t)])
 end
