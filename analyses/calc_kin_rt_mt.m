@@ -61,7 +61,7 @@ SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 
 % DON'T LOOK AT PAIR 102
 %SUBJECTS = [SUBJECTS(1) SUBJECTS(2) SUBJECTS(4)];%
-SUBJECTS = [SUBJECTS(1)];%
+SUBJECTS = [SUBJECTS(4)];%
 %%
 % The information we need to calculate is the reaction time and movement time. They are already in the
 % excel file and they depend on the agent that is performing the decision: they were calculated according to the buttons release(rt) and press(mt).
@@ -99,7 +99,7 @@ for p = 1:length(SUBJECTS)
     toc
 
     % Add path to store figures from cisual check cut
-    figurepath = 'Y:\Datasets\JointMotorDecision\Exported\behavioral_kin_data\tstart_tstop';
+    figurepath = 'C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecnologia\Desktop\jmd\example plots\tstart_tstop';
     mkdir(fullfile(figurepath,SUBJECTS{p}))
 
     %Remove trials in 'session' cell to avoid inserting the (last?) trials in
@@ -121,12 +121,9 @@ for p = 1:length(SUBJECTS)
     data              = cell2table(raw);
     
     % Fill the data with 0s for all the additional columns (txt)
-    table_zero = array2table(zeros(size(data,1),length(txt)-size(data,2)));
-    data       = [data table_zero];
-    if str2num(crash)
-        data(1:trialstart_num-1,:) = data_bkp(1:trialstart_num-1,:);
-        crash = '0';
-    end
+    %table_zero = array2table(zeros(size(data,1),length(txt)-size(data,2)));
+    %data       = [data table_zero];
+
 
     % Retrieve the agents acting for each decision
     at1stDec_ind   = strcmp('AgentTakingFirstDecision',txt);
@@ -232,7 +229,9 @@ for p = 1:length(SUBJECTS)
         %%%
 
 
-        % Write the final excel file, merging the new parameters with the excel file created during the acquisition 
+        % Write the final excel file, merging the new parameters with the excel file created during the acquisition
+        % NOTE: this doesnt work for some reason; you need to combine the
+        % bkp-data and the new data manually afterwards (command line 127)
         ol                = length(txt_or);
         data{t,ol+1:ol+10} = [changeMind(t) rt_final1 rt_final2 rt_finalColl dt_final1 dt_final2 dt_finalColl mt_final1 mt_final2 mt_finalColl];
 
@@ -242,6 +241,11 @@ for p = 1:length(SUBJECTS)
         
         % table header
         data.Properties.VariableNames = txt;
+        if str2num(crash)
+            data(1:trialstart_num-1,:) = data_bkp(1:trialstart_num-1,:);
+            crash = '0';
+        end
+
         if flag_pre
             writetable(data,fullfile(path_temp,['pilotData_' SUBJECTS{p}(2:end) '_kin_model_withPre.xlsx']));
         else
@@ -250,7 +254,7 @@ for p = 1:length(SUBJECTS)
     end
 
     % Save after each pair
-    save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',caa-3,'_tilltrialMat_',num2str(t)])
+    save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',sMarkers{t}.info.fullpath(end-11:end),'_tilltrialMat_',num2str(t)])
 
 
     % Plot the average and standard deviation of values of resampled time vectors of Vm,Am,Jm and filter spatial
@@ -302,5 +306,5 @@ end
 
 catch me 
     % Save mat file as a backup
-        save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',caa-3,'_tilltrialMat_',num2str(t)])
+        save([path_trial_traj,SUBJECTS{p}, '_tilltrialc3d_',sMarkers{t}.info.fullpath(end-11:end),'_tilltrialMat_',num2str(t)])
 end

@@ -67,29 +67,23 @@ ave_subj_plotting_fun(all_time_traj_ulna_y,3,yConf,yell_Dec,SecondDec,agent2ndDe
 
 
 %% Spatial coordinates
-%Height coordinate (z) of blue/yellow agent for index marker
+%Height coordinate (z) of blue/yellow agent for ulna marker
 threshold = [];%[-50 200];
 %blue
 agent2ndDec = 1;
 title_plot = ['ULNA - Z coordinate of BLUE agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = [SUBJECTS{p}(2:end) 'B_zcoord_ulna.png'];
+if flag_2nd
+    title_fig  = [SUBJECTS{p}(2:end) 'B_zcoord_ulna_dec2.png'];
+else
+    title_fig  = [SUBJECTS{p}(2:end) 'B_zcoord_ulna.png'];
+end
 ave_subj_plotting_fun(all_spa_traj_ulna_b,3,bConf,blue_Dec,SecondDec,agent2ndDec,title_plot,title_fig,path_temp,1,[],flag_2nd)
 %yellow
 agent2ndDec = 2;
 title_plot = ['ULNA - Z coordinate of YELLOW agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = [SUBJECTS{p}(2:end) 'Y_zcoord_ulna.png'];
+if flag_2nd
+    title_fig  = [SUBJECTS{p}(2:end) 'Y_zcoord_ulna_dec2.png'];
+else
+    title_fig  = [SUBJECTS{p}(2:end) 'Y_zcoord_ulna.png'];
+end
 ave_subj_plotting_fun(all_spa_traj_ulna_y,3,yConf,yell_Dec,SecondDec,agent2ndDec,title_plot,title_fig,path_temp,1,[],flag_2nd)
-
-%Height coordinate (z) of blue/yellow agent for ulna marker
-threshold = [];%-20;
-%blue
-agent2ndDec = 1;
-title_plot = ['ULNA - Z coordinate of BLUE agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = [SUBJECTS{p}(2:end) 'B_zcoord_ulna.png'];
-ave_subj_plotting_fun(all_spa_traj_ulna_b,3,bConf,blue_Dec,SecondDec,agent2ndDec,title_plot,title_fig,path_temp,1,[],flag_2nd)
-%yellow
-agent2ndDec = 2;
-title_plot = ['ULNA - Z coordinate of YELLOW agent, pair' SUBJECTS{p}(2:end)];
-title_fig  = [SUBJECTS{p}(2:end) 'Y_zcoord_ulna.png'];
-ave_subj_plotting_fun(all_spa_traj_ulna_y,3,yConf,yell_Dec,SecondDec,agent2ndDec,title_plot,title_fig,path_temp,1,[],flag_2nd)
-
