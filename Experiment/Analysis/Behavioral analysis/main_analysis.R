@@ -1,7 +1,7 @@
 # ==============================================================================
-# Analysis of pilot data for JMD study (JMD=joint motor decision)
-# Data: collected in November 2022 @IIT Genova
-# Participants: N=8 (4 pairs) -> 1 pair (102) excluded
+# Analysis of JMD study (JMD=joint motor decision)
+# Data: collected in June 2022 @IIT Genova
+# Participants: N=32 (16 pairs)
 # Script: written by Mariacarla Memeo & Laura Schmitz
 # ==============================================================================
 
@@ -38,17 +38,18 @@ if (local_user == 1) {
   PlotDir    = paste0(DataDir,"plot/") # save plots here
 } else {
   # Set directories manually
-  DataDir    = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/"
-  DataDirObs = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/data_obs/"
-  PlotDir    = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/plot/"
+  DataDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Behavioral/"
+  AnaDir     = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
+  #DataDirObs = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/data_obs/"
+  PlotDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 }
 
 # Call needed functions/scripts 
-source(paste0(DataDir,'read_all_sheets.R'))
-source(paste0(DataDir,'summarySE.R'))
-source(paste0(DataDir,'theme_custom.R'))
-source(paste0(DataDir,'plotSE.R'))
-source(paste0(DataDir,'final_rtmt_byAgent.R'))
+source(paste0(AnaDir,'read_all_sheets.R'))
+source(paste0(AnaDir,'summarySE.R'))
+source(paste0(AnaDir,'theme_custom.R'))
+source(paste0(AnaDir,'plotSE.R'))
+source(paste0(AnaDir,'final_rtmt_byAgent.R'))
 
 # Initialize variables
 decision1 = c()
