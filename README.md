@@ -1,6 +1,6 @@
 # Joint motor decision
 
-# 28.06.2023 !!!!!!!!!!!!!!!!!!!!!!! IMPORTANT !!!!!!!!!!!!!!!!!!!!
+# 28.06.20 IMPORTANT!!!
 DONT TOUCH THE PILOT FOLDER ANYMORE! ONLY WORK ON EXPERIMENT FOLDER
 
 
