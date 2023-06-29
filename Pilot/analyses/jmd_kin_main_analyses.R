@@ -25,15 +25,13 @@ pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Flags
-local_user = 2;    # set current user (1=MC, 2=LA)
+local_user = 1;    # set current user (1=MC, 2=LA)
 schon_data = TRUE  # if TRUE: EXCLUDE pair 102 (because 102 is not schön)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (see Patel et al., 2012)
 
 # Set paths (*** ADJUST TO LOCAL COMPUTER with flag local_user ***)
 if (local_user == 1) {
-  # Retrieve directory of current file and create main directory path
-  slash      = this.path()
-  DataDir    = substr(slash,1,114) 
+  DataDir    = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Pilot/analyses/"
   DataDirObs = paste0(DataDir,"data_obs/") # retrieve observation data
   PlotDir    = paste0(DataDir,"plot/") # save plots here
 } else {
