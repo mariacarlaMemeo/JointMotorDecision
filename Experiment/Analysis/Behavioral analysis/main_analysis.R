@@ -26,7 +26,6 @@ sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Flags
 local_user = 1;    # set current user (1=MC, 2=LA)
-schon_data = TRUE  # if TRUE: EXCLUDE pair 102 (because 102 is not schön)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (see Patel et al., 2012)
 
 # Set paths (*** ADJUST TO LOCAL COMPUTER with flag local_user ***)
@@ -69,51 +68,37 @@ acc2      = c()
 # the original .mat files created during the experiment.
 # -------------------------------------------------------------------------------------------
 
-
-# Use following Excel file: pilotData_all_BY.xlsx
-# B=blue participant (previously A1) - now A1 is agent taking 1st decision
-# Y=yellow participant (previously A2) - now A2 is agent taking 2nd decision
-cursub    = "pilotData_all_BY.xlsx"
-Filetmp   = sprintf('%s%s', DataDir, cursub) # create path to access Excel file
-
-# Read all sheets (only selected columns) and create main data frame ("curdat")
-dat       = read_all_sheets(Filetmp,"P","A:AH")
-list_size = lapply(dat,lengths)
-group     = c(rep(100,list_size[[1]][[1]]),rep(101,list_size[[2]][[1]]),rep(102,list_size[[3]][[1]]),rep(103,list_size[[4]][[1]]))
-trial     = c(1:list_size[[1]][[1]],1:list_size[[2]][[1]],1:list_size[[3]][[1]],1:list_size[[4]][[1]])
-# Bind all data by row (rbind)
-curdat    = rbindlist(dat)
-curdat    = cbind(group,trial,curdat) # add "group" (=pair) and "trial" as 1st/2nd column
+curdat=as.data.frame(bind_all_excel(DataDir))
 
 
 # Add additional info to the data frame
 # -------------------------------------
 
-# Add a column (at the end) that expresses whether agents Y and b agree in their decisions [1=agreement, -1=disagreement]
+# Add a column (at the end) that expresses whether agents Y and B agree in their decisions [1=agreement, -1=disagreement]
 curdat$agree                  = as.integer(curdat$B_decision == curdat$Y_decision)
 curdat$agree[curdat$agree==0] =-1
 
 # Add columns where decision, confidence, and accuracy are reported per 1st/2nd decision (rather than tied to agent Y and B)
 for (row in 1:dim(curdat)[1])
 {
-  f_dec = curdat[row,AgentTakingFirstDecision]#agent taking first decision
+  f_dec = curdat[row,"AgentTakingFirstDecision"]#agent taking first decision
   if (f_dec=="B") {
-    decision1[row] = curdat[row,B_decision]
-    conf1[row]     = curdat[row,B_conf]
-    acc1[row]      = curdat[row,B_acc]} else {
-    decision1[row] = curdat[row,Y_decision]
-    conf1[row]     = curdat[row,Y_conf]
-    acc1[row]      = curdat[row,Y_acc]
+    decision1[row] = curdat[row,"B_decision"]
+    conf1[row]     = curdat[row,"B_conf"]
+    acc1[row]      = curdat[row,"B_acc"]} else {
+    decision1[row] = curdat[row,"Y_decision"]
+    conf1[row]     = curdat[row,"Y_conf"]
+    acc1[row]      = curdat[row,"Y_acc"]
   }
   
-  s_dec = curdat[row,AgentTakingSecondDecision]#agent taking second decision
+  s_dec = curdat[row,"AgentTakingSecondDecision"]#agent taking second decision
   if (s_dec=="B") {
-    decision2[row] = curdat[row,B_decision]
-    conf2[row]     = curdat[row,B_conf]
-    acc2[row]      = curdat[row,B_acc]} else {
-    decision2[row] = curdat[row,Y_decision]
-    conf2[row]     = curdat[row,Y_conf]
-    acc2[row]      = curdat[row,Y_acc]
+    decision2[row] = curdat[row,"B_decision"]
+    conf2[row]     = curdat[row,"B_conf"]
+    acc2[row]      = curdat[row,"B_acc"]} else {
+    decision2[row] = curdat[row,"Y_decision"]
+    conf2[row]     = curdat[row,"Y_conf"]
+    acc2[row]      = curdat[row,"Y_acc"]
   }
 }
 # Add the computed values (decision, confidence, accuracy) for 1st/2nd decision to curdat
@@ -131,14 +116,6 @@ all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$deci
 curdat$switch                   = as.integer(curdat$decision1 != curdat$Coll_decision)
 curdat$switch[curdat$switch==0] = -1
 
-# Remove pair 102 - didn't follow the instructions
-if (schon_data) {
-  curdat    = curdat[curdat$group!=102,]
-  schon_lab = "noPair102"
-} else {
-  schon_lab = ""
-}
-
 
 # Configure plot parameters
 # -------------------------
@@ -155,10 +132,10 @@ switch_colors = c("lightcoral", "lightgreen")
 # Check PROPORTIONS: high/low confidence, agreement/disagreement, switch/no switch
 # --------------------------------------------------------------------------------
 # High/low confidence: Select high/low confidence trials for each agent and average the values
-perc_conf_lo = round(100*(dim(curdat[(curdat$B_conf==c(1) | curdat$B_conf==c(2) | curdat$B_conf==c(3))])[1]+dim(curdat[(curdat$Y_conf==c(1) | curdat$Y_conf==c(2) | curdat$Y_conf==c(3))])[1])/(2*dim(curdat)[1]))
-perc_conf_hi = round(100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1]))
-sprintf("Low confidence trials (1-3): %d %s", perc_conf_lo, "%")
-sprintf("High confidence trials (4-6): %d %s", perc_conf_hi, "%")
+# perc_conf_lo = round(100*(dim(curdat[(curdat$B_conf>=1 & curdat$B_conf<=3)|(curdat$Y_conf>=1 & curdat$Y_conf<=3),])[1])/(2*dim(curdat)[1]))
+# perc_conf_hi = round(100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1]))
+# sprintf("Low confidence trials (1-3): %d %s", perc_conf_lo, "%")
+# sprintf("High confidence trials (4-6): %d %s", perc_conf_hi, "%")
 
 # Sub-select agreement/disagreement trials
 at      = curdat[curdat$agree==1,]
@@ -166,8 +143,8 @@ dt      = curdat[curdat$agree==-1,]
 # Plot disagreement according to target contrast
 # agreement: 1=agreement, -1=disagreement; contrasts = c(0.115, 0.135, 0.170, 0.250)
 # hist(at$targetContrast)
-contrastData_all  = curdat[,c('group','targetContrast','agree','switch')]
-contrastData_indi = contrastData_all[contrastData_all$group==103]
+contrastData_all  = curdat[,c('Pair','targetContrast','agree','switch')]
+contrastData_indi = contrastData_all[contrastData_all$Pair==103]
 indi = 0; # select whether to plot aggregate or individual data ((indi=0 vs. indi=1)
 if (indi==1) {
   contrastD      = contrastData_indi
@@ -182,15 +159,17 @@ contrastD$agree          = as.factor(contrastD$agree)
 levels(contrastD$agree)  = c("disagree", "agree")
 contrastD$switch         = as.factor(contrastD$switch)
 levels(contrastD$switch) = c("no switch", "switch")
+contrastD$targetContrast = as.factor(contrastD$targetContrast)
+
 # plot agreement as a function of target contrast
-ggplot(contrastD, aes(x=contrastD$targetContrast, fill=contrastD$agree)) +
+ggplot(contrastD, aes(x=targetContrast, fill=agree)) +
   stat_count(geom = "bar", position="dodge2") +
   scale_y_continuous(limits = count_scale$lim, breaks = count_scale$breaks) +
   scale_x_continuous(breaks = target_scale$breaks, labels = target_scale$labels) +
     xlab("Target contrasts") + ylab("Count") + theme_custom()
 ggsave(file=paste0(PlotDir,"hist_agree_contrast.png"), dpi = 300, units=c("cm"), height =20, width = 20)
 # plot switch as a function of target contrast (only disagreement!)
-contrastD_dt = contrastD[contrastD$agree=="disagree"]
+contrastD_dt = contrastD[contrastD$agree=="disagree",]
 ggplot(contrastD_dt, aes(x=contrastD_dt$targetContrast, fill=contrastD_dt$switch)) +
   stat_count(geom = "bar", position="dodge2") + scale_fill_manual(values=switch_colors) +
   scale_y_continuous(limits = count_scale_dt$lim, breaks = count_scale_dt$breaks) +
@@ -205,8 +184,8 @@ sprintf("Disagreement trials: %d %s", perc_dt, "%")
 sprintf("Agreement trials: %d %s", perc_at, "%")
 
 # Percentage of switch/noswitch in case of disagreement (and for all trials)
-dt_switch         = dt[dt$switch==1]
-dt_noswitch       = dt[dt$switch==-1]
+dt_switch         = dt[dt$switch==1,]
+dt_noswitch       = dt[dt$switch==-1,]
 perc_dt_switch    = round(100*(dim(dt_switch)[1]/dim(dt)[1]))     #64%
 perc_dt_noswitch  = round(100*(dim(dt_noswitch)[1]/dim(dt)[1]))   #36%
 perc_all_switch   = round(100*(dim(dt_switch)[1]/dim(curdat)[1])) #25%
@@ -215,7 +194,7 @@ sprintf("Switch as proportion of disagreement trials: %d %s", perc_dt_switch, "%
 sprintf("No switch as proportion of disagreement trials: %d %s", perc_dt_noswitch, "%")
 sprintf("Switch/no switch as proportion of all trials: %d %s %d %s", perc_all_switch, "% /", perc_all_noswitch, "%")
 # Check if there is switching in case of agreement (1st = 2nd decision)
-at_switch = at[at$switch==1] # should be empty (no switch if agreement)
+at_switch = at[at$switch==1,] # should be empty (no switch if agreement)
 if (nrow(at_switch) == 0) {
   print("ALL GOOD: No switches if co-actors agree!")
 } else {
@@ -267,7 +246,7 @@ print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$
              manual_col=c("steelblue1", "darkgreen"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
              scale_shape_manual(values=c(16,16))+
              xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
-ggsave(file=paste0(PlotDir,"conf_agree",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+ggsave(file=paste0(PlotDir,"conf_agree",".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
 # 1b. Split by agreement and accuracy (only collective decision)
@@ -291,7 +270,7 @@ print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_
              manual_col=c("red", "green"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
              scale_shape_manual(values=c(16,16))+
              xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
-ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",schon_lab,".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
 # 2. ACCURACY AND CONFIDENCE as a function of AGREEMENT / SWITCH
@@ -430,17 +409,17 @@ ggsave(file=paste0(PlotDir,"Accuracy_Agree+Switch.png"), dpi = 300, units=c("cm"
 
 coll = FALSE # include also the collective decision?
 if (coll) {
-  dt_long  = melt(dt[,c("group","trial","confidence1","confidence2","Coll_conf","switch")], id=c("group","trial","switch"))
+  dt_long  = melt(dt[,c("Pair","Trial","confidence1","confidence2","Coll_conf","switch")], id=c("Pair","Trial","switch"))
   coll_lab = "_3conf"} else {
-  dt_long  = melt(dt[,c("group","trial","confidence1","confidence2","switch")], id=c("group","trial","switch"))
+  dt_long  = melt(dt[,c("Pair","Trial","confidence1","confidence2","switch")], id=c("Pair","Trial","switch"))
   coll_lab = ""
 }
 
 # No switch plots, per pair (disagreement trials)
-for(p in unique(dt_long$group)){
-  no_switch_100=dt_long[dt_long$group==p & dt_long$switch==-1,]
+for(p in unique(dt_long$Pair)){
+  no_switch_100=dt_long[dt_long$Pair==p & dt_long$switch==-1,]
   print(ggplot(no_switch_100, aes(x=variable, y=value,shape=variable)) +
-          geom_line(aes(group=trial,color=as.factor(trial)),position=position_jitter(width = .01, height = .01))+
+          geom_line(aes(Pair=Trial,color=as.factor(Trial)),position=position_jitter(width = .01, height = .01))+
           geom_point(size = 2, position=position_jitter(width = .1, height = .1)) +
           scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
           xlab("decision")+ylab("Confidence level")+
@@ -449,10 +428,10 @@ for(p in unique(dt_long$group)){
 }
 
 # Switch plots, per pair (disagreement trials)
-for(p in unique(dt_long$group)){
-  switch_100=dt_long[dt_long$group==p & dt_long$switch==1,]
+for(p in unique(dt_long$Pair)){
+  switch_100=dt_long[dt_long$Pair==p & dt_long$switch==1,]
   print(ggplot(switch_100, aes(x=variable, y=value,shape=variable)) +
-          geom_line(aes(group=trial,color=as.factor(trial)),position=position_jitter(width = .01, height = .01))+
+          geom_line(aes(Pair=Trial,color=as.factor(Trial)),position=position_jitter(width = .01, height = .01))+
           geom_point(size = 2, position=position_jitter(width = .1, height = .1)) +
           scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
           xlab("decision")+ylab("Confidence level")+
@@ -484,10 +463,10 @@ d                         = mt_rt_conf_2d_sum # shorter name for convenience
 # plot - RT and MT as a function of confidence level (across participants)
 print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
              colorvar=d$var_lab,shapevar=d$var_lab,
-             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (2nd decision) ",schon_lab),
+             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (2nd decision) "),
              manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
              xlab("agent confidence") + ylab("time [s]") + theme_custom())
-ggsave(file=sprintf(paste0("%stime_conf_2d",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+ggsave(file=sprintf(paste0("%stime_conf_2d",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
 # 6. RT and MT as a function of TARGET CONTRAST
@@ -536,15 +515,15 @@ for (m in 1:2){
   
   if (m==1) {
     lab ="RT"
-    all <- curdat[,c("targetContrast","B_rtKin","Y_rtKin","rt_finalColl","group")]
+    all <- curdat[,c("targetContrast","B_rtKin","Y_rtKin","rt_finalColl","Pair")]
     mov_scale = list("lim"=c(0,1.8),"breaks"=seq(0,1.8, by=0.2))} else {
     lab="MT"
-    all <- curdat[,c("targetContrast","B_mtKin","Y_mtKin","mt_finalColl","group")]
+    all <- curdat[,c("targetContrast","B_mtKin","Y_mtKin","mt_finalColl","Pair")]
     mov_scale = list("lim"=c(0.5,2.5),"breaks"=seq(0.5,2.5, by=0.25))
   }
   
   # prep data
-  all$group=as.factor(all$group)
+  all$Pair=as.factor(all$Pair)
   if (schon_data) {
     all_pairs = c(100,101,103) } else {
     all_pairs = c(100,101,102,103)
@@ -552,8 +531,8 @@ for (m in 1:2){
   
   for (g in all_pairs) {
     
-    sub_all=all[all$group==g,]
-    sub_all=subset(sub_all, select = -c(group) )
+    sub_all=all[all$Pair==g,]
+    sub_all=subset(sub_all, select = -c(Pair) )
     all_long <- melt(sub_all, id="targetContrast")
     # rename factor levels
     levels(all_long$variable) <- c("B", "Y", "Collective")
@@ -587,7 +566,7 @@ datObs = read_all_sheets(file,"P","A:U")
 curdatObs = rbindlist(datObs)
 names(curdatObs)[names(curdatObs)=="Trial"] <- "trial_obs"
 names(curdatObs)[names(curdatObs)=="Block"] <- "block_obs"
-names(curdatObs)[names(curdatObs)=="Group"] <- "pair_obs"
+names(curdatObs)[names(curdatObs)=="Pair"] <- "pair_obs"
 names(curdatObs)[names(curdatObs)=="CorrResp"] <- "agent_confidence"
 names(curdatObs)[names(curdatObs)=="SubjResp"] <- "observer_confidence"
 names(curdatObs)[names(curdatObs)=="SubjAcc01"] <- "observer_acc"
@@ -602,9 +581,9 @@ exedat       = as.data.frame(lapply(exedat, rep, each=4)) #repeat each row 4 tim
 asec         = as.factor(exedat$AgentTakingSecondDecision)
 levels(asec) = c(1,2)
 exedat$asec  = as.numeric(asec)
-exedat_yb    = with(exedat, exedat[order(group,-asec),])#first agent YELLOW(Y) acting second, observed by agent BLUE(b) (to align with obsdat)
-names(exedat_yb)[names(exedat_yb)=="trial"] <- "trial_exe"
-names(exedat_yb)[names(exedat_yb)=="group"] <- "pair_exe"
+exedat_yb    = with(exedat, exedat[order(Pair,-asec),])#first agent YELLOW(Y) acting second, observed by agent BLUE(b) (to align with obsdat)
+names(exedat_yb)[names(exedat_yb)=="Trial"] <- "trial_exe"
+names(exedat_yb)[names(exedat_yb)=="Pair"] <- "pair_exe"
 
 #Check if the order of agents is the same
 all(exedat_yb$asec==curdatObs$Pagent) #THIS CHECK FAILS - because we didn't update the obs results file (curobs); it's wrong because of P101
@@ -669,7 +648,7 @@ if(coll){dti_long = melt(dti[,c("pair_obs","trial_exe","confidence1","conf_aveBl
 for(p in unique(dti_long$pair_obs)){
   no_switch_100i = dti_long[dti_long$pair_obs==p & dti_long$switch==-1,]
   print(ggplot(no_switch_100i, aes(x=variable, y=value, shape=variable)) +
-          geom_line(aes(group=trial_exe,color=as.factor(trial_exe)),position=position_jitter(width = .01, height = .01))+
+          geom_line(aes(Pair=trial_exe,color=as.factor(trial_exe)),position=position_jitter(width = .01, height = .01))+
           geom_point(size = 2,position=position_jitter(width = .1, height = .1))+ 
           scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
           xlab("decision")+ylab("Confidence level")+
@@ -681,7 +660,7 @@ for(p in unique(dti_long$pair_obs)){
 for(p in unique(dti_long$pair_obs)){
   switch_100i = dti_long[dti_long$pair_obs==p & dti_long$switch==1,]
   print(ggplot(switch_100i, aes(x=variable, y=value, shape=variable)) +
-          geom_line(aes(group=trial_exe,color=as.factor(trial_exe)),position=position_jitter(width = .01, height = .01))+
+          geom_line(aes(Pair=trial_exe,color=as.factor(trial_exe)),position=position_jitter(width = .01, height = .01))+
           geom_point(size = 2,position=position_jitter(width = .1, height = .1))+ 
           scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
           xlab("decision")+ylab("Confidence level")+
@@ -840,10 +819,10 @@ mt_rt_confObs_sum$var_lab = c(replicate(length(rt_confObs_sum), "rt"),replicate(
 # plot the rt/mt according to inferred confidence (observation task)
 print(plotSE(df=mt_rt_confObs_sum,xvar=mt_rt_confObs_sum$observer_confidence,yvar=mt_rt_confObs_sum$var,
              colorvar=mt_rt_confObs_sum$var_lab,shapevar=mt_rt_confObs_sum$var_lab,
-             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (individual 2nd) ",schon_lab),
+             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (individual 2nd) "),
              manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
         xlab("observer confidence") + ylab("time [s]") + theme_custom())
-ggsave(file=sprintf(paste0("%stime_obs_conf",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+ggsave(file=sprintf(paste0("%stime_obs_conf",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
 ## Scatterplot - average value of confidence for Observation
@@ -857,7 +836,7 @@ conf_exe_obsAve = ggplot(sinout_1block, aes(x = agent_confidence, y = conf_aveBl
   annotate("text", x=5, y=1, label = paste("R2 = ", format(summary(fit_ave)$r.squared,digits=3)), col="black", cex=6)+
   ggtitle("Observer confidence vs Agent confidence")
 print(conf_exe_obsAve + labs(y = "Mean observer confidence", x = "agent confidence"))
-ggsave(file=sprintf(paste0("%sexeconf_vs_obsconfAveraged",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+ggsave(file=sprintf(paste0("%sexeconf_vs_obsconfAveraged",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
 # multiple facets with all the agents
@@ -868,7 +847,7 @@ mpg_plot <- ggplot(sinout, aes(x=agent_confidence, y=conf_aveBlock)) +
   geom_point(shape = 1, position = position_jitter(width = 0.1, height = .1)) +
   geom_smooth(method = lm, color = "blue", fill = "#69b3a2",se = TRUE) 
 print(mpg_plot)
-ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf_perPair_",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20*length(levels(interaction(sinout$pair_obs,sinout$Oagent))))
+ggsave(file=sprintf(paste0("%sexeconf_vs_obsconf_perPair_",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20*length(levels(interaction(sinout$pair_obs,sinout$Oagent))))
 
 #### COLLECTIVE AND INDIVIDUAL(COLLECTIVE) BENEFIT ####
 coll_benefit     = c(0.924,1.01,0.798)
@@ -904,16 +883,16 @@ print(plotSE(df=diffConf_targ_sum,xvar=diffConf_targ_sum$targetContrast,yvar=dif
              linevar=interaction(diffConf_targ_sum$Oagent,diffConf_targ_sum$pair_obs),sizevar=c(3,3),disco=FALSE) +
         xlab("Target Contrasts") + ylab("(mean obs confidence - agent confidence) ") + 
         scale_color_brewer(palette = "Paired")) + theme_custom()
-ggsave(file=sprintf(paste0("%sdiffConf_vs_contrasts_",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
+ggsave(file=sprintf(paste0("%sdiffConf_vs_contrasts_",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 
 
 ## (averaged obs conf - agent conf) vs movement time
-## averaged movement time - divided by CONTRAST/agent/group
+## averaged movement time - divided by CONTRAST/agent/Pair
 diffConf_mt  = sinout_1block[,c("targetContrast","diff_conf","diff_mt_signed","pair_obs","Oagent")]
 diffConf_mt_sum = summarySE(diffConf_mt,measurevar="diff_mt_signed",groupvars=c("targetContrast","pair_obs","Oagent"))
 diffConf_mt_sum$diff_conf = diffConf_targ_sum$diff_conf
 
-## averaged movement time - divided by AGENT/group
+## averaged movement time - divided by AGENT/Pair
 diffConf_diffMt  = sinout_1block[,c("diff_conf","diff_mt_signed","pair_obs","Oagent")]
 sub_mt           = summarySE(diffConf_diffMt,measurevar="diff_mt_signed",groupvars=c("pair_obs"));names(sub_mt)=c("pair_obs","N_mt","diff_mt_signed","sd_mt","se_mt","ci_mt")
 sub_mt           = sub_mt[rep(seq_len(nrow(sub_mt)), each = 2), ]
@@ -930,7 +909,7 @@ print(ggplot(diffConf_diffMt_sum, aes(x=diff_mt_signed, y=diff_conf, color=inter
         geom_errorbar(aes(ymin=diff_conf-se_conf, ymax=diff_conf+se_conf), size=0.7, width=.01, position=pd) +
         geom_point(aes(color=interaction(Oagent,pair_obs))) + 
         scale_color_brewer(palette = "Paired"))
-ggsave(file=sprintf(paste0("%sdiffConf_vs_diffMt",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
+ggsave(file=sprintf(paste0("%sdiffConf_vs_diffMt",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 
 
 # XXX Do participants who rate observed decisions, on average, as more confident than their own also move more slowly than the observed actions?
@@ -981,7 +960,7 @@ if(patel_mt){
           geom_point(aes(color=inter_agent_pair,shape=as.factor(iconHigh),size=3)) + 
           labs( y = "Difference in MT (A1 - A2)", x = "Agent and Pair"))
   # scale_color_brewer(palette = "Paired"))
-  ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",schon_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
+  ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
 }
 
 
