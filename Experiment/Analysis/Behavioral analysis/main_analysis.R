@@ -668,15 +668,17 @@ print(ggplot(sub_noswitch, aes(x=sub_noswitch[,"Conf. 2 - Conf. 1"], y=sub_noswi
 ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_NoSwitch.png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 # END COLLECTIVE ADJUSTMENT PLOTS
-################################################################################
+##############################################################################
 
-########################################################################################
+# #### LINEAR MODEL
+#########################################################
 # Quick test on linear models
 coll_conf=lmer(Coll_conf ~ confidence1 * switch + confidence2 + (1|interaction(curdat$Pair)), data=curdat)
 summary(coll_conf)
 # emmeans(coll_conf,pairwise~confidence1|switch)
-
-##############################
+#########################################################
+# #### PATEL
+#########################################################
 # XXX Do participants who rate observed decisions, on average, as more confident than their own also move more slowly than the observed actions?
 # The faster agent should rate the observed action as less confident than their own (pCon > iCon). 
 # However, all our pilot participants rate the observed action as more confident than their own (pCon < iCon).

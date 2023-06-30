@@ -19,9 +19,12 @@ clear;
 %--------------------------------------------------------------------------
 % Prepare path and variables
 %--------------------------------------------------------------------------
-path_to_edit = 'C:\Users\Laura\Desktop\check\exp_data_107+\'; % Matlab data
-path_to_save = 'C:\Users\Laura\Desktop\check\'; % save figures here
-ptc          = [108, 110, 111:124]; % participant numbers
+path_data    = fullfile(pwd,'..\..\Data\Behavioral\'); % Matlab data
+path_to_save = fullfile(pwd,'Behavioral plots\Accuracy_PsychCurves\'); % save figures here
+% Prepare the data to be loaded
+each         = dir([path_data,'*.mat']); % list of Matlab files
+% Retrieve participant number
+ptc     = cellfun(@(s) cell2mat(regexp(s,'\d{3}','Match')),{each.name},'uni',0); %take the first 3 digits
 
 % Initialize variable to save slope values for: Blue, Yellow, Collective,
 % Coll. Blue, Coll. Yellow, Coll. Blue v2, Coll. Yellow v2,
@@ -99,8 +102,7 @@ end
 for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     
     % Load each pair's data
-    each = dir([path_to_edit,'*.mat']);
-    load([path_to_edit,each(p).name])
+    load([path_data,each(p).name])
     disp(['Loading ',each(p).name]);
 
     % remove header and convert cell to mat
@@ -175,7 +177,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     % Plot accuracies across abs., log-transformed contrast differences
     %  -> Here we use the accuracy data (0 or 1)
     % -----------------------------------------
-    acc_fig_contrasts=figure('Name',['S' num2str(ptc(p))]); set(acc_fig_contrasts, 'WindowStyle', 'Docked');
+    acc_fig_contrasts=figure('Name',['S' ptc{p}]); set(acc_fig_contrasts, 'WindowStyle', 'Docked');
     semilogx(absConSteps,data.result.a1.acc,'-s','MarkerSize',6,'LineWidth',1.5,'Color',color(1,:)); % Blue
     hold on;
     semilogx(absConSteps,data.result.a2.acc,'-o','MarkerSize',6,'LineWidth',1.5,'Color',color(2,:)); % Yellow
@@ -185,8 +187,8 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     xticks([min(absConSteps)*.8 max(absConSteps)*1.2]); % remove ticks?
     ylabel('Accuracy');
     ylim([0.3 1]);
-    title(['Accuracy - ','S' num2str(ptc(p))]);
-    saveas(gcf,[path_to_save,'S',num2str(ptc(p)),'_accuracy',lab,block_lab,CB_lab],'png');
+    title(['Accuracy - ','S' ptc{p}]);
+    saveas(gcf,[path_to_save,'S',ptc{p},'_accuracy_',coll_calc,lab,block_lab,CB_lab],'png');
     
     % Save accuracies for all pairs
     accDyad_all  = [accDyad_all; data.result.coll.acc];
@@ -240,7 +242,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
 
     %----------------------------------------------------------------------
     % Add the non-logarithmic plot (not necessary, so don't save it)
-    acc_fig_psy=figure('Name',['S' num2str(ptc(p))]); set(acc_fig_psy, 'WindowStyle', 'Docked');
+    acc_fig_psy=figure('Name',['S' ptc{p}]); set(acc_fig_psy, 'WindowStyle', 'Docked');
     plot(conSteps,data.result.a1.fs,'bs-');
     hold on;
     plot(conSteps,data.result.a2.fs,'yo-');
@@ -248,8 +250,8 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     xlabel('C2 - C1');
     ylabel('P(Report 2nd)');
     ylim([0 1]);
-    title(['Accuracy - ','S' num2str(ptc(p))]);
-    % saveas(gcf,[path_to_save,'S',num2str(ptc(p)),'_psy',lab,block_lab,CB_lab],'png');
+    title(['Accuracy - ','S' ptc{p}]);
+    % saveas(gcf,[path_to_save,'S',ptc{p},'_psy_',coll_calc,lab,block_lab,CB_lab],'png');
     
     
     %----------------------------------------------------------------------
@@ -262,7 +264,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
                data.result.collA1.fs' data.result.collA2.fs'...
                data.result.a1_1dec.fs' data.result.a2_1dec.fs'];
     % Figure per pair that shows the psychometric curves
-    cb=figure('Name',['CB_S' num2str(ptc(p))]);set(cb, 'WindowStyle', 'Docked');
+    cb=figure('Name',['CB_S' ptc{p}]);set(cb, 'WindowStyle', 'Docked');
     % slope: [a1(blue), a2(yellow), sdyad(coll), sdyadA1(coll blue), sdyadA2(coll yellow)]
     % Each row is a pair; each column refers to coll/individual etc.
     full=1; % compute cb for all trials, not for windows
@@ -291,9 +293,9 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     end
     
     % display info in command window
-    disp(['Collective benefit ' num2str(ptc(p)) ': ' num2str(coll_ben(p,3))]);
-    disp(['B individual coll benefit ' num2str(ptc(p)) ': ' num2str(coll_ben(p,1))])
-    disp(['Y individual coll benefit ' num2str(ptc(p)) ': ' num2str(coll_ben(p,2))])
+    disp(['Collective benefit ' ptc{p} ': ' num2str(coll_ben(p,3))]);
+    disp(['B individual coll benefit ' ptc{p} ': ' num2str(coll_ben(p,1))])
+    disp(['Y individual coll benefit ' ptc{p} ': ' num2str(coll_ben(p,2))])
     disp(['smax: ' num2str(smax) ' agent: ' num2str(agent_max)]);
     disp(['smin: ' num2str(smin) ' agent: ' num2str(agent_min)]);
     disp(['sdiff: ' num2str(smax-smin)]);
@@ -302,10 +304,10 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
 %     text(-0.15,0.7,['coll. blue benefit = ' num2str(coll_ben(p,1))]);
 %     text(-0.15,0.6,['coll. yell benefit = ' num2str(coll_ben(p,2))]);
     
-    title(['Coll. benefit - ','S' num2str(ptc(p))]);
+    title(['Coll. benefit - ','S' ptc{p}]);
 
     %save figure
-    saveas(gcf,[path_to_save,'S',num2str(ptc(p)),'_cb',lab,block_lab,CB_lab],'png');
+    saveas(gcf,[path_to_save,'S',ptc{p},'_cb_',coll_calc,lab,block_lab,CB_lab],'png');
     hold off;
 
     ratio = smin/smax;
@@ -326,14 +328,14 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     % -> use the same smax found before
     % -> collective decision and relative signed contrast
     if not(subcon_calc) && sub_block==0
-        ws=figure('Name',['S' num2str(ptc(p)) '_wnd']);set(ws, 'WindowStyle', 'Docked');
+        ws=figure('Name',['S' ptc{p} '_wnd']);set(ws, 'WindowStyle', 'Docked');
         % XXX WHAT DOES THE FOLLOWING COMMENT MEAN?
         % Each row is a pair - here the y is different!!!
         full=0; % compute cb separately for windows
         coll_prtc = [coll_fs_v C2_C1_v];
         slope_wcoll(p,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full,coll_calc);
         slope_wcoll(p,:) = slope_wcoll(p,:)/smax;
-        plot(slope_wcoll(p,:),['-' plotSym{3}],'Color',color(3,:)); title(['Coll benefit - ','S' num2str(ptc(p)),'- wnd']);
+        plot(slope_wcoll(p,:),['-' plotSym{3}],'Color',color(3,:)); title(['Coll benefit - ','S' ptc{p},'- wnd']);
     end
 end % end of pair loop ---------------------------------------------------%
 
@@ -412,6 +414,8 @@ xticks([min(absConSteps)*.8 max(absConSteps)*1.2]);
 ylabel('Accuracy');
 ylim([0.3 1]);
 title('Accuracy average across pairs');
+% save figure
+saveas(gcf,[path_to_save,'Average_cb_',coll_calc,lab,block_lab,CB_lab],'png');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
