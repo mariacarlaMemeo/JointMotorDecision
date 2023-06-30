@@ -358,6 +358,7 @@ sAverage = plot_psy(conSteps,y,plotSymAve,colorAve,default,full,coll_calc);
 ylim([0 1]);
 xlabel("Contrast difference");
 ylabel("Proportion 2nd interval");
+saveas(gcf,[path_to_save,'Average_cb_',coll_calc,lab,block_lab,CB_lab],'png');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -415,7 +416,7 @@ ylabel('Accuracy');
 ylim([0.3 1]);
 title('Accuracy average across pairs');
 % save figure
-saveas(gcf,[path_to_save,'Average_cb_',coll_calc,lab,block_lab,CB_lab],'png');
+saveas(gcf,[path_to_save,'Average_acc_',coll_calc,lab,block_lab,CB_lab],'png');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
