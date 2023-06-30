@@ -24,7 +24,7 @@ path_to_save = fullfile(pwd,'Behavioral plots\Accuracy_PsychCurves\'); % save fi
 % Prepare the data to be loaded
 each         = dir([path_data,'*.mat']); % list of Matlab files
 % Retrieve participant number
-ptc     = cellfun(@(s) cell2mat(regexp(s,'\d{3}','Match')),{each.name},'uni',0); %take the first 3 digits
+ptc          = cellfun(@(s) cell2mat(regexp(s,'\d{3}','Match')),{each.name},'uni',0); %take first 3 digits
 
 % Initialize variable to save slope values for: Blue, Yellow, Collective,
 % Coll. Blue, Coll. Yellow, Coll. Blue v2, Coll. Yellow v2,
@@ -47,9 +47,9 @@ default.w           = zeros(default.w_lgt/default.step,default.w_lgt);
 default.slope_wnd   = [];
 default.slope_wcoll = [];
 
-% Specify colors and markers
+% Specify markers
 plotSym    = {'s' 'o' '*' '+' '+'};
-plotSymAve = {'o' 's' 'diamond'};
+plotSymAve = {'o' 's' 'diamond'}; % colors for average plots
 % Specify colors
 color     = [[30 60 190]; [240 200 40]; [17 105 40];... % blue, yellow, dark green
     [30 60 190]; [240 200 40]; ... % blue, yellow
@@ -58,9 +58,8 @@ color     = [[30 60 190]; [240 200 40]; [17 105 40];... % blue, yellow, dark gre
 % Specify colors for average plots
 colorAve = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; [0 0 0]];
 
-
 %--------------------------------------------------------------------------
-% Ask for use input
+% Ask for user input
 %--------------------------------------------------------------------------
 % Calculate collective benefit with 'max' or 'mean' function?
 fcalc = input('Choose the function to calculate collective benefit:\n 1 = max\n 2 = mean\n');
@@ -105,8 +104,8 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     load([path_data,each(p).name])
     disp(['Loading ',each(p).name]);
 
-    % remove header and convert cell to mat
-    % optionally: select 1st or 2nd block
+    % Remove header and convert cell to mat
+    % Optionally: select 1st or 2nd block
     if sub_block==0 % all data
         agent_order = data.output(2:end,28:30);
         data.output = cell2mat(data.output(2:end,1:27));
@@ -121,7 +120,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     % SKIP THIS -----------------------------------------------------------
     % The following is only useful if we have unequal numbers for the
     % different contrast levels. We chose to have equal numbers in Exp. 1.
-    % Optionally subselect trials
+    % Optionally subselect trials:
     % Here we subselect trials such that we have the same number of trials
     % for each contrast level (i.e., here: 32 per contrast)
     if subcon_calc
@@ -196,7 +195,8 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     accY_all     = [accY_all; data.result.a2.acc];
    
     %----------------------------------------------------------------------
-    % Plot P(Report 2nd) across abs., log-transformed contrast differences
+    % Plot P(Report 2nd) across contrast differences (non-logarithmic!)
+    % Note: This plot is like the psych. curve but without curve fitting!
     % -> Here we use the decision data (1 or 2)
     % -----------------------------------------
     % fs = FirstSecond
@@ -240,8 +240,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         data.result.collA2.N(cI) = length(coll_fs_vA2(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA2)));
     end
 
-    %----------------------------------------------------------------------
-    % Add the non-logarithmic plot (not necessary, so don't save it)
+    % Plot now (plot not necessary, so don't save it)
     acc_fig_psy=figure('Name',['S' ptc{p}]); set(acc_fig_psy, 'WindowStyle', 'Docked');
     plot(conSteps,data.result.a1.fs,'bs-');
     hold on;
@@ -250,69 +249,92 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     xlabel('C2 - C1');
     ylabel('P(Report 2nd)');
     ylim([0 1]);
-    title(['Accuracy - ','S' ptc{p}]);
+    title(['Sensitivity - ','S' ptc{p}]);
     % saveas(gcf,[path_to_save,'S',ptc{p},'_psy_',coll_calc,lab,block_lab,CB_lab],'png');
-    
     
     %----------------------------------------------------------------------
     % FIT PSYCHOMETRIC CURVES
     %----------------------------------------------------------------------
-    % In y, we save the decision data for each contrast level (i.e., signed 
-    % contrast differences -> 8 values). There are 7 output values, for:
+    % !!! y: here we save the DECISION data for each contrast level
+    % (i.e., signed contrast differences -> 8 values).
+    % There are 7 output values, for:
     % [Blue/A1, Yellow/A2, Collective , BColl, YColl, BCollv2, YCollv2]
+    full=1; % compute cb for all trials, not for windows
     y       = [data.result.a1.fs' data.result.a2.fs' data.result.coll.fs'...
                data.result.collA1.fs' data.result.collA2.fs'...
                data.result.a1_1dec.fs' data.result.a2_1dec.fs'];
-    % Figure per pair that shows the psychometric curves
-    cb=figure('Name',['CB_S' ptc{p}]);set(cb, 'WindowStyle', 'Docked');
-    % slope: [a1(blue), a2(yellow), sdyad(coll), sdyadA1(coll blue), sdyadA2(coll yellow)]
-    % Each row is a pair; each column refers to coll/individual etc.
-    full=1; % compute cb for all trials, not for windows
+    
+    % Prepare figure (per pair) to show psychometric curves
+    cb=figure('Name',['CB_S' ptc{p}]);
+    set(cb, 'WindowStyle', 'Docked');
+    
+    % !!! slope: here we save the slope values (max or mean) for each pair.
+    % Structure of "slope":
+    % Each row is one pair.
+    % There are 7 columns, referring to
+    % [Blue/A1, Yellow/A2, Collective , BColl, YColl, BCollv2, YCollv2] 
+    % ---------------------------------------------------------------------
+    % -> GO INTO FUNCTION PLOT_PSY to fit and plot psych. curves
     slope(p,:) = plot_psy(conSteps,y,plotSym,color,default,full,coll_calc);
+    % ---------------------------------------------------------------------
+    
+    % Set figure properties
     ylim([0 1]);
     xlabel("Contrast difference");
     ylabel("Proportion 2nd interval");
 
-    %%%%%Compute collective benefit
-    [smax,agent_max]  = max(slope(p,1:2));
+    %----------------------------------------------------------------------
+    % COMPUTE COLLECTIVE BENEFIT
+    %----------------------------------------------------------------------
+    % Compute which individual (B or Y) has the larger slope, i.e., has a
+    % higher perceptual sensitivity
+    % agent_max/min = the agent names (1 means Blue, 2 means Yellow)
+    % smax/smin     = the slope values
+    [smax,agent_max]  = max(slope(p,1:2)); %smax=slope, 
     [smin,agent_min]  = min(slope(p,1:2));
-    % Note: the total collective benefit takes into account all trials
-    % (from the coll. decision and from the max. individual decider)
-    % whereas the indiv. collective benefits take into account only those
-    % trials in which the respective individual (b/y) took the first and
-    % last decision
-    %%%
-    coll_ben(p,3) = round(slope(p,3)/smax,2); % this is the coll. benefit
-    %%%
+    
+    %%% Collective benefit
+    % sdyad ([mean or max] dyad slope) / smax (slope of more sensitive individual)
+    coll_ben(p,3) = round(slope(p,3)/smax,2);
+    %%% Individual collective benefit
+    % v1: include only the collective decisions taken by respective
+    % individual (B or Y) and all individual decisions of that individual
     if ind_CB==1
-        coll_ben(p,1) = round(slope(p,4)/slope(p,1),2);%sdyadA1/slope_a1;
-        coll_ben(p,2) = round(slope(p,5)/slope(p,2),2);%sdyadA2/slope_a2;
+        coll_ben(p,1) = round(slope(p,4)/slope(p,1),2); %sdyadA1/slope_a1;
+        coll_ben(p,2) = round(slope(p,5)/slope(p,2),2); %sdyadA2/slope_a2;
+    % v2: include only the collective decisions taken by respective
+    % individual (B or Y) and only the individual decisions of the same
+    % trials (i.e., only trials in which the individual took the first and
+    % the collective decision; to have a better comparison)
     elseif ind_CB==2
-        coll_ben(p,1) = round(slope(p,4)/slope(p,6),2);%sdyadA1/slope_a1 1st dec;
-        coll_ben(p,2) = round(slope(p,5)/slope(p,7),2);%sdyadA2/slope_a2 1st dec;
+        coll_ben(p,1) = round(slope(p,4)/slope(p,6),2); %sdyadA1/slope_a1 1st dec;
+        coll_ben(p,2) = round(slope(p,5)/slope(p,7),2); %sdyadA2/slope_a2 1st dec;
     end
     
-    % display info in command window
+    % Display info in command window
     disp(['Collective benefit ' ptc{p} ': ' num2str(coll_ben(p,3))]);
     disp(['B individual coll benefit ' ptc{p} ': ' num2str(coll_ben(p,1))])
     disp(['Y individual coll benefit ' ptc{p} ': ' num2str(coll_ben(p,2))])
     disp(['smax: ' num2str(smax) ' agent: ' num2str(agent_max)]);
     disp(['smin: ' num2str(smin) ' agent: ' num2str(agent_min)]);
     disp(['sdiff: ' num2str(smax-smin)]);
-    % include coll. benefit numbers in plot
+    % Also display coll. benefit values in plot
     text(-0.15,0.8,['coll. benefit = ' num2str(coll_ben(p,3),'%.2f')]);
 %     text(-0.15,0.7,['coll. blue benefit = ' num2str(coll_ben(p,1))]);
 %     text(-0.15,0.6,['coll. yell benefit = ' num2str(coll_ben(p,2))]);
     
     title(['Coll. benefit - ','S' ptc{p}]);
 
-    %save figure
+    % Save figure
     saveas(gcf,[path_to_save,'S',ptc{p},'_cb_',coll_calc,lab,block_lab,CB_lab],'png');
     hold off;
 
+    % Compute ratio between individuals' slopes, as a measure for the
+    % interindividual difference. If this difference is too large
+    % (i.e., if ratio < ~0.4), then there should be no collective benefit.
     ratio = smin/smax;
 
-    % collect values for all pairs
+    % Collect values for all pairs (for later computation of averages)
     sdyad_all    = [sdyad_all; slope(p,3)];
     smax_all     = [smax_all; smax];
     cb_all       = [cb_all; coll_ben(p,3)];
@@ -320,53 +342,77 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     decDyad_all  = [decDyad_all; y(:,3)'];
     decMax_all   = [decMax_all; y(:,agent_max)'];
     decMin_all   = [decMin_all; y(:,agent_min)'];
-    
-    
-    
+   
+
     % ---------------- WINDOW ANALYSIS -----------------------------------%
-    % Calculate collective benefit in windows of 80 elements each 8(4) trials
-    % -> use the same smax found before
+    % Calculate collective benefit in windows of 80 elements each 8 trials
+    % -> use the same smax found before (no change across windows!)
     % -> collective decision and relative signed contrast
     if not(subcon_calc) && sub_block==0
-        ws=figure('Name',['S' ptc{p} '_wnd']);set(ws, 'WindowStyle', 'Docked');
-        % XXX WHAT DOES THE FOLLOWING COMMENT MEAN?
-        % Each row is a pair - here the y is different!!!
         full=0; % compute cb separately for windows
+        
+        % Prepare figure: one per pair, show cb across windows
+        ws=figure('Name',['S' ptc{p} '_wnd']);
+        set(ws, 'WindowStyle', 'Docked');
+        % coll_prtc:
+        % Each row is a pair. Columns are XXX
         coll_prtc = [coll_fs_v C2_C1_v];
+        % -> GO INTO FUNCTION PLOT_PSY to fit and plot psych. curves
         slope_wcoll(p,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full,coll_calc);
+        % -----------------------------------------------------------------
         slope_wcoll(p,:) = slope_wcoll(p,:)/smax;
-        plot(slope_wcoll(p,:),['-' plotSym{3}],'Color',color(3,:)); title(['Coll benefit - ','S' ptc{p},'- wnd']);
+        plot(slope_wcoll(p,:),['-' plotSym{3}],'Color',color(3,:));
+        title(['Coll benefit - ','S' ptc{p},'- wnd']);
     end
-end % end of pair loop ---------------------------------------------------%
+end
+% end of pair loop -------------------------------------------------------%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Compute average decisions for sdyad, smin, smax
-% Use median instead of mean?!
-% (The median is the middle value when a data set is ordered from least to
-% greatest.)
+
+%--------------------------------------------------------------------------
+% COMPUTE AND PLOT GROUP AVERAGES
+%--------------------------------------------------------------------------
+    
+% -------------------------------------------------------------------------
+% AVERAGE PSYCHOMETRIC CURVES (dyad, min, max)
+% -----------------------------------------------
+full=1; % compute cb for all trials, not for windows
+% Note: Use median instead of mean!
+% (Median = middle value when a data set is ordered from least to greatest.)
 decDyad_ave  = median(decDyad_all,1);
 decMax_ave   = median(decMax_all,1);
 decMin_ave   = median(decMin_all,1);
+
+% !!! y: here we save the AVERAGE DECISION data for each contrast level
+% (i.e., signed contrast differences -> 8 values).
+% There are 3 output values, for: [smin, smax, Collective]
 y = [decMin_ave' decMax_ave' decDyad_ave'];
+
+% Prepare figure
 cb_ave=figure('Name','CB_Average');
 set(cb_ave, 'WindowStyle', 'Docked');
-% slope: [a1(blue), a2(yellow), sdyad(coll)]
-% Each row is a pair; each column refers to coll/individual etc.
-full=1; % compute cb for all trials, not for windows
+
+% -------------------------------------------------------------------------
+% -> GO INTO FUNCTION PLOT_PSY to fit and plot psych. curves
 sAverage = plot_psy(conSteps,y,plotSymAve,colorAve,default,full,coll_calc);
+% -------------------------------------------------------------------------
+
+% Set figure properties
 ylim([0 1]);
-xlabel("Contrast difference");
-ylabel("Proportion 2nd interval");
-saveas(gcf,[path_to_save,'Average_cb_',coll_calc,lab,block_lab,CB_lab],'png');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+xlabel('Contrast difference');
+ylabel('Proportion 2nd interval');
+% Save figure
+saveas(gcf,[path_to_save,'Average_cb_',coll_calc,lab,block_lab],'png');
+% -------------------------------------------------------------------------
 
-
-% Compute collective benefit as average across pairs and per pair, PER WINDOW
+% -------------------------------------------------------------------------
+% AVERAGE PSYCHOMETRIC CURVES (dyad, min, max) per WINDOW
+% ----------------------------------------------------------
+% Compute collective benefit as average across pairs and for all pairs
 if not(subcon_calc) && sub_block==0 && length(ptc)>1
     
-    % average across pairs
-    h4=figure();set(h4,'WindowStyle','Docked');
+    % Average across pairs
+    h4=figure(); set(h4,'WindowStyle','Docked');
     errorbar(1:default.w_lgt/default.step,mean(slope_wcoll),-std(slope_wcoll)/sqrt(length((slope_wcoll))),+std(slope_wcoll)/sqrt(length((slope_wcoll))),'Color', color(3,:),'LineWidth',1);hold on;
     % plot a horizontal line at 1
     line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
@@ -375,30 +421,34 @@ if not(subcon_calc) && sub_block==0 && length(ptc)>1
     ylim([0.9 1.1]);
     yticks(0.9:0.05:1.1);
 %     axis([0 (default.w_lgt/default.step)+1 0.8 1.2]);
-    xlabel("Sliding window (80 trials each)");
-    ylabel("sdyad/smax");
+    xlabel('Sliding window (80 trials each)');
+    ylabel('sdyad/smax');
     title('Average values across pairs - coll. benefit');
-    
-    % all pairs within one figure
-    h5=figure();set(h5, 'WindowStyle', 'Docked');
-    colororder(color(end-2:end,:));
+    % Save figure
+    saveas(gcf,[path_to_save,'Average_WindowCB_',coll_calc,lab,block_lab],'png');
+
+    % All pairs within one figure
+    allColors = jet(16);
+    h5=figure(); set(h5, 'WindowStyle', 'Docked');
+    colororder(allColors(1:end,:));
     plot(slope_wcoll',['-' plotSym{3}]); hold on;
     % plot a horizontal line at 1
-    line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:),'LineWidth',1); hold off
-    axis([0 (default.w_lgt/default.step)+1 0.6 1.3])
-%     legend({'P101','P102','P103','P104','P105','P106','1'},'location','best');
+    line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:),'LineWidth',1.5);
+    hold off;
+    axis([0 (default.w_lgt/default.step)+1 0.6 1.8])
+    legend({'S108','S110','S111','S112','S113','S114','S115','S116',...
+        'S117','S118','S119','S120','S121','S122','S123','S124','1'},'location','bestoutside');
     title('Coll. benefit - each pair');
+    % Save figure
+    saveas(gcf,[path_to_save,'AllPairs_WindowCB_',coll_calc,lab,block_lab],'png');
 
 end
+% -------------------------------------------------------------------------
 
-% test whether collective slope differs from max. slope
-% [h,p,ci,stats] = ttest(sdyad_all',smax_all', "Tail","right");
-% use non-parametric test (Wilcoxon signed rank test)
-[p,h,stats] = signrank(sdyad_all',smax_all');
-disp(['p-value (coll. slope vs. max. slope): ' num2str(p,'%.7f')]);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Compute average accuracy for sdyad, smin, smax
+% -------------------------------------------------------------------------
+% AVERAGE ACCURACIES (dyad, individual)
+% ----------------------------------------------------------
+% Compute average accuracy for sdyad and sindividual
 accDyad_ave = mean(accDyad_all,1);
 accB_ave   = mean(accB_all,1);
 accY_ave   = mean(accY_all,1);
@@ -416,15 +466,35 @@ ylabel('Accuracy');
 ylim([0.3 1]);
 title('Accuracy average across pairs');
 % save figure
-saveas(gcf,[path_to_save,'Average_acc_',coll_calc,lab,block_lab,CB_lab],'png');
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+saveas(gcf,[path_to_save,'Average_acc_',coll_calc,lab,block_lab],'png');
+% -------------------------------------------------------------------------
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% check if interindividual differences play a role
+% PLOT IN PROGRESS:
+% -------------------------------------------------------------------------
+% Do interindividual differences predict collective benefit???
+% Theoretical prediction:
+% The larger the difference (i.e., smaller ratio), the smaller the cb
+% Threshold should be ~ 0.4
+% Plot ratio on x-axis and collective benefit on y-axis
 cb_ratio_combo = [cb_all ratio_all];
 cb_ratio_combo_sorted = sortrows(cb_ratio_combo,2);
+ratio_fig=figure(); set(ratio_fig, 'WindowStyle', 'Docked');
 scatter(cb_ratio_combo_sorted(:,2),cb_ratio_combo_sorted(:,1)); hold on;
 line = lsline; hold on;
 yline(1);
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+xlabel('smin/smax');
+ylabel('sdyad/smax');
+title('Coll. benefit as a function of similarity');
+% Save figure
+saveas(gcf,[path_to_save,'Similarity_',coll_calc,lab,block_lab],'png');
+% -------------------------------------------------------------------------
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% STATISTICAL TESTS
+% test whether collective slope differs from max. slope
+[h,p,ci,stats] = ttest(sdyad_all',smax_all', "Tail","right");
+% % use non-parametric test (Wilcoxon signed rank test):
+% [p,h,stats] = signrank(sdyad_all',smax_all');
+disp(['p-value (coll. slope vs. max. slope): ' num2str(p,'%.7f')]);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
