@@ -1,0 +1,12 @@
+figures/
+
+temp_results/
+
+Results/
+
+permtest_data/
+
+statedict/
+
+**/__pycache__
+
