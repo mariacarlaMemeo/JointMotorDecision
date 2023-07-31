@@ -25,7 +25,7 @@ pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Flags
-local_user = 1;    # set current user (1=MC, 2=LA)
+local_user = 2;    # set current user (1=MC, 2=LA)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (see Patel et al., 2012)
 pair_plots = FALSE # if TRUE: shows the confidence for each pair and each decision
 rt_mt      = FALSE # if TRUE: includes the plots of RT and MT after cutting the kin trials
@@ -138,6 +138,7 @@ conf_scale2   = list("lim"=c(1,4.5),"breaks"=seq(1,4.5, by=1)) # for mean values
 time_scale    = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
 mov_scale     = list("lim"=c(0.5,1.75),"breaks"=seq(0.5,1.75, by=0.25))
 switch_colors = c("lightcoral", "lightgreen")
+bar_colors    = c("gray88", "gray44", "lightcoral", "lightgreen")
 
 # Check PROPORTIONS: high/low confidence, agreement/disagreement, switch/no switch
 # --------------------------------------------------------------------------------
@@ -385,7 +386,7 @@ ggsave(file=paste0(PlotDir,"Accuracy_Agree+Switch.png"), dpi = 300, units=c("cm"
 # panels: switch/no switch
 # bars:   light gray (agree) vs. dark gray (disagree)
 # panels: green (switch) vs. red (no switch)
-bar_colors = c("gray88", "gray44", "lightcoral", "lightgreen")
+
 
 # prep confidence bars
 conf_targ_sw              = curdat[,c("switch","agree","confidence1","Coll_conf")]
