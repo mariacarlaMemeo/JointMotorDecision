@@ -14,8 +14,12 @@ flag_hd = 1;
 flag_2nd = 1;
 % Display plots
 flag_plot = 1;
-%median split
+% median split
 med_split = 1;
+% Check also the sample before the button release
+flag_pre  = 0;
+% XXX
+trial_plot = 1;
 
 %% Script to calculate the reaction time and movement time from kinematic data. Files from the pilot data acquired the 3-4 Nov 2022. Pairs from P100 to P103 - all the trials
 %path
@@ -26,10 +30,8 @@ else
 end
 
 path_kin  = fullfile(path_data,'..\Processed');
-%%
-path_temp = fullfile(pwd,'data\');
-flag_pre  = 0;
-trial_plot = 1;
+path_kin_save = fullfile(pwd,'..\..\Data\Kinematic\');
+
 %%
 % path_trial_traj = 'Y:\Datasets\JointMotorDecision\Static\Processed';%'C:\Users\MMemeo\OneDrive - Fondazione Istituto Italiano Tecnologia\Documents\GitHub\joint-motor-decision\analyses\data\trial_trajectories\';
 crash = input('do you want to start from backup? (1/0)\n','s');
@@ -244,9 +246,9 @@ for p = 1:length(SUBJECTS)
         end
 
         if flag_pre
-            writetable(data,fullfile(path_temp,['expData_' SUBJECTS{p}(2:end) '_kin_model_withPre.xlsx']));
+            writetable(data,fullfile(path_kin_save,['expData_' SUBJECTS{p}(2:end) '_kin_model_withPre.xlsx']));
         else
-            writetable(data,fullfile(path_temp,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
+            writetable(data,fullfile(path_kin_save,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
         end
     end
     toc

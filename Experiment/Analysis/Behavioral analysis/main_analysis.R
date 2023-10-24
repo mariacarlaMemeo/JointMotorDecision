@@ -25,7 +25,7 @@ pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Flags
-local_user = 2;    # set current user (1=MC, 2=LA)
+local_user = 1;    # set current user (1=MC, 2=LA)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (see Patel et al., 2012)
 pair_plots = FALSE # if TRUE: shows the confidence for each pair and each decision
 rt_mt      = FALSE # if TRUE: includes the plots of RT and MT after cutting the kin trials
@@ -40,7 +40,6 @@ if (local_user == 1) {
   # Set directories manually
   DataDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Behavioral/"
   AnaDir     = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
-  #DataDirObs = "C:/Users/Laura/GitHub/JointMotorDecision/analyses/data_obs/"
   PlotDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 }
 
@@ -63,13 +62,15 @@ acc2      = c()
 #################################################################################################################################
 ### EXECUTION DATA (collective decision-making)
 
-#XXX
-# Create data frame with execution data.
+#XXX EDIT THE DESCRIPTION BELOW
+# Goal: Create data frame with execution data.
+# Steps to achieve goal:
 # Retrieve data from an Excel file that was automatically created by merging the single pair files. 
 # Single pair files were created with Matlab script movement_onset.m, which takes as input
 # the original .mat files created during the experiment.
 # -------------------------------------------------------------------------------------------
 
+# XXXhere we should use the new kin_model Excel files
 curdat=as.data.frame(bind_all_excel(DataDir))
 
 
@@ -125,6 +126,11 @@ all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$deci
 # i.e., whether A1 switched her decision (changed her mind) [1=switch, -1=no switch]
 curdat$switch                   = as.integer(curdat$decision1 != curdat$Coll_decision)
 curdat$switch[curdat$switch==0] = -1
+
+# XXX more sanity checks:
+# 1. confidence distribution: all levels (1-6) used equally? (on average and per participant)
+# 2. plot accuracy as a function of confidence level -> positive correlation expected
+# 3. target1/target2 distribution: left/right bias (on average and per participant)
 
 
 # Configure plot parameters
