@@ -31,11 +31,11 @@ for g = 1:length(agent2ndDec)
         for param = 1:length(time_param)
             title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' agent2ndDec{g} ' agent, pair' SUBJECTS{p}(2:end)];
             if flag_2nd
-                title_fig  = [SUBJECTS{p}(2:end) agent2ndDec{g} '_' time_param{param}(1) 'm_' mrks{m} '_dec2.png'];
+                title_fig  = [SUBJECTS{p}(2:end) agent2ndDec{g} '_' time_param{param}(1) 'm_' mrks{m} '_dec2_pre_abs.png'];
             else
                 title_fig  = [SUBJECTS{p}(2:end) agent2ndDec{g} '_' time_param{param}(1) 'm_' mrks{m} '.png'];
             end
-            ave_subj_plotting_fun(eval(['all_time_traj_' mrks{m} '_' lower(agent2ndDec{g})]),param,conf,dec,SecondDec,agent2ndDec{g},title_plot,title_fig,path_kin,1,[],flag_2nd)
+            ave_subj_plotting_fun(eval(['all_time_traj_' mrks{m} '_' lower(agent2ndDec{g})]),param,conf,dec,SecondDec,agent2ndDec{g},title_plot,title_fig,path_kin,1,[],flag_2nd,flag_bin)
 
         end
         %loop on the spatial parameters
@@ -43,12 +43,13 @@ for g = 1:length(agent2ndDec)
             %change the title of the spatial param
             title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agent2ndDec{g} ' agent, pair' SUBJECTS{p}(2:end)];
             if flag_2nd
-                title_fig  = [SUBJECTS{p}(2:end) agent2ndDec{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec2.png'];
+                title_fig  = [SUBJECTS{p}(2:end) agent2ndDec{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec2_pre_abs.png'];
             else
                 title_fig  = [SUBJECTS{p}(2:end) agent2ndDec{g} '_' spa_param{sparam} ' coord_' mrks{m} '.png'];
             end
-            ave_subj_plotting_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agent2ndDec{g})]),sparam,conf,dec,SecondDec,agent2ndDec{g},title_plot,title_fig,path_kin,1,[],flag_2nd)
+            ave_subj_plotting_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agent2ndDec{g})]),sparam,conf,dec,SecondDec,agent2ndDec{g},title_plot,title_fig,path_kin,1,[],flag_2nd,flag_bin)
         end
     end
 end
 
+disp(eval(['size(all_spa_traj_'  mrks{m} '_' lower(agent2ndDec{g}) ',3)']))

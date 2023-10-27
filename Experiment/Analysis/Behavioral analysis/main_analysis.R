@@ -28,17 +28,17 @@ sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 local_user = 1;    # set current user (1=MC, 2=LA)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (see Patel et al., 2012)
 pair_plots = FALSE # if TRUE: shows the confidence for each pair and each decision
-rt_mt      = FALSE # if TRUE: includes the plots of RT and MT after cutting the kin trials
+rt_mt      = TRUE # if TRUE: includes the plots of RT and MT after cutting the kin trials
 
 # Set paths (*** ADJUST TO LOCAL COMPUTER with flag local_user ***)
 if (local_user == 1) {
   # set directories manually
-  DataDir    = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Data/Behavioral/" 
-  AnaDir     = paste0(getwd(),"/")
+  DataDir    = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Data/Kinematic/" 
+  AnaDir     = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Analysis/Behavioral analysis/"
   PlotDir    = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Analysis/Behavioral analysis/Behavioral plots/" # save plots here
 } else {
   # Set directories manually
-  DataDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Behavioral/"
+  DataDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Kinematic/"
   AnaDir     = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
   PlotDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 }
@@ -119,18 +119,16 @@ curdat$deltaC2C1   = curdat$confidence2-curdat$confidence1
 # deltaCcC1 < 0 = Coll_conf < conf1; deltaCcC1 > 0 = Coll_conf > conf1
 curdat$deltaCcC1   = curdat$Coll_conf-curdat$confidence1
 
-# Sanity check: confirm that Y/B decisions correspond to 1st/2nd decision (must be TRUE)
+# Sanity check: just checks trials in which B=Y -> then also decision1 must be equal to decision2
 all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$decision1 == curdat$decision2))
 
 # Add a column that indicates whether 1st and collective decision differ,
 # i.e., whether A1 switched her decision (changed her mind) [1=switch, -1=no switch]
-curdat$switch                   = as.integer(curdat$decision1 != curdat$Coll_decision)
+switchR                         = as.integer(curdat$decision1 != curdat$Coll_decision)
+all(curdat$switch == switchR)
+# GO ON ONLY IF THE PREVIOUS IS TRUE
 curdat$switch[curdat$switch==0] = -1
 
-# XXX more sanity checks:
-# 1. confidence distribution: all levels (1-6) used equally? (on average and per participant)
-# 2. plot accuracy as a function of confidence level -> positive correlation expected
-# 3. target1/target2 distribution: left/right bias (on average and per participant)
 
 
 # Configure plot parameters
@@ -140,11 +138,77 @@ acc_scale     = list("lim"=c(0,1),"breaks"=seq(0,1, by=0.2))
 acc_scale2    = list("lim"=c(0,0.85),"breaks"=seq(0,0.85, by=0.1)) # for mean values up to ~0.8
 target_scale  = list("breaks"=unique(curdat$targetContrast),"labels"=unique(curdat$targetContrast))
 conf_scale    = list("lim"=c(1,6),"breaks"=seq(1,6, by=1))
+#conf_scale_la = list("lim"=c(1,6),"breaks"=seq(1,6, by=1), "labels"=c(1,2,3,4,5,6))
 conf_scale2   = list("lim"=c(1,4.5),"breaks"=seq(1,4.5, by=1)) # for mean values up to ~4
 time_scale    = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
 mov_scale     = list("lim"=c(0.5,1.75),"breaks"=seq(0.5,1.75, by=0.25))
 switch_colors = c("lightcoral", "lightgreen")
 bar_colors    = c("gray88", "gray44", "lightcoral", "lightgreen")
+
+
+
+# XXX more sanity checks:
+# 1. confidence distribution: all levels (1-6) used equally? (on average and per participant)
+# 2. plot accuracy as a function of confidence level -> positive correlation expected
+# 3. target1/target2 distribution: left/right bias (on average and per participant)
+
+#1. Confidence distribution
+all_conf = curdat[,c("Pair","confidence1","confidence2","Coll_conf","targetContrast")]
+names(all_conf)[names(all_conf)=='confidence1']    <- 'Confidence 1st decision'
+names(all_conf)[names(all_conf)=='confidence2']    <- 'Confidence 2nd decision'
+names(all_conf)[names(all_conf)=='Coll_conf']    <- 'Confidence collective decision'
+all_conf$targetContrast = as.factor(all_conf$targetContrast)
+#levels(all_conf$targetContrast) <- c(0.115, 0.135, 0.17, 0.25)
+count_scale_conftar    = list("lim"=c(0,175),"breaks"=seq(0,175, by=25))
+count_scale_conf       = list("lim"=c(0,600),"breaks"=seq(0,600, by=50))
+#levels(conf_all_sum_acc$agree)    = c("disagree", "agree")
+
+for(confy in (seq(2,ncol(all_conf)-1))){
+  var_conf = all_conf[,confy] # confy=confidence1,confidence2,coll_Conf
+  # plot confidence count split by target contrast
+  print(ggplot(all_conf, aes(x=var_conf, fill=targetContrast)) +
+          stat_count(geom = "bar", position="dodge2") +
+          scale_y_continuous(limits = count_scale_conftar$lim, breaks = count_scale_conftar$breaks) +
+          scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+          ggtitle(colnames(all_conf)[confy]) +
+          ylab("Count") + xlab("Confidence level") + theme_custom())
+  # save the plot
+  ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),"_target.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  
+  # plot confidence count
+  print(ggplot(all_conf, aes(x=var_conf)) +
+          stat_count(geom = "bar", position="dodge2") +
+          scale_y_continuous(limits = count_scale_conf$lim, breaks = count_scale_conf$breaks) +
+          scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+          ggtitle(colnames(all_conf)[confy]) +
+          ylab("Count") + xlab("Confidence level") + theme_custom())
+  # print the confidence means in the console
+  print(sprintf("Average %s%s %.2f", colnames(all_conf)[confy], ":", round(mean(all_conf[,confy]),2)))
+  print(sprintf("SD %s%s %.2f", colnames(all_conf)[confy], ":", round(sd(all_conf[,confy]),2)))
+  # save the plot
+  ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+}
+
+# 3. check for left-right response bias
+curdat$targetContrast = as.factor(curdat$targetContrast)
+curdat$decision1=as.factor(curdat$decision1)
+levels(curdat$decision1)= c("left","right")
+
+curdat$decision2=as.factor(curdat$decision2)
+levels(curdat$decision2)= c("left","right")
+
+curdat$Coll_decision=as.factor(curdat$Coll_decision)
+levels(curdat$Coll_decision)= c("left","right")
+
+ggplot(curdat, aes(x=decision2,fill=targetContrast)) +
+  stat_count(geom = "bar", position="dodge2") +
+  # scale_y_continuous(limits = count_scale_conf$lim, breaks = count_scale_conf$breaks) +
+  # scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+  # ggtitle(colnames(all_conf)[confy]) +
+  ylab("Count") + xlab("1st decision") + theme_custom()
+
+
+
 
 # Check PROPORTIONS: high/low confidence, agreement/disagreement, switch/no switch
 # --------------------------------------------------------------------------------
@@ -551,11 +615,7 @@ if (rt_mt){
     
     # prep data
     all$Pair=as.factor(all$Pair)
-    if (schon_data) {
-      all_pairs = c(100,101,103) } else {
-        all_pairs = c(100,101,102,103)
-      }
-    
+
     for (g in all_pairs) {
       
       sub_all=all[all$Pair==g,]
@@ -684,7 +744,10 @@ coll_conf=lmer(Coll_conf ~ confidence1 * switch + confidence2 + (1|interaction(c
 summary(coll_conf)
 # emmeans(coll_conf,pairwise~confidence1|switch)
 #########################################################
-# #### PATEL
+
+
+
+# #### PATEL (only works with observation data)
 #########################################################
 # XXX Do participants who rate observed decisions, on average, as more confident than their own also move more slowly than the observed actions?
 # The faster agent should rate the observed action as less confident than their own (pCon > iCon). 
@@ -756,8 +819,4 @@ if(patel_mt){
 # # plot(r2,ind_coll_benefit,xlim=c(0,0.5),ylim=c(0,2));abline(fit1)
 # # plot(r2,coll_benefit2,xlim=c(0,0.5),ylim=c(0,1.2))
 # #######################################################
-
-
-
-
 

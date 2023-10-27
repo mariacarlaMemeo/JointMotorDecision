@@ -1,4 +1,4 @@
-function ave_subj_plotting_fun(matrix_3d,clm,ag_Conf,ag_Dec,SecondDec,agent2ndDec,title_plot,title_fig,save_path,n_var,threshold,flag_2nd)
+function ave_subj_plotting_fun(matrix_3d,clm,ag_Conf,ag_Dec,SecondDec,agent2ndDec,title_plot,title_fig,save_path,n_var,threshold,flag_2nd,flag_bin)
 % 28.03.2023
 %settings
 wd = 4; ls =':';
@@ -7,12 +7,13 @@ y_solid  = [0.8 0.4667 0.1333];
 y_dashed = [0.9412 0.7843 0.1569];
 hConf_col = [.6 0 0];
 lConf_col = [0 .6 .6];
-x_width   = 16; 
+x_width   = 16;
 y_width   = 12;
 
-%plot 1 var
+%plot 1 var (across time/frames)
 if n_var==1
-    %remove outliers
+    %remove outliers WE DONT USE THE THRESHOLD THIS WAS ONLY TO REMOVE
+    %WEIRD TRIALS
     ave_all = squeeze(matrix_3d(:,clm,:));
     if length(threshold)==1
         if threshold>0
@@ -28,11 +29,11 @@ if n_var==1
     matrix_3d(:,clm,unique(c)) = nan;
     ave_all(:,unique(c)) = nan;
 
-%     %Remove the trial in which the index marker is not found in the first n
-%     %samples, where n=20. P103, yellow 153 trial
-%     if all(title_fig(1:4)=='103Y')
-%         ave_all(:,153) = nan;
-%     end
+    %     %Remove the trial in which the index marker is not found in the first n
+    %     %samples, where n=20. P103, yellow 153 trial
+    %     if all(title_fig(1:4)=='103Y')
+    %         ave_all(:,153) = nan;
+    %     end
 
 
     biv=figure();set(biv, 'WindowStyle', 'Docked');
@@ -40,16 +41,20 @@ if n_var==1
         % plot single trials
         plot(ave_all(:,ag_Conf==2 & SecondDec==agent2ndDec),'color',hConf_col);hold on;%plot all trials high confidence
         plot(ave_all(:,ag_Conf==1 & SecondDec==agent2ndDec),'color',lConf_col+.2);%plot all trials low confidence
-        % plot averages
-        plot(mean(matrix_3d(:,clm,ag_Conf==2 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',hConf_col);%plot average value of high confidence
-        plot(mean(matrix_3d(:,clm,ag_Conf==1 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+        if flag_bin
+            % plot averages
+            plot(mean(matrix_3d(:,clm,ag_Conf==2 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',hConf_col);%plot average value of high confidence
+            plot(mean(matrix_3d(:,clm,ag_Conf==1 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+        end
     else
         % plot single trials
         plot(ave_all(:,ag_Conf==2),'color',hConf_col);hold on;%plot all trials high confidence
         plot(ave_all(:,ag_Conf==1),'color',lConf_col+.2);%plot all trials low confidence
-        % plot averages
-        plot(mean(matrix_3d(:,clm,ag_Conf==2),3,'omitnan'),'LineWidth',wd,'color',hConf_col);%plot average value of high confidence
-        plot(mean(matrix_3d(:,clm,ag_Conf==1),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+        if flag_bin
+            % plot averages
+            plot(mean(matrix_3d(:,clm,ag_Conf==2),3,'omitnan'),'LineWidth',wd,'color',hConf_col);%plot average value of high confidence
+            plot(mean(matrix_3d(:,clm,ag_Conf==1),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+        end
     end
 
     title(title_plot);
@@ -58,7 +63,7 @@ if n_var==1
     saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig))
     hold off;
 
-elseif n_var==2 %only for xy plots
+elseif n_var==2 %only for xy plots (in this case, x-axis is not time/frames)
     ave_x_all = squeeze(matrix_3d(:,1,:));%here I want always the FIRST COLUMN because it represents x
     ave_y_all = squeeze(matrix_3d(:,2,:));%here I want always the SECOND COLUMN because it represents y
 
@@ -81,27 +86,34 @@ elseif n_var==2 %only for xy plots
         % plot single trials
         plot(ave_x_all(:,ag_Conf==2 & SecondDec==agent2ndDec),ave_y_all(:,ag_Conf==2 & SecondDec==agent2ndDec),'color',hConf_col);hold on;
         plot(ave_x_all(:,ag_Conf==1 & SecondDec==agent2ndDec),ave_y_all(:,ag_Conf==1 & SecondDec==agent2ndDec),'color',lConf_col+.2);
-        % plot averages
-        %high conf (left and right targets)
-        plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==1 & SecondDec==agent2ndDec),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==1 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
-        plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==2 & SecondDec==agent2ndDec),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==2 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
-        %low conf (left and right targets)
-        plot(mean(matrix_3d(:,1,ag_Conf==1 & ag_Dec==1 & SecondDec==agent2ndDec),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==1 & ag_Dec==1 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
-        plot(mean(matrix_3d(:,1,ag_Conf==1 & ag_Dec==2 & SecondDec==agent2ndDec),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==1 & ag_Dec==2 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+        if flag_bin
+            % plot averages
+            %high conf (left and right targets)
+            plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==1 & SecondDec==agent2ndDec),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==1 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
+            plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==2 & SecondDec==agent2ndDec),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==2 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
+            %low conf (left and right targets)
+            plot(mean(matrix_3d(:,1,ag_Conf==1 & ag_Dec==1 & SecondDec==agent2ndDec),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==1 & ag_Dec==1 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+            plot(mean(matrix_3d(:,1,ag_Conf==1 & ag_Dec==2 & SecondDec==agent2ndDec),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==1 & ag_Dec==2 & SecondDec==agent2ndDec),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+        end
     else
         % plot single trials
         plot(ave_x_all(:,ag_Conf==2),ave_y_all(:,ag_Conf==2),'color',hConf_col);hold on;
         plot(ave_x_all(:,ag_Conf==1),ave_y_all(:,ag_Conf==1),'color',lConf_col+.2);
-        % plot averages
-        %high conf (left and right targets)
-        plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==1),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==1),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
-        plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==2),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==2),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
-        %low conf (left and right targets)
-        plot(mean(matrix_3d(:,1,ag_Conf==1 & ag_Dec==1),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==1 & ag_Dec==1),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
-        plot(mean(matrix_3d(:,1,ag_Conf==1 & ag_Dec==2),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==1 & ag_Dec==2),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+        if flag_bin
+            % plot averages
+            %high conf (left and right targets)
+            plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==1),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==1),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
+            plot(mean(matrix_3d(:,1,ag_Conf==2 & ag_Dec==2),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==2 & ag_Dec==2),3,'omitnan'),'LineWidth',wd,'color',hConf_col);
+            %low conf (left and right targets)
+            plot(mean(matrix_3d(:,1,ag_Conf==1 & ag_Dec==1),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==1 & ag_Dec==1),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+            plot(mean(matrix_3d(:,1,ag_Conf==1 & ag_Dec==2),3,'omitnan'),mean(matrix_3d(:,2,ag_Conf==1 & ag_Dec==2),3,'omitnan'),'LineWidth',wd,'color',lConf_col);
+        end
     end
     title(title_plot);
 
+    % display how many trials per agent were plotted
+    disp(['Number of trials plotted: ' num2str(size(ave_all(:,SecondDec==agent2ndDec),2))])
+    
     %save each figure with the specified dimensions
     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
     saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig))

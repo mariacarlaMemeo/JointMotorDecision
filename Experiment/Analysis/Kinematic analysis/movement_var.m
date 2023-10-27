@@ -1,27 +1,36 @@
 function [tindex,tulna,sindex,sulna,sdindex,...
     time_traj_index,time_traj_ulna,...
-    spa_traj_index,spa_traj_ulna]=movement_var(sMarkers,t,SUBJECTS,p,agentExec,tmove,endFrame)
+    spa_traj_index,spa_traj_ulna]=movement_var(sMarkers,t,SUBJECTS,p,agentExec,tstart,endFrame,flag_bin)
 
 % CHECK index and wrist velocity threshold
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:};
+preAcq     = 20;
 model_name = [SUBJECTS{p} '_' agentExec '_' agentExec];%name of the model in Nexus
 samp       = 1:sMarkers{t}.info.nSamples;
 index      = sMarkers{t}.markers.([model_name '_index']);
 ulna       = sMarkers{t}.markers.([model_name '_ulna']);
 
-const = 0;%%remove last 'const' frames for index values
-if endFrame > tmove
-    range_index = tmove:endFrame-const;
+% CANNOT DO THE Z SHIFTING (the zero of the z coordinate == origin) : schift z values so they start from 0[mm]: remove the average value of the
+% first 20 frames of acquisition to all the z coord trajectory
 
-    i_index     = linspace(range_index(1),range_index(end));
-    range_ulna  = tmove:endFrame;
-    i_ulna      = linspace(range_ulna(1),range_ulna(end));
+% For the plotting of the trajectories, we use the startFrame and the
+% endFrame identified in movement_onset (we pass it from cal_kin_rt_mt to
+% movement_var with the name startFrame/tstart) 
+% Note: in a previous version (pilot), we used tmove instead
+if endFrame > tstart
+    
+    range_index = tstart:endFrame;
+    range_ulna  = tstart:endFrame;
+
+    if flag_bin
+        i_index     = linspace(range_index(1),range_index(end));
+        i_ulna      = linspace(range_ulna(1),range_ulna(end));
+    end
 
     %Calc kin vars - temporal variables
     %average speed
     va_index = mean(index.Vm(range_index));%
     va_ulna  = mean(ulna.Vm(range_ulna));%
-
     %average acceleration
     aa_index = mean(index.A(range_index));
     aa_ulna  = mean(ulna.A(range_ulna));
@@ -32,13 +41,22 @@ if endFrame > tmove
     %group time variables
     tindex = [va_index aa_index ja_index];
     tulna  = [va_ulna aa_ulna ja_ulna];
-    % group time variables - all the trajectory
-    time_traj_index = [interp1(range_index,index.Vm(range_index),i_index)'...
-        interp1(range_index,index.A(range_index),i_index)'...
-        interp1(range_index,index.J(range_index),i_index)'];
-    time_traj_ulna  = [interp1(range_ulna,ulna.Vm(range_ulna),i_ulna)'...
-        interp1(range_ulna,ulna.A(range_ulna),i_ulna)'...
-        interp1(range_ulna,ulna.J(range_ulna),i_ulna)'];
+    % do interpolation to 100 samples on full trajectory
+    if flag_bin
+        time_traj_index = [interp1(range_index,index.Vm(range_index),i_index)'...
+            interp1(range_index,index.A(range_index),i_index)'...
+            interp1(range_index,index.J(range_index),i_index)'];
+        time_traj_ulna  = [interp1(range_ulna,ulna.Vm(range_ulna),i_ulna)'...
+            interp1(range_ulna,ulna.A(range_ulna),i_ulna)'...
+            interp1(range_ulna,ulna.J(range_ulna),i_ulna)'];
+    else
+        time_traj_index = [index.Vm(range_index)...
+            index.A(range_index)...
+            index.J(range_index)];
+        time_traj_ulna  = [ulna.Vm(range_ulna)...
+            ulna.A(range_ulna)...
+            ulna.J(range_ulna)];
+    end
 
     %Calc kin vars - spatial variables
     %peak hight (z coord)
@@ -57,21 +75,29 @@ if endFrame > tmove
     %group spatial variables
     sindex = [pz_index mz_index za_index az_index];
     sulna  = [pz_ulna mz_ulna za_ulna az_ulna];
-
-    % group spatial variables - all the trajectory
-    spa_traj_index = [interp1(range_index,index.xyzf((range_index),1),i_index)'...
-        interp1(range_index,index.xyzf((range_index),2),i_index)'...
-        interp1(range_index,index.xyzf((range_index),3),i_index)'];
-    spa_traj_ulna  = [interp1(range_ulna,ulna.xyzf((range_ulna),1),i_ulna)'...
-        interp1(range_ulna,ulna.xyzf((range_ulna),2),i_ulna)'...
-        interp1(range_ulna,ulna.xyzf((range_ulna),3),i_ulna)'];
+    % do interpolation to 100 samples on full trajectory
+    if flag_bin
+        spa_traj_index = [interp1(range_index,index.xyzf((range_index),1),i_index)'...
+            interp1(range_index,index.xyzf((range_index),2),i_index)'...
+            interp1(range_index,index.xyzf((range_index),3),i_index)'];
+        spa_traj_ulna  = [interp1(range_ulna,ulna.xyzf((range_ulna),1),i_ulna)'...
+            interp1(range_ulna,ulna.xyzf((range_ulna),2),i_ulna)'...
+            interp1(range_ulna,ulna.xyzf((range_ulna),3),i_ulna)'];
+    else
+        spa_traj_index = [index.xyzf((range_index),1)...
+                          index.xyzf((range_index),2)...
+                          index.xyzf((range_index),3)];
+        spa_traj_ulna  = [ulna.xyzf((range_ulna),1)...
+                          ulna.xyzf((range_ulna),2)...
+                          ulna.xyzf((range_ulna),3)];
+    end
 
     %average deviation from straight line (queer spectrum)
     %calculate coeffs of the straight line - only for index marker
-    x1    = index.xyzf(tmove,1);
-    xend  = index.xyzf(endFrame-const,1);
-    y1    = index.xyzf(tmove,2);
-    yend  = index.xyzf(endFrame-const,2);
+    x1    = index.xyzf(tstart,1);
+    xend  = index.xyzf(endFrame,1);
+    y1    = index.xyzf(tstart,2);
+    yend  = index.xyzf(endFrame,2);
     coefs = polyfit([x1, xend], [y1, yend], 1);
     sline = coefs(1).*index.xyzf((range_index),1) + coefs(2);
 
