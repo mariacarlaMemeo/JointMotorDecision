@@ -4,14 +4,14 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame]= ...
 % -------------------------------------------------------------------------
 % -> Here we identify START and END of each movement, to then cut the trial.
 % -------------------------------------------------------------------------
-% This function is called from "calc_kin_rt_mt.m"
+% This function is called from calc_kin_rt_mt.m
 % Functions and scripts called from within here:
 % 1. findTh_cons
 % 2. find_tmove
 % 3. visual_check
 
 % Note: input argument "figurepath" is needed for visual_check
-
+start_criterion  = 0; %1=index;2=ulna;3=button release
 %% Retrieve and define parameters
 % retrieve information from Vicon recording
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:}; % retrieve acquisition frame rate in Hz (Hz = 1 event per sec)
@@ -38,7 +38,7 @@ moveCol    = [1 0 0]; % red for actual movement start (tmove)
 % "rt_mat" has been recorded during acquisition (and saved in original Matfile)
 % rt_mat = time from decision prompt to button release (i.e., without pre-acquisition)
 % RT conversion: (convert rt from ms to s) and multiply by frameRate to get no. of frames
-rt_mat = round((rt_mat/1000)*frameRate); % XXX DOUBLE-CHECK THIS AGAIN - see lines 137ff
+rt_mat = round((rt_mat/1000)*frameRate); % XXX DOUBLE-CHECK THIS AGAIN - see lines 137
 
 %% Find out when velocity threshold is passed (-> function *findTh_cons*)
 if flag_pre % check for entire trial (= including 200 ms preAcq)
@@ -128,8 +128,15 @@ end % end of trial plot ---------------------------------------------------
 % *endFrame*   = target press
 startVector            = [indexTh(1),ulnaTh(1)]; % take the 1st value that passed threshold
 [startFrame,ind_start] = min(startVector); % choose smaller value and its index [min value, index min value]
+if ind_start
+    start_criterion = 1;
+elseif ind_start == 2
+    start_criterion = 2;
+end
+
 if startFrame > rt_mat+preAcq % if chosen startFrame occurs later than button release, then re-define
     startFrame = rt_mat+preAcq;
+    start_criterion = 3;
 end
 endFrame               = (samp(end)-10); % time of target button press
 
@@ -167,7 +174,9 @@ mt_final = (endFrame-startFrame)/frameRate;
 
 
 %% Add possibility to change startFrame and endFrame MANUALLY
-% visual_check;
+if trial_plot
+    visual_check;
+end
 
 % optional: if we decide to use "tmove"
 % % Check if tmove appears before startFrame - in that case tmove=startFrame
@@ -178,98 +187,89 @@ mt_final = (endFrame-startFrame)/frameRate;
 %     end
 % end
 
-% UNCOMMENT this if you want to use visual_check!
-% % Update start/endFrame (if visual_change is set to 1 in visual_check)
-% if visual_change && not(del_fig) % ----------------------------------------
-%     
-%     v=figure('Name',['P' SUBJECTS{p}(2:end)]); % create figure v
-%     set(v, 'WindowStyle', 'Docked'); % dock figure
-% 
-%     % 1. plot velocity and height for ULNA; use *left* y-axis of plot
-%     yyaxis left;
-%     plot(samp,ulna);  % ulna velocity ("ulna")
-%     hold on;
-%     plot(samp,ulnaZ); % ulna height ("ulnaZ")
-%     ylabel('Velocity [mm/s]'); % label for left y-axis
-%     hold off;
-%     % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
-%     if ~isnan(ulnaTh(1))
-%         xline(ulnaTh(1), 'Color',blueCol);
-%         t_uln = text(ulnaTh(1)-plotxShift, yPos_text-300,' tstart ulna','Color',blueCol);
-%         set(t_uln,'Rotation',90);
+% Update start/endFrame (if visual_change is set to 1 in visual_check)
+if trial_plot && visual_change && not(del_fig)% ----------------------------------------
+
+    v=figure('Name',['P' SUBJECTS{p}(2:end)]); % create figure v
+    set(v, 'WindowStyle', 'Docked'); % dock figure
+
+    % 1. plot velocity and height for ULNA; use *left* y-axis of plot
+    yyaxis left;
+    plot(samp,ulna);  % ulna velocity ("ulna")
+    hold on;
+    plot(samp,ulnaZ); % ulna height ("ulnaZ")
+    ylabel('Velocity [mm/s]'); % label for left y-axis
+    hold off;
+    % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
+    if ~isnan(ulnaTh(1))
+        xline(ulnaTh(1), 'Color',blueCol);
+        t_uln = text(ulnaTh(1)-plotxShift, yPos_text-300,' tstart ulna','Color',blueCol);
+        set(t_uln,'Rotation',90);
+    end
+
+    % 2. plot velocity and height for INDEX; use *right* y-axis of plot
+    yyaxis right;
+    plot(samp,index);  % index velocity ("index")
+    hold on;
+    plot(samp,indexZ); % index height ("indexZ")
+    hold off;
+    % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
+    if ~isnan(indexTh(1))
+        xline(indexTh(1), 'Color',orangeCol);
+        t_ind = text(indexTh(1)-plotxShift,yPos_text-300,' tstart index','Color', orangeCol);
+        set(t_ind,'Rotation',90);
+    end
+
+    % 3. plot vertical line for startFrame (ulnaTh, indexTh, or button release)
+    if ~isnan(startFrame)
+        xline(startFrame, 'LineWidth',3, 'Color',startCol); % plot in bold
+        t_start=text(startFrame-plotxShift,yPos_text-300,' tstart', 'Color',startCol);
+        set(t_start,'Rotation',90);
+    end
+
+    % 4. plot three more vertical lines:
+    xline(preAcq); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
+    t_pre    = text(preAcq-plotxShift,yPos_text-300,' decision prompt (t0)'); set(t_pre,'Rotation',90);
+    xline(rt_mat+preAcq); % "t1": moment of button release
+    t_rt_mat = text(rt_mat+preAcq-plotxShift,yPos_text-300,' button release (t1)'); set(t_rt_mat,'Rotation',90);
+    xline(samp(end)-10);  % "t2": moment of button press (i.e., 10 frames before end of recording)
+    t_post   = text((samp(end)-10)-plotxShift,yPos_text-300,' target press (t2)'); set(t_post,'Rotation',90);
+
+    % optional: if we decide to use "tmove"
+%     % plot vertical line for tmove
+%     if ~isnan(tmove)
+%         xline(tmove, 'LineWidth',3, 'Color',moveCol); % plot in bold
+%         t_mv = text(tmove-plotxShift,yPos_text-300,' tmove', 'Color',moveCol);
+%         set(t_mv,'Rotation',90);
 %     end
-% 
-%     % 2. plot velocity and height for INDEX; use *right* y-axis of plot
-%     yyaxis right;
-%     plot(samp,index);  % index velocity ("index")
-%     hold on;
-%     plot(samp,indexZ); % index height ("indexZ")
-%     hold off;
-%     % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
-%     if ~isnan(indexTh(1))
-%         xline(indexTh(1), 'Color',orangeCol);
-%         t_ind = text(indexTh(1)-plotxShift,yPos_text-300,' tstart index','Color', orangeCol);
-%         set(t_ind,'Rotation',90);
-%     end
-% 
-%     % 3. plot vertical line for startFrame (ulnaTh, indexTh, or button release)
-%     if ~isnan(startFrame)
-%         xline(startFrame, 'LineWidth',3, 'Color',startCol); % plot in bold
-%         t_start=text(startFrame-plotxShift,yPos_text-300,' tstart', 'Color',startCol);
-%         set(t_start,'Rotation',90);
-%     end
-% 
-%     % 4. plot three more vertical lines: 
-%     xline(preAcq); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
-%     t_pre    = text(preAcq-plotxShift,yPos_text-300,' decision prompt (t0)'); set(t_pre,'Rotation',90);
-%     xline(rt_mat+preAcq); % "t1": moment of button release
-%     t_rt_mat = text(rt_mat+preAcq-plotxShift,yPos_text-300,' button release (t1)'); set(t_rt_mat,'Rotation',90);
-%     xline(samp(end)-10);  % "t2": moment of button press (i.e., 10 frames before end of recording)
-%     t_post   = text((samp(end)-10)-plotxShift,yPos_text-300,' target press (t2)'); set(t_post,'Rotation',90);
-% 
-%     % optional: if we decide to use "tmove"
-% %     % plot vertical line for tmove
-% %     if ~isnan(tmove)
-% %         xline(tmove, 'LineWidth',3, 'Color',moveCol); % plot in bold
-% %         t_mv = text(tmove-plotxShift,yPos_text-300,' tmove', 'Color',moveCol);
-% %         set(t_mv,'Rotation',90);
-% %     end
-% 
-%     % set x-axis limit as end of sample (=100 if normalized)
-%     xlim([0 samp(end)]);
-%     % add title with pair no., acting agent, marker, matTrial, actual trial
-%     title(['Pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
-%     xlabel('Samples');
-%     
-%     % save the new figure
-%     saveas(gcf,strcat(jpg_title,'_v1.png'))
-% 
-%     % Update RT and MT according to new start/endFrame
-%     if flag_pre
-%         rt_final = (startFrame)/frameRate;
-%     else
-%         rt_final = (startFrame-preAcq)/frameRate;
-%     end
-%     mt_final     = (endFrame-startFrame)/frameRate;
-% 
-% end % end of plotting after visual_check ----------------------------------
+
+    % set x-axis limit as end of sample (=100 if normalized)
+    xlim([0 samp(end)]);
+    % add title with pair no., acting agent, marker, matTrial, actual trial
+    title(['Pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
+    xlabel('Samples');
+
+    % save the new figure
+    saveas(gcf,strcat(jpg_title,'_v1.png'))
+
+    % Update RT and MT according to new start/endFrame
+    if flag_pre
+        rt_final = (startFrame)/frameRate;
+    else
+        rt_final = (startFrame-preAcq)/frameRate;
+    end
+    mt_final     = (endFrame-startFrame)/frameRate;
+
+end % end of plotting after visual_check ----------------------------------
 
 
 % Calculate deliberation time: tmove - startFrame - CURRENTLY NOT USED
 dt_final = (tmove-startFrame)/frameRate;
 
-% % XXX DO WE WANT TO ADD A MINIMUM AND MAXIMUM TIME FOR RT and MT???
-% if rt_final < 0.05 % RT is in seconds
-%     rt_index  = NaN;
-%     rt_ulna   = NaN;
-%     rt_final  = NaN;
-%     mt_final  = NaN;
-% end
-
-% % If we decide to eliminate the trial in visual_check: fill with NaN values
-% if del_fig
-%     startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;
-% end
+% If we decide to eliminate the trial in visual_check: fill with NaN values
+if exist('del_fig') && del_fig
+    startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;
+end
 
 close all % close figure(s)
 

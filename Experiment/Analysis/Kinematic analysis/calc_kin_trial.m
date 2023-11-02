@@ -14,7 +14,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % CHECK "early start"-column in Excel (early_release_A1/A2/Coll == 1).
     % CHECK additionally if RT is implausibly small (< 100 ms).
     % If any of this is true, then exclude the entire trial!
-    if (any([raw{t,end-2:end}])) || (blue_rt(t)<100) || (yell_rt(t)<100) || (Coll_rt(t)<100)
+    if (any([raw{t,end-2:end}])) || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
         early = 1;
         early_count = early_count+1; % increase counter
     end

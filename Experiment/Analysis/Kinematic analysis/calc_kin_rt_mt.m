@@ -98,9 +98,8 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     blue_Conf      = cell2mat(raw(:,blue_Conf_ind));
     yell_Conf_ind  = strcmp('Y_conf',txt);
     yell_Conf      = cell2mat(raw(:,yell_Conf_ind));
-    % XXX dont we also want collective confidence?
-%     Coll_Conf_ind  = strcmp('Coll_conf',txt);
-%     Coll_Conf      = cell2mat(raw(:,Coll_Conf_ind));
+    Coll_Conf_ind  = strcmp('Coll_conf',txt);
+    Coll_Conf      = cell2mat(raw(:,Coll_Conf_ind));
     % Retrieve the choice of each agent (blue, yellow, collective)
     blue_Dec_ind   = strcmp('B_decision',txt);
     blue_Dec       = cell2mat(raw(:,blue_Dec_ind));

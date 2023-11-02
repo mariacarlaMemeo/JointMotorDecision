@@ -8,11 +8,23 @@ visual_change = []; % did you make changes after visual inspection?
 del_fig       = []; % do you want to eliminate the trial?
 jpg_title     = [fullfile(figurepath,SUBJECTS{p}) '\' num2str(sMarkers{t}.info.trial_id) ...
                 '_trial_' agent_name];
-mainmarker    = [model_name '_ulna']; % XXX CHECK: WE USE ONLY ULNA CURRENTLY
+% criterion to select the startFrame: it shows the markers accordingly
+switch start_criterion
+    case 1
+        mainmarker      = [model_name '_index']; 
+        label_criterion = 'Index';
+    case 2
+        mainmarker    = [model_name '_ulna']; 
+        label_criterion = 'Ulna';
+    case 3
+        mainmarker    = [model_name '_index']; % this is related to the button release and we chose to select the startFrame on the index trajectories
+        label_criterion = 'Button';
+end
+
 
 % display trial number in command window
 fprintf(['Trial n. ' num2str(sMarkers{t}.info.trial_id) '\n']);
-
+fprintf([label_criterion ' as the start criterion \n']);
 
 %%%%%%%%%%%%%%%%%% SHOW FIGURE AND ASK FOR USER INPUT %%%%%%%%%%%%%%%%%%%%%
 
@@ -21,7 +33,7 @@ drawnow % this is to show changes to figure immediately
 % display options for user
 mod = input('0 = Erase trial;\n1 = Change TSTART;\n2 = Change TMOVE;\n3 = Change TSTOP;\n4 = Change ALL\n999 = ALL GOOD\n','s');
 
-% XXX if mod is empty or non of the required inputs, then put 999? but this means all good... CHECK!
+% If mod is empty or non of the required inputs, then put 999
 if isempty(mod) || sum([strcmp(mod,'0'),strcmp(mod,'1'),strcmp(mod,'2'),strcmp(mod,'3'), strcmp(mod,'4')]) == 0
     mod = '999';
 end

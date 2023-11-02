@@ -5,6 +5,10 @@
 % number of bins for normalization
 bin = 100;
 
+% rt minimum number of ms to classify a trial as an 'early start' trial.
+% The check is done in calc_kin_trial.m
+rt_min = 100;
+
 % -------------------------------------------------------------------------
 % Set directory paths:
 
