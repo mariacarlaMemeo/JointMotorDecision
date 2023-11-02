@@ -44,13 +44,9 @@ calc_kin_init;
 for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
 
     disp(['Start ' SUBJECTS{p}(2:end)]);
-    clear v raw_clm
     close all
     early_count = 0; % counter for trials where agent started before prompt
     
-    % Create a table
-    raw_clm     = table(); % XXX is this used anywhere???
-
     %% Locate and load data for current pair
 
     % *MAT FILE*: Locate 'session' struct for current pair
@@ -67,7 +63,6 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     sMarkers = session(mark);
 
     % *EXCEL FILE*: Locate file for current pair
-%     path_task      = fullfile(path_data,SUBJECTS{p}); % XXX delete bc not used?!
     path_data_each = fullfile(path_data,SUBJECTS{p},['S' SUBJECTS{p}(2:end) '.xlsx']);
     % Read Excel file
     [~,txt_or,raw] = xlsread(path_data_each);
@@ -75,7 +70,6 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     %% Process "raw" data from Excel file
     raw  = raw(2:end,:); % remove header
     % create header for additional variables (computed and added later)
-    % XXX why do we have z only for ulna??? (z_uln2_)???
     txt  = [txt_or{1,:} {'switch' 'rt_final1' 'rt_final2' 'rt_finalColl' ...
                                   'dt_final1' 'dt_final2' 'dt_finalColl' ...
                                   'mt_final1' 'mt_final2' 'mt_finalColl'} ...
@@ -85,6 +79,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
                          cellstr(strcat('vel_uln2_',string(1:bin))), ...
                          cellstr(strcat('acc_uln2_',string(1:bin))), ...
                          cellstr(strcat('jrk_uln2_',string(1:bin))), ...
+                         cellstr(strcat('z_ind2_',string(1:bin))), ...
                          cellstr(strcat('z_uln2_',string(1:bin))), ...
                          'tstart1' 'tmove1' 'tstop1' ...
                          'tstart2' 'tmove2' 'tstop2' ...

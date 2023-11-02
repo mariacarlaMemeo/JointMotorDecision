@@ -19,7 +19,6 @@ end
 path_kin  = fullfile(path_data,'..\Processed');
 
 % 3. Set figure path for trial-by-trial plots (if necessary at all)
-% XXX CREATE THIS FOLDER ON HD!!!
 figurepath = fullfile(path_data,'..\Processed\trialPlots');
 
 % 4. Retrieve folder path to create list with pair numbers (S1xx)
