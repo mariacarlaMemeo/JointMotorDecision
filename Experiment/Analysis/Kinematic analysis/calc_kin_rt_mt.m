@@ -29,9 +29,8 @@ try % main try/catch statement
 flag_hd    = 1; % retrieve data from hard drive? -> set to 1!
 flag_2nd   = 1; % plot only 2nd decision?
 flag_plot  = 1; % 1 plot per agent with all trajectories ("exploratory plots")?
-trial_plot = 0; % 1 plot per trial (for cutting and visual inspection)?
+trial_plot = 1; % 1 plot per trial (for cutting and visual inspection)?
 med_split  = 1; % median split for confidence?
-flag_pre   = 1; % include pre-aquisition (20 frames pre decision prompt)?
 flag_bin   = 0; % normalize trajectories to 100 bins?
 
 
@@ -132,7 +131,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     disp(['Number of early starts for pair ' SUBJECTS{p}(2:end) ': ' num2str(early_count)]);
 
     % Save mat file for each pair XXX check file name
-    save(fullfile(path_kin,[SUBJECTS{p},'_post_absValues_withPre']))
+    save(fullfile(path_kin,[SUBJECTS{p},'_post_absValues']))
 
     % ---------------------------------------------------------------------    
     % Classify confidence as high and low, using MEDIAN SPLIT

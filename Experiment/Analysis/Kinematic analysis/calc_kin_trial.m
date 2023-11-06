@@ -60,10 +60,11 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     label_agent = 'FIRSTDecision';
 
     % 1. call movement_onset.m
-    [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1] = ...
-        movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
-        FirstRT,flag_pre,trial_plot,figurepath);
-
+    if not(early)
+        [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1] = ...
+            movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
+            FirstRT,trial_plot,figurepath);
+    end
     % 2. call movement_var.m
     % only if start frame exists and start button was NOT pressed too early
     if not(isnan(startFrame1)) && not(early)
@@ -133,12 +134,13 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % AGENT ACTING SECOND -------------------------------------------------
     
     label_agent = 'SECONDDecision';
-    
-    % 1. call movement_onset.m
-    [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2] = ...
-        movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
-        SecRT,flag_pre,trial_plot,figurepath);
 
+    % 1. call movement_onset.m
+    if not(early)
+        [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2] = ...
+            movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
+            SecRT,trial_plot,figurepath);
+    end
     % 2. call movement_var.m
     % only if start frame exists and start button was NOT pressed too early
     if not(isnan(startFrame2)) && not(early)
@@ -208,14 +210,15 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % Collective decision -------------------------------------------------
     % Note: We currently DO NOT prepare the trajectory plots (with all
     % trials for the collective decision (with all_time/spa_ data).
-    
+
     label_agent = 'COLLECTIVEDecision';
 
     % 1. call movement_onset.m
-    [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl] = ...
-        movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
-        CollRT,flag_pre,trial_plot,figurepath);
-    
+    if not(early)
+        [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl] = ...
+            movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
+            CollRT,trial_plot,figurepath);
+    end
     % 2. call movement_var.m
     % if start frame exists and start button was NOT pressed too early
     if not(isnan(startFrameColl)) && not(early)
@@ -271,14 +274,8 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             crash = '0';
         end % -------------------------------------------------------------
 
-        % write the Excel file (and adjust name depening on pre flag)
-        % XXX why is this inside the trial loop: are we writing this file
-        % continuously???
-        if flag_pre
-            writetable(data,fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model_withPre.xlsx']));
-        else
-            writetable(data,fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
-        end
+        % write the Excel file
+        writetable(data,fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
 
     end % end of adding data to Excel file
 

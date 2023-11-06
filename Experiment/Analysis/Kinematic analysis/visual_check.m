@@ -7,7 +7,7 @@
 visual_change = []; % did you make changes after visual inspection?
 del_fig       = []; % do you want to eliminate the trial?
 jpg_title     = [fullfile(figurepath,SUBJECTS{p}) '\' num2str(sMarkers{t}.info.trial_id) ...
-                '_trial_' agent_name];
+                '_trial_' agentExec];
 % criterion to select the startFrame: it shows the markers accordingly
 switch start_criterion
     case 1
@@ -31,7 +31,7 @@ fprintf([label_criterion ' as the start criterion \n']);
 drawnow % this is to show changes to figure immediately
 
 % display options for user
-mod = input('0 = Erase trial;\n1 = Change TSTART;\n2 = Change TMOVE;\n3 = Change TSTOP;\n4 = Change ALL\n999 = ALL GOOD\n','s');
+mod = input('0 = Erase trial;\n1 = Change TSTART;\n2 = Change TMOVE;\n3 = Change TSTOP;\n4 = Change TSTART and TSTOP\n999 = ALL GOOD\n','s');
 
 % If mod is empty or non of the required inputs, then put 999
 if isempty(mod) || sum([strcmp(mod,'0'),strcmp(mod,'1'),strcmp(mod,'2'),strcmp(mod,'3'), strcmp(mod,'4')]) == 0
@@ -92,21 +92,21 @@ switch str2double(mod) % depending on user input, check respective case
         visual_change = 1;
         del_fig       = 0;
 
-    case 4 % change tstart, tmove, and tstop; save original and new figure
+    case 4 % change tstart and tstop; save original and new figure
         if ~exist(strcat(jpg_title,'_v0.png'),'file')
             saveas(gcf,strcat(jpg_title,'_v0.png'))
         end
-        disp('Insert tstart, tmove and tstop ');
-        [x,~] = ginput(3); % 3(!) user inputs: select positions one after other
+        disp('Insert tstart and tstop ');
+        [x,~] = ginput(2); % 2(!) user inputs: select positions one after other
         rangex1 = (round(x(1))-3):(round(x(1))+3);
         rangex2 = (round(x(2))-3):(round(x(2))+3);
-        rangex3 = (round(x(3))-3):(round(x(3))+3);
+        %rangex3 = (round(x(3))-3):(round(x(3))+3);
         startFrame = rangex1(sMarkers{t}.markers.(mainmarker).Vm(rangex1)== ...
                          min(sMarkers{t}.markers.(mainmarker).Vm(rangex1)));       
-        tmove      = rangex2(sMarkers{t}.markers.(mainmarker).Vm(rangex2)== ...
+        endFrame   = rangex2(sMarkers{t}.markers.(mainmarker).Vm(rangex2)== ...
                          min(sMarkers{t}.markers.(mainmarker).Vm(rangex2)));        
-        endFrame   = rangex3(sMarkers{t}.markers.(mainmarker).Vm(rangex3)== ...
-                         min(sMarkers{t}.markers.(mainmarker).Vm(rangex3)));
+        %tmove      = rangex3(sMarkers{t}.markers.(mainmarker).Vm(rangex3)== ...
+        %                 min(sMarkers{t}.markers.(mainmarker).Vm(rangex3)));
         visual_change = 1;
         del_fig       = 0;
 end

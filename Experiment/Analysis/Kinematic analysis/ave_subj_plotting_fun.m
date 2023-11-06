@@ -16,12 +16,6 @@ lConf_col     = [0.2 0.8 0.8]; % blueish
 lConf_col_ave = [0 .6 .6]; % slightly different blueish for averages
 x_width       = 16;
 y_width       = 12;
-% XXX are the following parameters used???
-ls            = ':';
-b_dashed      = [0.1176 0.2353 0.7451];
-y_solid       = [0.8 0.4667 0.1333];
-y_dashed      = [0.9412 0.7843 0.1569];
-
 
 %% Plotting trajectories (colored according to confidence - high/low)
 

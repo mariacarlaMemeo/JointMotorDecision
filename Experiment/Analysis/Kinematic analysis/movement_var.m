@@ -15,11 +15,6 @@ function [tindex,tulna,sindex,sulna,sdindex,...
 model_name = [SUBJECTS{p} '_' agentExec '_' agentExec]; % name of hand model in Nexus
 index      = sMarkers{t}.markers.([model_name '_index']); % ALL DATA for index
 ulna       = sMarkers{t}.markers.([model_name '_ulna']);  % ALL DATA for ulna
-% XXX are the following three variables needed here? apparently not used
-frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:}; % acquisition frame rate in Hz
-samp       = 1:sMarkers{t}.info.nSamples;
-preAcq     = 20; % preacquisition duration: 200 ms == 20 frames (10ms = 1 frame)
-
 
 if endFrame > tstart
 
