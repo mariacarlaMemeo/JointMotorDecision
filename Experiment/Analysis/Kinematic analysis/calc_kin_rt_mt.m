@@ -27,13 +27,16 @@ try % main try/catch statement
 
 %% First set flags (1=yes,0=no)
 flag_hd    = 1; % retrieve data from hard drive? -> set to 1!
-flag_2nd   = 1; % plot only 2nd decision?
 flag_plot  = 1; % 1 plot per agent with all trajectories ("exploratory plots")?
 trial_plot = 0; % 1 plot per trial (for cutting and visual inspection)?
 med_split  = 1; % median split for confidence?
 flag_bin   = 1; % normalize trajectories to 100 bins?
 flag_write = 0; % select to write excel files and save mat files
 
+which_Dec  = 1; % select the decision to plot: 1=first, 2=second, 3=collective, 4=first and second
+if which_Dec ~= 2
+    flag_write = 0;
+end
 %%%%%%%%%%%% initialize parameters in separate script %%%%%%%%%%%%%%%%%%%%%
 calc_kin_init;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

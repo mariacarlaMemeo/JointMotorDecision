@@ -1,12 +1,12 @@
 function ave_all = ave_subj_plotting_fun(matrix_3d,clm,pairS, ...
-         agent2ndDec,title_plot,title_fig,save_path,n_var,threshold, ...
-         flag_2nd,flag_bin)
+    agents,title_plot,title_fig,save_path,n_var,threshold, ...
+    which_Dec,flag_bin)
 
 % -------------------------------------------------------------------------
 % -> We plot kin. variables for all trials (only 2nd decision), per agent.
 % -------------------------------------------------------------------------
 % This function is called from "ave_subj_plotting_new.m"
-% Note: "trials" actually means "decisions"        
+% Note: "trials" actually means "decisions"
 
 % Set some parameters first
 wd            = 4;
@@ -23,7 +23,7 @@ if n_var==1
 
     % "squeeze" first to change format XXX
     ave_all = squeeze(matrix_3d(:,clm,:)); % data named "ave_all" now
-    
+
     % The following is done to remove weird trials, -----------------------
     % but we currently do NOT use this: "threshold" = []
     if length(threshold)==1
@@ -41,26 +41,49 @@ if n_var==1
 
     matrix_3d(:,clm,unique(c)) = nan;
     ave_all(:,unique(c))       = nan;
-    
+
     biv = figure(); % create figure
     set(biv, 'WindowStyle', 'Docked');
-    
-    if flag_2nd % only second decision
-        
+
+    if which_Dec == 1
         % plot single trials
-        plot(ave_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agent2ndDec),'color',hConf_col); % high confidence
+        plot(ave_all(:,pairS.curr_conf==2 & pairS.at1stDec==agents),'color',hConf_col); % high confidence
         hold on;
-        plot(ave_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agent2ndDec),'color',lConf_col); % low confidence
+        plot(ave_all(:,pairS.curr_conf==1 & pairS.at1stDec==agents),'color',lConf_col); % low confidence
         % plot average trajectories only if data has been normalized (not feasible otherwise)
         if flag_bin
-            plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
+            plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col); % average high confidence
-            plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
+            plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
         end
-    
-    else % both first and second decision (collective is currently not included)
-        
+    elseif which_Dec == 2 % only second decision
+
+        % plot single trials
+        plot(ave_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col); % high confidence
+        hold on;
+        plot(ave_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents),'color',lConf_col); % low confidence
+        % plot average trajectories only if data has been normalized (not feasible otherwise)
+        if flag_bin
+            plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',hConf_col); % average high confidence
+            plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',lConf_col_ave); % average low confidence
+        end
+    elseif which_Dec == 3
+        % plot single trials
+        plot(ave_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents),'color',hConf_col); % high confidence
+        hold on;
+        plot(ave_all(:,pairS.curr_conf==1 & pairS.atCollDec==agents),'color',lConf_col); % low confidence
+        % plot average trajectories only if data has been normalized (not feasible otherwise)
+        if flag_bin
+            plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',hConf_col); % average high confidence
+            plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',lConf_col_ave); % average low confidence
+        end
+    elseif which_Dec == 4 % both first and second decision (collective is currently not included)
+
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2),'color',hConf_col); % high confidence
         hold on;
@@ -81,7 +104,7 @@ if n_var==1
     saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig));
     hold off;
 
-% Plotting two variables (i.e., spatial x-y plots, not across time/frames)
+    % Plotting two variables (i.e., spatial x-y plots, not across time/frames)
 elseif n_var==2
 
     % "squeeze" to adjust data format
@@ -106,34 +129,82 @@ elseif n_var==2
     yiz=figure(); % create figure
     set(yiz, 'WindowStyle', 'Docked');
 
-    if flag_2nd % only second decision
-        
+    if which_Dec == 1
         % plot single trials
-        plot(ave_x_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agent2ndDec), ...
-            ave_y_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agent2ndDec),'color',hConf_col);
+        plot(ave_x_all(:,pairS.curr_conf==2 & pairS.at1stDec==agents), ...
+            ave_y_all(:,pairS.curr_conf==2 & pairS.at1stDec==agents),'color',hConf_col);
         hold on;
-        plot(ave_x_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agent2ndDec), ...
-            ave_y_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agent2ndDec),'color',lConf_col);
+        plot(ave_x_all(:,pairS.curr_conf==1 & pairS.at1stDec==agents), ...
+            ave_y_all(:,pairS.curr_conf==1 & pairS.at1stDec==agents),'color',lConf_col);
         % plot average trajectories only if data has been normalized (not feasible otherwise)
         if flag_bin
             % high confidence - target 1 (left) and target 2 (right)
-            plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
-                mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col);
-            plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
-                mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col);
             % low confidence - target 1 (left) and target 2 (right)
-            plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
-                mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave);
-            plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
-                mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agent2ndDec),3,'omitnan'), ...
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave);
         end
-    
-    else % both first and second decision (collective is currently not included)
-        
+
+    elseif which_Dec == 2 % only second decision
+        % plot single trials
+        plot(ave_x_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents), ...
+            ave_y_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col);
+        hold on;
+        plot(ave_x_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents), ...
+            ave_y_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents),'color',lConf_col);
+        % plot average trajectories only if data has been normalized (not feasible otherwise)
+        if flag_bin
+            % high confidence - target 1 (left) and target 2 (right)
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',hConf_col);
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',hConf_col);
+            % low confidence - target 1 (left) and target 2 (right)
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',lConf_col_ave);
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',lConf_col_ave);
+        end
+
+    elseif which_Dec == 3
+        % plot single trials
+        plot(ave_x_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents), ...
+            ave_y_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents),'color',hConf_col);
+        hold on;
+        plot(ave_x_all(:,pairS.curr_conf==1 & pairS.atCollDec==agents), ...
+            ave_y_all(:,pairS.curr_conf==1 & pairS.atCollDec==agents),'color',lConf_col);
+        % plot average trajectories only if data has been normalized (not feasible otherwise)
+        if flag_bin
+            % high confidence - target 1 (left) and target 2 (right)
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',hConf_col);
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',hConf_col);
+            % low confidence - target 1 (left) and target 2 (right)
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',lConf_col_ave);
+            plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+                mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+                'LineWidth',wd,'color',lConf_col_ave);
+        end
+
+    elseif which_Dec == 4 % both first and second decision (collective is currently not included)
         % plot single trials
         plot(ave_x_all(:,pairS.curr_conf==2),ave_y_all(:,pairS.curr_conf==2),'color',hConf_col);
         hold on;
@@ -147,7 +218,7 @@ elseif n_var==2
             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col);
-             % low confidence - target 1 (left) and target 2 (right)
+            % low confidence - target 1 (left) and target 2 (right)
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave);
@@ -157,11 +228,11 @@ elseif n_var==2
         end
 
     end
-    
+
     title(title_plot);
     % save each figure with the specified dimensions
     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
     saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig))
     hold off;
-  
+
 end % end of plotting
