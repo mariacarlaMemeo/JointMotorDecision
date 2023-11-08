@@ -28,11 +28,11 @@ spa_param   = {'x' 'y' 'z'};
 for g = 1:length(agent2ndDec) % -------------------------------------------
     
     if agent2ndDec{g}=='B'
-        conf = bConf;
-        dec  = blue_Dec;
+        pairS.curr_conf = pairS.bConf;
+        pairS.curr_dec  = pairS.blue_Dec;
     elseif agent2ndDec{g}=='Y'
-        conf = yConf;
-        dec  = yell_Dec;
+        pairS.curr_conf = pairS.yConf;
+        pairS.curr_dec  = pairS.yell_Dec;
     end
     
     % marker loop: index, ulna
@@ -47,8 +47,8 @@ for g = 1:length(agent2ndDec) % -------------------------------------------
                 title_fig  = [SUBJECTS{p}(2:end) agent2ndDec{g} '_' time_param{param}(1) 'm_' mrks{m} '.png'];
             end
             % go into plotting function
-            ave_subj_plotting_fun(eval(['all_time_traj_' mrks{m} '_' lower(agent2ndDec{g})]),param,conf, ...
-                dec,SecondDec,agent2ndDec{g},title_plot,title_fig,path_kin,1,[],flag_2nd,flag_bin)
+            ave_all = ave_subj_plotting_fun(eval(['all_time_traj_' mrks{m} '_' lower(agent2ndDec{g})]),param,pairS,...
+                agent2ndDec{g},title_plot,title_fig,path_kin,1,[],flag_2nd,flag_bin);
         end
         
         % spatial parameter loop: x-dimension (left-right), z-dimension (height)
@@ -61,15 +61,14 @@ for g = 1:length(agent2ndDec) % -------------------------------------------
                 title_fig  = [SUBJECTS{p}(2:end) agent2ndDec{g} '_' spa_param{sparam} ' coord_' mrks{m} '.png'];
             end
             % go into plotting function
-            ave_subj_plotting_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agent2ndDec{g})]),sparam,conf, ...
-                dec,SecondDec,agent2ndDec{g},title_plot,title_fig,path_kin,1,[],flag_2nd,flag_bin)
+            ave_all = ave_subj_plotting_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agent2ndDec{g})]),sparam,pairS, ...
+                agent2ndDec{g},title_plot,title_fig,path_kin,1,[],flag_2nd,flag_bin);
         end
 
     end % end of marker loop
+    SecDec_clean(g) = length(ave_all(~isnan(ave_all(1,pairS.at2ndDec==agent2ndDec{g}))));
 end % end of agent loop ---------------------------------------------------
 
 
-% XXX what do we want to display here?
-disp(eval(['size(all_spa_traj_'  mrks{m} '_' lower(agent2ndDec{g}) ',3)']));
 
 % script version: 1 Nov 2023

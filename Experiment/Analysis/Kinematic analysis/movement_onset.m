@@ -121,7 +121,7 @@ if startFrame > preAcq
         xline(preAcq); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
         t_pre    = text(preAcq-plotxShift,yPos_text-300,' decision prompt (t0)'); set(t_pre,'Rotation',90);
         xline(rt_mat+preAcq); % "t1": moment of button release
-        t_rt_mat = text(rt_mat+preAcq-plotxShift,yPos_text-600,' button release (t1)'); set(t_rt_mat,'Rotation',90);
+        t_rt_mat = text(rt_mat+preAcq-plotxShift,yPos_text-450,' button release (t1)'); set(t_rt_mat,'Rotation',90);
         xline(samp(end)-10);  % "t2": moment of button press (i.e., 10 frames before end of recording)
         t_post   = text((samp(end)-10)-plotxShift,yPos_text-300,' target press (t2)'); set(t_post,'Rotation',90);
 
@@ -212,7 +212,7 @@ if startFrame > preAcq
             xline(preAcq); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
             t_pre    = text(preAcq-plotxShift,yPos_text-300,' decision prompt (t0)'); set(t_pre,'Rotation',90);
             xline(rt_mat+preAcq); % "t1": moment of button release
-            t_rt_mat = text(rt_mat+preAcq-plotxShift,yPos_text-600,' button release (t1)'); set(t_rt_mat,'Rotation',90);
+            t_rt_mat = text(rt_mat+preAcq-plotxShift,yPos_text-450,' button release (t1)'); set(t_rt_mat,'Rotation',90);
             xline(samp(end)-10);  % "t2": moment of button press (i.e., 10 frames before end of recording)
             t_post   = text((samp(end)-10)-plotxShift,yPos_text-300,' target press (t2)'); set(t_post,'Rotation',90);
 

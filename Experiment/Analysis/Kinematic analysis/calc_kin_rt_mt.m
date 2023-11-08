@@ -29,10 +29,10 @@ try % main try/catch statement
 flag_hd    = 1; % retrieve data from hard drive? -> set to 1!
 flag_2nd   = 1; % plot only 2nd decision?
 flag_plot  = 1; % 1 plot per agent with all trajectories ("exploratory plots")?
-trial_plot = 1; % 1 plot per trial (for cutting and visual inspection)?
+trial_plot = 0; % 1 plot per trial (for cutting and visual inspection)?
 med_split  = 1; % median split for confidence?
-flag_bin   = 0; % normalize trajectories to 100 bins?
-
+flag_bin   = 1; % normalize trajectories to 100 bins?
+flag_write = 0; % select to write excel files and save mat files
 
 %%%%%%%%%%%% initialize parameters in separate script %%%%%%%%%%%%%%%%%%%%%
 calc_kin_init;
@@ -87,25 +87,25 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     
     % Retrieve the decision data (1st, 2nd, collective)
     at1stDec_ind   = strcmp('AgentTakingFirstDecision',txt);
-    at1stDec       = cell2mat(raw(:,at1stDec_ind));
+    pairS.at1stDec       = cell2mat(raw(:,at1stDec_ind));
     at2ndDec_ind   = strcmp('AgentTakingSecondDecision',txt);
-    at2ndDec       = cell2mat(raw(:,at2ndDec_ind));
+    pairS.at2ndDec       = cell2mat(raw(:,at2ndDec_ind));
     atCollDec_ind  = strcmp('AgentTakingCollDecision',txt);
-    atCollDec      = cell2mat(raw(:,atCollDec_ind));
+    pairS.atCollDec      = cell2mat(raw(:,atCollDec_ind));
     % Retrieve the confidence of each agent (blue, yellow)
     blue_Conf_ind  = strcmp('B_conf',txt);
-    blue_Conf      = cell2mat(raw(:,blue_Conf_ind));
+    pairS.blue_Conf      = cell2mat(raw(:,blue_Conf_ind));
     yell_Conf_ind  = strcmp('Y_conf',txt);
-    yell_Conf      = cell2mat(raw(:,yell_Conf_ind));
+    pairS.yell_Conf      = cell2mat(raw(:,yell_Conf_ind));
     Coll_Conf_ind  = strcmp('Coll_conf',txt);
-    Coll_Conf      = cell2mat(raw(:,Coll_Conf_ind));
+    pairS.Coll_Conf      = cell2mat(raw(:,Coll_Conf_ind));
     % Retrieve the choice of each agent (blue, yellow, collective)
     blue_Dec_ind   = strcmp('B_decision',txt);
-    blue_Dec       = cell2mat(raw(:,blue_Dec_ind));
+    pairS.blue_Dec       = cell2mat(raw(:,blue_Dec_ind));
     yell_Dec_ind   = strcmp('Y_decision',txt);
-    yell_Dec       = cell2mat(raw(:,yell_Dec_ind));
+    pairS.yell_Dec       = cell2mat(raw(:,yell_Dec_ind));
     Coll_Dec_ind   = strcmp('Coll_decision',txt);
-    Coll_Dec       = cell2mat(raw(:,Coll_Dec_ind));
+    pairS.Coll_Dec       = cell2mat(raw(:,Coll_Dec_ind));
     % Retrieve the RT of each agent (blue, yellow, collective)
     blue_rt_ind    = strcmp('B_rt',txt);
     blue_rt        = cell2mat(raw(:,blue_rt_ind));
@@ -131,7 +131,9 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     disp(['Number of early starts for pair ' SUBJECTS{p}(2:end) ': ' num2str(early_count)]);
 
     % Save mat file for each pair XXX check file name
-    save(fullfile(path_kin,[SUBJECTS{p},'_post_absValues']))
+    if flag_write
+        save(fullfile(path_kin,[SUBJECTS{p},'_post_absValues']))
+    end
 
     % ---------------------------------------------------------------------    
     % Classify confidence as high and low, using MEDIAN SPLIT
@@ -139,29 +141,39 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % value in the middle that is most common (CHECK THIS).
     % Thus, low confidence would be 1-3 and high would be 4-6; see below.
     if med_split % XXX maybe use median(X,'omitnan')? 
-        bConf = blue_Conf;  % re-name to avoid overwriting
-        yConf = yell_Conf;
+        bConf = pairS.blue_Conf;  % re-name to avoid overwriting
+        yConf = pairS.yell_Conf;
         bConf(bConf<=median(bConf)) = 1; % if <= median, classify as low (1)
         bConf(bConf>median(bConf))  = 2; % if > median, classify as high (2)
         yConf(yConf<=median(yConf)) = 1;
-        yConf(yConf>median(yConf))  = 2; 
+        yConf(yConf>median(yConf))  = 2;
+        pairS.bConf = bConf;
+        pairS.yConf = yConf;
+
     else % if no median split, categorize as 1-3(low) and 4-6(high) anyway
-        bConf = blue_Conf;
-        yConf = yell_Conf;
+        bConf = pairS.blue_Conf;
+        yConf = pairS.yell_Conf;
         bConf(bConf<4)  = 1;
         bConf(bConf>=4) = 2;
         yConf(yConf<4)  = 1; 
         yConf(yConf>=4) = 2;
+        
+        pairS.bConf = bConf;
+        pairS.yConf = yConf;
     end
     % ---------------------------------------------------------------------
 
     % Re-name vector that specifies who took the 2nd decision
-    SecondDec = at2ndDec;
+    %SecondDec = at2ndDec;
     
     % display and save exploratory plots (1 plot per agent with all trials)
     if flag_plot
         ave_subj_plotting_new;
     end
+    % Write an additional Excel file to record the number of trial lost for early release of the button (per pair and per agent)
+    exc{p,1:4} = [str2double(SUBJECTS{p}(2:end)) early_count SecDec_clean];
+    exc.Properties.VariableNames = {'pair','early_start','B_2ndDec','Y_2ndDec'};
+    writetable(exc,fullfile(path_kin,'SecDec_cleanAll.xlsx'));
 
     % clear parameters for next pair
     clear sMarkers session bConf yConf blue_Dec yell_Dec

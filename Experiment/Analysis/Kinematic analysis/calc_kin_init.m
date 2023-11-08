@@ -1,6 +1,9 @@
 % -------------------------------------------------------------------------
 % Here we set some parameters for the main script calc_kin_rt_mt.m
 % -------------------------------------------------------------------------
+% Initialize table to create excel file with early release trials or
+% excluded trials (if one decision is excluded, all the trial is excluded)
+exc = table();
 
 % number of bins for normalization
 bin = 100;
@@ -35,23 +38,26 @@ SUBJECT_LIST = cellfun(@(s) find(contains(s,'S1')),SUBJECTS,'uni',0);
 SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 % *Change here if you want to check specific pairs only*
-% SUBJECTS = [SUBJECTS(1)]; %[SUBJECTS(2) SUBJECTS(4)];
+SUBJECTS = [SUBJECTS(1)]; %[SUBJECTS(2) SUBJECTS(4)];
 % -------------------------------------------------------------------------
 
 
 % Initialize time & space matrices for non-normalized trajectories (no bins)
 max_samples = 800; % 800 frames = 8 seconds
 max_trial   = 320; % 320 decisions XXX why not 160?
-% for blue agent
-all_time_traj_index_b = NaN*ones(max_samples,3,max_trial);
-all_time_traj_ulna_b  = NaN*ones(max_samples,3,max_trial);
-all_spa_traj_index_b  = NaN*ones(max_samples,3,max_trial);
-all_spa_traj_ulna_b   = NaN*ones(max_samples,3,max_trial);
-% for yellow agent
-all_time_traj_index_y = NaN*ones(max_samples,3,max_trial);
-all_time_traj_ulna_y  = NaN*ones(max_samples,3,max_trial);
-all_spa_traj_index_y  = NaN*ones(max_samples,3,max_trial);
-all_spa_traj_ulna_y   = NaN*ones(max_samples,3,max_trial);
+
+if not(flag_bin)
+    % for blue agent
+    all_time_traj_index_b = NaN*ones(max_samples,3,max_trial);
+    all_time_traj_ulna_b  = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_index_b  = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_ulna_b   = NaN*ones(max_samples,3,max_trial);
+    % for yellow agent
+    all_time_traj_index_y = NaN*ones(max_samples,3,max_trial);
+    all_time_traj_ulna_y  = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_index_y  = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_ulna_y   = NaN*ones(max_samples,3,max_trial);
+end
 
 % Decide if you want to analyze full data set or 
 % if you want to start from backup (in case of previous crash)

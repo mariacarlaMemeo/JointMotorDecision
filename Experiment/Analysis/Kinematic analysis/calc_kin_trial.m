@@ -21,24 +21,24 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
     % Who is taking the first decision in current trial t?
     % Note: this step is done only to create the "switch" column below
-    if at1stDec(t) == 'B'
-        FirstDec(t) = blue_Dec(t);
+    if pairS.at1stDec(t) == 'B'
+        FirstDec(t) = pairS.blue_Dec(t);
     else
-        FirstDec(t) = yell_Dec(t);
+        FirstDec(t) = pairS.yell_Dec(t);
     end
     % Did the first agent change her mind when taking the coll. decision?
-    if FirstDec(t) == Coll_Dec(t)
+    if FirstDec(t) == pairS.Coll_Dec(t)
         changeMind(t) = 0;
     else
         changeMind(t) = 1;
     end
     
     % Check who is the executing agent for each decision
-    agentExec1    = lower(at1stDec(t));
-    agentExec2    = lower(at2ndDec(t));
-    agentExecColl = lower(atCollDec(t));
+    agentExec1    = lower(pairS.at1stDec(t));
+    agentExec2    = lower(pairS.at2ndDec(t));
+    agentExecColl = lower(pairS.atCollDec(t));
     % Assign RT to 1st, 2nd, and collective accordingly
-    if at1stDec(t) == 'B'
+    if pairS.at1stDec(t) == 'B'
         FirstRT = blue_rt(t);
         SecRT   = yell_rt(t);
     else
@@ -48,7 +48,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     CollRT      = Coll_rt(t);
 
     % SANITY CHECK: Do 1st and 2nd agent differ? (they have to)
-    if at1stDec(t) == at2ndDec(t)
+    if pairS.at1stDec(t) == pairS.at2ndDec(t)
         warning('Agents taking 1st and 2nd decisions are the same! Aaargh #!@*&%');
     end
 
@@ -64,28 +64,32 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1] = ...
             movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
             FirstRT,trial_plot,figurepath);
-    end
-    % 2. call movement_var.m
-    % only if start frame exists and start button was NOT pressed too early
-    if not(isnan(startFrame1)) && not(early)
-        [tindex1,tulna1,sindex1,sulna1,sdindex1, ...
-            time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1] = ...
-            movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1,flag_bin);
+
+        % 2. call movement_var.m
+        % only if start frame exists and start button was NOT pressed too early
+        if not(isnan(startFrame1))
+            [tindex1,tulna1,sindex1,sulna1,sdindex1, ...
+                time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1] = ...
+                movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1,flag_bin);
+        end
+
     else % otherwise fill with NaN
+        startFrame1 = NaN;tmove1 = NaN;rt_final1 = NaN;dt_final1 = NaN;mt_final1 = NaN;endFrame1 =  NaN;
         tindex1          = [NaN NaN NaN];
         tulna1           = [NaN NaN NaN];
         sindex1          = [NaN NaN NaN NaN];
         sulna1           = [NaN NaN NaN NaN];
         sdindex1         = [NaN NaN NaN NaN];
-        time_traj_index1 = ones(100,3)*NaN;
-        time_traj_ulna1  = ones(100,3)*NaN;
-        spa_traj_index1  = ones(100,3)*NaN;
-        spa_traj_ulna1   = ones(100,3)*NaN;
+        time_traj_index1 = ones(bin,3)*NaN;
+        time_traj_ulna1  = ones(bin,3)*NaN;
+        spa_traj_index1  = ones(bin,3)*NaN;
+        spa_traj_ulna1   = ones(bin,3)*NaN;
     end
+    
 
     if flag_bin % only if we want to bin/normalize trajectories
 
-        if at1stDec(t) == 'B' % blue takes first decision
+        if pairS.at1stDec(t) == 'B' % blue takes first decision
             all_time_traj_index_b(:,:,t) = time_traj_index1;
             all_time_traj_ulna_b(:,:,t)  = time_traj_ulna1;
             all_spa_traj_index_b(:,:,t)  = spa_traj_index1;
@@ -102,7 +106,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         % Note: we currently exclude trials that are too long
         % -> check setting of "max_samples" in calc_kin_init.m
         if length(time_traj_index1) > max_samples
-            if at1stDec(t) == 'B' % blue takes first decision
+            if pairS.at1stDec(t) == 'B' % blue takes first decision
                 all_time_traj_index_b(:,:,t) = NaN*ones(max_samples,3);
                 all_time_traj_ulna_b(:,:,t)  = NaN*ones(max_samples,3);
                 all_spa_traj_index_b(:,:,t)  = NaN*ones(max_samples,3);
@@ -114,7 +118,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
                 all_spa_traj_ulna_y(:,:,t)   = NaN*ones(max_samples,3);
             end
         else % for all trials with samples < max_samples (usual case)
-            if at1stDec(t) == 'B' % blue takes first decision
+            if pairS.at1stDec(t) == 'B' % blue takes first decision
                 all_time_traj_index_b(:,:,t) = [time_traj_index1;NaN*ones((max_samples-length(time_traj_index1)),3)];
                 all_time_traj_ulna_b(:,:,t)  = [time_traj_ulna1;NaN*ones((max_samples-length(time_traj_ulna1)),3)];
                 all_spa_traj_index_b(:,:,t)  = [spa_traj_index1;NaN*ones((max_samples-length(spa_traj_index1)),3)];
@@ -140,28 +144,31 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2] = ...
             movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
             SecRT,trial_plot,figurepath);
-    end
-    % 2. call movement_var.m
-    % only if start frame exists and start button was NOT pressed too early
-    if not(isnan(startFrame2)) && not(early)
-        [tindex2,tulna2,sindex2,sulna2,sdindex2, ...
-            time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2] = ...
-            movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2,flag_bin);
+
+        % 2. call movement_var.m
+        % only if start frame exists and start button was NOT pressed too early
+        if not(isnan(startFrame2))
+            [tindex2,tulna2,sindex2,sulna2,sdindex2, ...
+                time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2] = ...
+                movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2,flag_bin);
+        end
+
     else % otherwise fill with NaN
+        startFrame2 = NaN;tmove2 = NaN;rt_final2 = NaN;dt_final2 = NaN;mt_final2 = NaN;endFrame2 =  NaN;
         tindex2          = [NaN NaN NaN];
         tulna2           = [NaN NaN NaN];
         sindex2          = [NaN NaN NaN NaN];
         sulna2           = [NaN NaN NaN NaN];
         sdindex2         = [NaN NaN NaN NaN];
-        time_traj_index2 = ones(100,3)*NaN;
-        time_traj_ulna2  = ones(100,3)*NaN;
-        spa_traj_index2  = ones(100,3)*NaN;
-        spa_traj_ulna2   = ones(100,3)*NaN;
+        time_traj_index2 = ones(bin,3)*NaN;
+        time_traj_ulna2  = ones(bin,3)*NaN;
+        spa_traj_index2  = ones(bin,3)*NaN;
+        spa_traj_ulna2   = ones(bin,3)*NaN;
     end
 
     if flag_bin % only if we want to bin/normalize trajectories
         
-        if at2ndDec(t) == 'B' % blue takes second decision
+        if pairS.at2ndDec(t) == 'B' % blue takes second decision
             all_time_traj_index_b(:,:,t) = time_traj_index2;
             all_time_traj_ulna_b(:,:,t)  = time_traj_ulna2;
             all_spa_traj_index_b(:,:,t)  = spa_traj_index2;
@@ -178,7 +185,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         % Note: we currently exclude trials that are too long -> see
         % calc_kin_init and check setting of max_samples
         if length(time_traj_index2) > max_samples
-            if at2ndDec(t) == 'B' % blue takes second decision
+            if pairS.at2ndDec(t) == 'B' % blue takes second decision
                 all_time_traj_index_b(:,:,t) = NaN*ones(max_samples,3);
                 all_time_traj_ulna_b(:,:,t)  = NaN*ones(max_samples,3);
                 all_spa_traj_index_b(:,:,t)  = NaN*ones(max_samples,3);
@@ -190,7 +197,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
                 all_spa_traj_ulna_y(:,:,t)   = NaN*ones(max_samples,3);
             end
         else % for all trials with samples < max_samples (usual case)
-            if at2ndDec(t) == 'B' % blue takes second decision
+            if pairS.at2ndDec(t) == 'B' % blue takes second decision
                 all_time_traj_index_b(:,:,t) = [time_traj_index2;NaN*ones((max_samples-length(time_traj_index2)),3)];
                 all_time_traj_ulna_b(:,:,t)  = [time_traj_ulna2;NaN*ones((max_samples-length(time_traj_ulna2)),3)];
                 all_spa_traj_index_b(:,:,t)  = [spa_traj_index2;NaN*ones((max_samples-length(spa_traj_index2)),3)];
@@ -218,23 +225,26 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl] = ...
             movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
             CollRT,trial_plot,figurepath);
-    end
-    % 2. call movement_var.m
-    % if start frame exists and start button was NOT pressed too early
-    if not(isnan(startFrameColl)) && not(early)
-        [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl, ...
-            time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = ...
-            movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl,flag_bin);
+
+        % 2. call movement_var.m
+        % if start frame exists and start button was NOT pressed too early
+        if not(isnan(startFrameColl))
+            [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl, ...
+                time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = ...
+                movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl,flag_bin);
+        end
+
     else % otherwise fill with NaN
+        startFrameColl = NaN;tmoveColl = NaN;rt_finalColl = NaN;dt_finalColl = NaN;mt_finalColl = NaN;endFrameColl =  NaN;
         tindexColl          = [NaN NaN NaN];
         tulnaColl           = [NaN NaN NaN];
         sindexColl          = [NaN NaN NaN NaN];
         sulnaColl           = [NaN NaN NaN NaN];
         sdindexColl         = [NaN NaN NaN NaN];
-        time_traj_indexColl = ones(100,3)*NaN;
-        time_traj_ulnaColl  = ones(100,3)*NaN;
-        spa_traj_indexColl  = ones(100,3)*NaN;
-        spa_traj_ulnaColl   = ones(100,3)*NaN;
+        time_traj_indexColl = ones(bin,3)*NaN;
+        time_traj_ulnaColl  = ones(bin,3)*NaN;
+        spa_traj_indexColl  = ones(bin,3)*NaN;
+        spa_traj_ulnaColl   = ones(bin,3)*NaN;
     end
 
     caa = caa +3; % increase decision counter
@@ -256,7 +266,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
                                                     mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
         % -> normalized 100 samples for index and ulna: ONLY 2nd DECISION
-        data{t,ol(2)+11:ol(2)+719} = [time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
+        data{t,ol(2)+11:ol(2)+819} = [time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
                                       time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
                                       spa_traj_index2(:,3)' spa_traj_ulna2(:,3)'...
                                       startFrame1 tmove1 endFrame1 ...
@@ -275,8 +285,10 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         end % -------------------------------------------------------------
 
         % write the Excel file
-        writetable(data,fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
-
+        if flag_write
+            writetable(data,fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
+        end
+        
     end % end of adding data to Excel file
 
 end % end of trial loop (i.e., all trials for one pair were completed)
