@@ -1,4 +1,4 @@
-function ave_all = ave_subj_plotting_fun(matrix_3d,clm,pairS, ...
+function ave_all = ave_subj_plotting_fun(matrix_3d,clm,pairS,...
     agents,title_plot,title_fig,save_path,n_var,threshold, ...
     which_Dec,flag_bin)
 
@@ -57,10 +57,14 @@ if n_var==1
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
         end
+
     elseif which_Dec == 2 % only second decision
 
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col); % high confidence
+        indeces = 1:length(ave_all);
+        sel_lab = indeces(pairS.at2ndDec==agents);
+        text(1:length(sel_lab),ave_all(1,pairS.at2ndDec==agents),string(sel_lab))
         hold on;
         plot(ave_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents),'color',lConf_col); % low confidence
         % plot average trajectories only if data has been normalized (not feasible otherwise)
@@ -70,6 +74,7 @@ if n_var==1
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
         end
+
     elseif which_Dec == 3
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents),'color',hConf_col); % high confidence
@@ -82,8 +87,8 @@ if n_var==1
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.atCollDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
         end
-    elseif which_Dec == 4 % both first and second decision (collective is currently not included)
 
+    elseif which_Dec == 4 % both first and second decision (collective is currently not included)
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2),'color',hConf_col); % high confidence
         hold on;
@@ -99,6 +104,7 @@ if n_var==1
     end
 
     title(title_plot);
+    
     % save each figure with the specified dimensions
     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
     saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig));

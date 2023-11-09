@@ -55,7 +55,7 @@ for g = 1:length(agents) % -------------------------------------------
             title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
 
             % go into plotting function
-            ave_all = ave_subj_plotting_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS, ...
+            ave_all = ave_subj_plotting_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS,...
                 agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin);
         end
 

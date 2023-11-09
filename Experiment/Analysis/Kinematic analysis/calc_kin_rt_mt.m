@@ -33,7 +33,7 @@ med_split  = 1; % median split for confidence?
 flag_bin   = 1; % normalize trajectories to 100 bins?
 flag_write = 0; % select to write excel files and save mat files
 
-which_Dec  = 1; % select the decision to plot: 1=first, 2=second, 3=collective, 4=first and second
+which_Dec  = 2; % select the decision to plot: 1=first, 2=second, 3=collective, 4=first and second
 if which_Dec ~= 2
     flag_write = 0;
 end
