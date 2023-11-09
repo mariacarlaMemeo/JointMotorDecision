@@ -14,7 +14,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % CHECK "early start"-column in Excel (early_release_A1/A2/Coll == 1).
     % CHECK additionally if RT is implausibly small (< 100 ms).
     % If any of this is true, then exclude the entire trial!
-    if (any([raw{t,end-2:end}])) || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
+    if (any([raw{t,end-2:end}]))% || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
         early = 1;
         early_count = early_count+1; % increase counter
     end
@@ -32,7 +32,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     else
         changeMind(t) = 1;
     end
-    
+
     % Check who is the executing agent for each decision
     agentExec1    = lower(pairS.at1stDec(t));
     agentExec2    = lower(pairS.at2ndDec(t));
@@ -56,7 +56,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     %% CALL FUNCTIONS TO COMPUTE TRIAL START/END and KIN. VARIABLES
 
     % AGENT ACTING FIRST --------------------------------------------------
-    
+
     label_agent = 'FIRSTDecision';
 
     % 1. call movement_onset.m
@@ -64,17 +64,18 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1] = ...
             movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
             FirstRT,trial_plot,figurepath);
+    else
+        startFrame1 = NaN;tmove1 = NaN;rt_final1 = NaN;dt_final1 = NaN;mt_final1 = NaN;endFrame1 =  NaN;
+    end
 
+    if not(isnan(startFrame1)) && not(early)
         % 2. call movement_var.m
         % only if start frame exists and start button was NOT pressed too early
-        if not(isnan(startFrame1))
-            [tindex1,tulna1,sindex1,sulna1,sdindex1, ...
-                time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1] = ...
-                movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1,flag_bin);
-        end
 
+        [tindex1,tulna1,sindex1,sulna1,sdindex1, ...
+            time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1] = ...
+            movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1,flag_bin);
     else % otherwise fill with NaN
-        startFrame1 = NaN;tmove1 = NaN;rt_final1 = NaN;dt_final1 = NaN;mt_final1 = NaN;endFrame1 =  NaN;
         tindex1          = [NaN NaN NaN];
         tulna1           = [NaN NaN NaN];
         sindex1          = [NaN NaN NaN NaN];
@@ -85,7 +86,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         spa_traj_index1  = ones(bin,3)*NaN;
         spa_traj_ulna1   = ones(bin,3)*NaN;
     end
-    
+
 
     if flag_bin % only if we want to bin/normalize trajectories
 
@@ -102,7 +103,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         end
 
     else % only if we DO NOT bin/normalize trajectories
-        
+
         % Note: we currently exclude trials that are too long
         % -> check setting of "max_samples" in calc_kin_init.m
         if length(time_traj_index1) > max_samples
@@ -136,7 +137,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % ---------------------------------------------------------------------
 
     % AGENT ACTING SECOND -------------------------------------------------
-    
+
     label_agent = 'SECONDDecision';
 
     % 1. call movement_onset.m
@@ -144,17 +145,18 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2] = ...
             movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
             SecRT,trial_plot,figurepath);
+    else
+        startFrame2 = NaN;tmove2 = NaN;rt_final2 = NaN;dt_final2 = NaN;mt_final2 = NaN;endFrame2 =  NaN;
+    end
 
+    if not(isnan(startFrame2)) && not(early)
         % 2. call movement_var.m
         % only if start frame exists and start button was NOT pressed too early
-        if not(isnan(startFrame2))
-            [tindex2,tulna2,sindex2,sulna2,sdindex2, ...
-                time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2] = ...
-                movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2,flag_bin);
-        end
 
+        [tindex2,tulna2,sindex2,sulna2,sdindex2, ...
+            time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2] = ...
+            movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2,flag_bin);
     else % otherwise fill with NaN
-        startFrame2 = NaN;tmove2 = NaN;rt_final2 = NaN;dt_final2 = NaN;mt_final2 = NaN;endFrame2 =  NaN;
         tindex2          = [NaN NaN NaN];
         tulna2           = [NaN NaN NaN];
         sindex2          = [NaN NaN NaN NaN];
@@ -167,7 +169,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     end
 
     if flag_bin % only if we want to bin/normalize trajectories
-        
+
         if pairS.at2ndDec(t) == 'B' % blue takes second decision
             all_time_traj_index_b(:,:,t) = time_traj_index2;
             all_time_traj_ulna_b(:,:,t)  = time_traj_ulna2;
@@ -181,7 +183,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         end
 
     else % only if we DO NOT bin/normalize trajectories
-        
+
         % Note: we currently exclude trials that are too long -> see
         % calc_kin_init and check setting of max_samples
         if length(time_traj_index2) > max_samples
@@ -225,17 +227,18 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl] = ...
             movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
             CollRT,trial_plot,figurepath);
+    else
+        startFrameColl = NaN;tmoveColl = NaN;rt_finalColl = NaN;dt_finalColl = NaN;mt_finalColl = NaN;endFrameColl =  NaN;
+    end
 
+    if not(isnan(startFrameColl)) && not(early)
         % 2. call movement_var.m
         % if start frame exists and start button was NOT pressed too early
-        if not(isnan(startFrameColl))
-            [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl, ...
-                time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = ...
-                movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl,flag_bin);
-        end
-
+        [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl, ...
+            time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = ...
+            movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl,flag_bin);
+    
     else % otherwise fill with NaN
-        startFrameColl = NaN;tmoveColl = NaN;rt_finalColl = NaN;dt_finalColl = NaN;mt_finalColl = NaN;endFrameColl =  NaN;
         tindexColl          = [NaN NaN NaN];
         tulnaColl           = [NaN NaN NaN];
         sindexColl          = [NaN NaN NaN NaN];
@@ -253,29 +256,29 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     %% Create new data set
     % Now we add the newly computed parameters to the original Excel file
     % and create a new Excel file (a much bigger one): expData_xxx_kin_model
-    
+
     if flag_bin % write the new Excel file ONLY FOR binned data
 
         % size of old header (from original Excel file)
         ol                         = size(txt_or);
-        
+
         % ADD TIME VARIABLES (i.e., append to end of original Excel file)
         % -> variables are added for current trial t
         data{t,ol(2)+1:ol(2)+10}   = [changeMind(t) rt_final1 rt_final2 rt_finalColl ...
-                                                    dt_final1 dt_final2 dt_finalColl ...
-                                                    mt_final1 mt_final2 mt_finalColl];
+            dt_final1 dt_final2 dt_finalColl ...
+            mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
         % -> normalized 100 samples for index and ulna: ONLY 2nd DECISION
         data{t,ol(2)+11:ol(2)+819} = [time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
-                                      time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
-                                      spa_traj_index2(:,3)' spa_traj_ulna2(:,3)'...
-                                      startFrame1 tmove1 endFrame1 ...
-                                      startFrame2 tmove2 endFrame2 ...
-                                      startFrameColl tmoveColl endFrameColl];
-        
+            time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
+            spa_traj_index2(:,3)' spa_traj_ulna2(:,3)'...
+            startFrame1 tmove1 endFrame1 ...
+            startFrame2 tmove2 endFrame2 ...
+            startFrameColl tmoveColl endFrameColl];
+
         % Assign new header (created in calc_kin_rt_mt.m)
         data.Properties.VariableNames = txt;
-        
+
         % -----------------------------------------------------------------
         % Note: The above does not work if started from backup; then you
         % need to combine the bkp-data and the new data manually afterwards
@@ -288,7 +291,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         if flag_write
             writetable(data,fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
         end
-        
+
     end % end of adding data to Excel file
 
 end % end of trial loop (i.e., all trials for one pair were completed)

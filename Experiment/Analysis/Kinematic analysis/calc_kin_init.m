@@ -38,7 +38,7 @@ SUBJECT_LIST = cellfun(@(s) find(contains(s,'S1')),SUBJECTS,'uni',0);
 SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 % *Change here if you want to check specific pairs only*
-SUBJECTS = [SUBJECTS(2)]; %[SUBJECTS(2) SUBJECTS(4)];
+% SUBJECTS = [SUBJECTS(2)]; %[SUBJECTS(2) SUBJECTS(4)];
 % -------------------------------------------------------------------------
 
 

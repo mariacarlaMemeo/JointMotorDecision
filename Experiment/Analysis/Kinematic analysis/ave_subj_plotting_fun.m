@@ -62,9 +62,10 @@ if n_var==1
 
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col); % high confidence
-        indeces = 1:length(ave_all);
-        sel_lab = indeces(pairS.at2ndDec==agents);
-        text(1:length(sel_lab),ave_all(1,pairS.at2ndDec==agents),string(sel_lab))
+        % Add trial numbers on the plots 
+        % indeces = 1:length(ave_all);
+        % sel_lab = indeces(pairS.at2ndDec==agents);
+        % text(1:length(sel_lab),ave_all(1,pairS.at2ndDec==agents),string(sel_lab))
         hold on;
         plot(ave_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents),'color',lConf_col); % low confidence
         % plot average trajectories only if data has been normalized (not feasible otherwise)
