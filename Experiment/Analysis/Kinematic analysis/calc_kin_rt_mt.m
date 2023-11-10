@@ -31,12 +31,14 @@ flag_plot  = 1; % 1 plot per agent with all trajectories ("exploratory plots")?
 trial_plot = 0; % 1 plot per trial (for cutting and visual inspection)?
 med_split  = 1; % median split for confidence?
 flag_bin   = 1; % normalize trajectories to 100 bins?
-flag_write = 0; % select to write excel files and save mat files
+flag_write = 0; % write Excel files and save mat files?
 
-which_Dec  = 1; % select the decision to plot: 1=first, 2=second, 3=collective, 4=first and second
-if which_Dec ~= 2
+% select which decision to plot: 1 = 1st, 2 = 2nd, 3 = coll., 4 = 1st & 2nd
+which_Dec  = 1; 
+if which_Dec ~= 2 % save Excel file only for 2nd decision
     flag_write = 0;
 end
+
 %%%%%%%%%%%% initialize parameters in separate script %%%%%%%%%%%%%%%%%%%%%
 calc_kin_init;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,6 +83,8 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
                          cellstr(strcat('vel_uln2_',string(1:bin))), ...
                          cellstr(strcat('acc_uln2_',string(1:bin))), ...
                          cellstr(strcat('jrk_uln2_',string(1:bin))), ...
+                         cellstr(strcat('x_ind2_',string(1:bin))), ...
+                         cellstr(strcat('x_uln2_',string(1:bin))), ...
                          cellstr(strcat('z_ind2_',string(1:bin))), ...
                          cellstr(strcat('z_uln2_',string(1:bin))), ...
                          'tstart1' 'tmove1' 'tstop1' ...

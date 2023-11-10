@@ -62,7 +62,7 @@ if n_var==1
 
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col); % high confidence
-        % Add trial numbers on the plots 
+        % Add trial number for each trajectory 
         % indeces = 1:length(ave_all);
         % sel_lab = indeces(pairS.at2ndDec==agents);
         % text(1:length(sel_lab),ave_all(1,pairS.at2ndDec==agents),string(sel_lab))
@@ -111,8 +111,9 @@ if n_var==1
     saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig));
     hold off;
 
-    % Plotting two variables (i.e., spatial x-y plots, not across time/frames)
-elseif n_var==2
+
+% Plotting two variables (i.e., spatial x-y plots, not across time/frames)
+elseif n_var==2 % CURRENTLY NOT USED
 
     % "squeeze" to adjust data format
     ave_x_all = squeeze(matrix_3d(:,1,:)); % 1st column is x

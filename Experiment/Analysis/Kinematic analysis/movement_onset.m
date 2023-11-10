@@ -11,7 +11,7 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame]= ...
 % 3. visual_check
 
 % Note: input argument "figurepath" is needed for visual_check
-start_criterion  = 0; %1=index;2=ulna;3=button release
+
 %% Retrieve and define parameters
 % retrieve information from Vicon recording
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:}; % retrieve acquisition frame rate in Hz (Hz = 1 event per sec)
@@ -38,7 +38,8 @@ moveCol    = [1 0 0]; % red for actual movement start (tmove)
 % "rt_mat" has been recorded during acquisition (and saved in original Matfile)
 % rt_mat = time from decision prompt to button release (i.e., without pre-acquisition)
 % RT conversion: (convert rt from ms to s) and multiply by frameRate to get no. of frames
-rt_mat = round((rt_mat/1000)*frameRate);
+rt_mat           = round((rt_mat/1000)*frameRate);
+start_criterion  = 0; % which criterion was used to identify startFrame? (1=index;2=ulna;3=button)
 
 %% Find out when velocity threshold is passed (-> function *findTh_cons*)
 indexTh    = findTh_cons(index,vel_th,succSample);
@@ -244,7 +245,7 @@ if startFrame > preAcq
     % Calculate deliberation time: tmove - startFrame - CURRENTLY NOT USED
     dt_final = (tmove-startFrame)/frameRate;
 
-else
+else % if startFrame < preAcqu: movement started too early -> NaN
     startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;
 end
 

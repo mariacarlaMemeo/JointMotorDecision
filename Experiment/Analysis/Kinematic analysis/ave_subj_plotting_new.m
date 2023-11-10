@@ -42,7 +42,6 @@ for g = 1:length(agents) % -------------------------------------------
         for param = 1:length(time_param)
             title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
             title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) 'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-
             % go into plotting function
             ave_all = ave_subj_plotting_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),param,pairS,...
                 agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin);
@@ -50,20 +49,20 @@ for g = 1:length(agents) % -------------------------------------------
         
         % spatial parameter loop: x-dimension (left-right), z-dimension (height)
         for sparam = 1:2:length(spa_param)
-            %change the title of the spatial param
             title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
             title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-
             % go into plotting function
             ave_all = ave_subj_plotting_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS,...
                 agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin);
         end
 
     end % end of marker loop
+
+    % here we save the number of early starts and the number of "clean" 2nd
+    % decisions per agent (the 3 numbers should add up to trial num = 160)
     SecDec_clean(g) = length(ave_all(~isnan(ave_all(1,pairS.at2ndDec==agents{g}))));
 
 end % end of agent loop ---------------------------------------------------
-
 
 
 % script version: 1 Nov 2023

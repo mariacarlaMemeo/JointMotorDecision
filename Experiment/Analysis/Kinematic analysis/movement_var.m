@@ -3,7 +3,7 @@ function [tindex,tulna,sindex,sulna,sdindex,...
     spa_traj_index,spa_traj_ulna] = ...
     movement_var(sMarkers,t,SUBJECTS,p,agentExec,tstart,endFrame,flag_bin)
 
-% CAN WE CHANGE "tstart" to "startFrame", please??! to avoid confusion
+% Note: "tstart" is called "startFrame" in other scripts
 
 % -------------------------------------------------------------------------
 % -> We compute the kin. variables and prepare 3d-matrices with all trials.

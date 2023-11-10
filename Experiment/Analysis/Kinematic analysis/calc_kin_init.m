@@ -1,8 +1,9 @@
 % -------------------------------------------------------------------------
 % Here we set some parameters for the main script calc_kin_rt_mt.m
 % -------------------------------------------------------------------------
-% Initialize table to create excel file with early release trials or
-% excluded trials (if one decision is excluded, all the trial is excluded)
+
+% initialize table to create Excel file with excluded trials (e.g., early
+% release) - always exclude the entire trial (not single decisions)
 exc = table();
 
 % number of bins for normalization

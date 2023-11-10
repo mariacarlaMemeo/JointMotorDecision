@@ -37,6 +37,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     agentExec1    = lower(pairS.at1stDec(t));
     agentExec2    = lower(pairS.at2ndDec(t));
     agentExecColl = lower(pairS.atCollDec(t));
+    
     % Assign RT to 1st, 2nd, and collective accordingly
     if pairS.at1stDec(t) == 'B'
         FirstRT = blue_rt(t);
@@ -65,13 +66,12 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
             FirstRT,trial_plot,figurepath);
     else
-        startFrame1 = NaN;tmove1 = NaN;rt_final1 = NaN;dt_final1 = NaN;mt_final1 = NaN;endFrame1 =  NaN;
+        startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN;
     end
 
-    if not(isnan(startFrame1)) && not(early)
-        % 2. call movement_var.m
-        % only if start frame exists and start button was NOT pressed too early
-
+    % 2. call movement_var.m
+    % only if start frame exists and start button was NOT pressed too early
+    if not(isnan(startFrame1)) && not(early)    
         [tindex1,tulna1,sindex1,sulna1,sdindex1, ...
             time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1] = ...
             movement_var(sMarkers,faa,SUBJECTS,p,agentExec1,startFrame1,endFrame1,flag_bin);
@@ -146,13 +146,12 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
             SecRT,trial_plot,figurepath);
     else
-        startFrame2 = NaN;tmove2 = NaN;rt_final2 = NaN;dt_final2 = NaN;mt_final2 = NaN;endFrame2 =  NaN;
+        startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN;
     end
 
+    % 2. call movement_var.m
+    % only if start frame exists and start button was NOT pressed too early
     if not(isnan(startFrame2)) && not(early)
-        % 2. call movement_var.m
-        % only if start frame exists and start button was NOT pressed too early
-
         [tindex2,tulna2,sindex2,sulna2,sdindex2, ...
             time_traj_index2,time_traj_ulna2,spa_traj_index2,spa_traj_ulna2] = ...
             movement_var(sMarkers,saa,SUBJECTS,p,agentExec2,startFrame2,endFrame2,flag_bin);
@@ -228,12 +227,12 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
             CollRT,trial_plot,figurepath);
     else
-        startFrameColl = NaN;tmoveColl = NaN;rt_finalColl = NaN;dt_finalColl = NaN;mt_finalColl = NaN;endFrameColl =  NaN;
+        startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN;
     end
 
+    % 2. call movement_var.m
+    % if start frame exists and start button was NOT pressed too early
     if not(isnan(startFrameColl)) && not(early)
-        % 2. call movement_var.m
-        % if start frame exists and start button was NOT pressed too early
         [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl, ...
             time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = ...
             movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl,flag_bin);
@@ -269,8 +268,10 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
         % -> normalized 100 samples for index and ulna: ONLY 2nd DECISION
-        data{t,ol(2)+11:ol(2)+819} = [time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
+        data{t,ol(2)+11:ol(2)+819} = [...
+            time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
             time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
+            spa_traj_index2(:,1)' spa_traj_ulna2(:,1)'...
             spa_traj_index2(:,3)' spa_traj_ulna2(:,3)'...
             startFrame1 tmove1 endFrame1 ...
             startFrame2 tmove2 endFrame2 ...
