@@ -17,10 +17,10 @@ rt_min = 100;
 % Set directory paths:
 
 % 1. Set main data path (where the original EXCEL FILES are located)
-if flag_hd % currently we are using the hard drive only!
+if flag_hd 
     path_data = 'F:\jmd_experiment_final\joint-motor-decision\kin_data\Cleaned';
 else
-    path_data = 'Y:\Datasets\JointMotorDecision\Static\Cleaned';
+    path_data = 'D:\BACKUP_jmd_271023\CMON_HD2_harddrive\jmd_experiment_final\joint-motor-decision\kin_data\Cleaned';
 end
 
 % 2. Set "kin path": MAT FILES created with main-c3d-toolbox
@@ -38,8 +38,10 @@ SUBJECTS     = {folder_list.name};
 SUBJECT_LIST = cellfun(@(s) find(contains(s,'S1')),SUBJECTS,'uni',0);
 SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
+% Remove pair 119 because there are many early starts
+SUBJECTS(10) = []; 
 % *Change here if you want to check specific pairs only*
-% SUBJECTS = [SUBJECTS(2)]; %[SUBJECTS(2) SUBJECTS(4)];
+%SUBJECTS = [SUBJECTS(2)]; 
 % -------------------------------------------------------------------------
 
 
@@ -59,21 +61,6 @@ if not(flag_bin)
     all_spa_traj_index_y  = NaN*ones(max_samples,3,max_trial);
     all_spa_traj_ulna_y   = NaN*ones(max_samples,3,max_trial);
 end
-
-% Decide if you want to analyze full data set or 
-% if you want to start from backup (in case of previous crash)
-crash = input('do you want to start from backup? (1/0)\n','s');
-if str2double(crash) 
-    [filename, pathname, filterindex] = uigetfile(path_kin,'.mat');
-    load(fullfile(pathname,filename));
-    data_bkp        = data; % 'data' is now 'data_bkp' to avoid overwriting
-    file_split      = split(filename,'_');
-    trial_crash_str = cell2mat(file_split(end));
-    trialstart_num  = str2double(trial_crash_str(1:end-4)); % start at later trial
-else
-    trialstart_num = 1;
-end
-
 
 % Random note on median split:
 % The median is the value separating the higher half from the lower half 

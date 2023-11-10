@@ -81,7 +81,7 @@ if endFrame > tstart
     sulna  = [pz_ulna mz_ulna za_ulna az_ulna];
 
 
-    %% Create full (binned) spatial trajectories for vel., acc., and jerk
+    %% Create full (binned) spatial trajectories 
     if flag_bin % do interpolation to 100 samples
         spa_traj_index = [interp1(range_index,index.xyzf((range_index),1),i_index)'...
             interp1(range_index,index.xyzf((range_index),2),i_index)'...

@@ -11,10 +11,10 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
     early = 0; % set early-start-flag to 0 at beginning of each trial
 
-    % CHECK "early start"-column in Excel (early_release_A1/A2/Coll == 1).
+    % CHECK "early start"-column in Excel (early_release_A1/A2 == 1).
     % CHECK additionally if RT is implausibly small (< 100 ms).
     % If any of this is true, then exclude the entire trial!
-    if (any([raw{t,end-2:end}]))% || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
+    if (any([raw{t,end-2:end-1}]))% || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
         early = 1;
         early_count = early_count+1; % increase counter
     end
@@ -252,6 +252,44 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     caa = caa +3; % increase decision counter
     % -----------------------------------------------------------------
 
+        % Check if there is one decision with startFrame==NaN and increase
+        % accordingly the counter
+        if not(early) && (isnan(startFrame1) || isnan(startFrame2))% || isnan(startFrameColl))
+            excl_trial = excl_trial + 1;
+            if flag_bin
+                startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN;
+                startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN;
+
+                tindex1          = [NaN NaN NaN];
+                tulna1           = [NaN NaN NaN];
+                sindex1          = [NaN NaN NaN NaN];
+                sulna1           = [NaN NaN NaN NaN];
+                sdindex1         = [NaN NaN NaN NaN];
+                time_traj_index1 = ones(bin,3)*NaN;
+                time_traj_ulna1  = ones(bin,3)*NaN;
+                spa_traj_index1  = ones(bin,3)*NaN;
+                spa_traj_ulna1   = ones(bin,3)*NaN;
+                tindex2          = [NaN NaN NaN];
+                tulna2           = [NaN NaN NaN];
+                sindex2          = [NaN NaN NaN NaN];
+                sulna2           = [NaN NaN NaN NaN];
+                sdindex2         = [NaN NaN NaN NaN];
+                time_traj_index2 = ones(bin,3)*NaN;
+                time_traj_ulna2  = ones(bin,3)*NaN;
+                spa_traj_index2  = ones(bin,3)*NaN;
+                spa_traj_ulna2   = ones(bin,3)*NaN;
+
+                all_time_traj_index_b(:,:,t) = NaN*ones(bin,3);
+                all_time_traj_ulna_b(:,:,t)  = NaN*ones(bin,3);
+                all_spa_traj_index_b(:,:,t)  = NaN*ones(bin,3);
+                all_spa_traj_ulna_b(:,:,t)   = NaN*ones(bin,3);
+                all_time_traj_index_y(:,:,t) = NaN*ones(bin,3);
+                all_time_traj_ulna_y(:,:,t)  = NaN*ones(bin,3);
+                all_spa_traj_index_y(:,:,t)  = NaN*ones(bin,3);
+                all_spa_traj_ulna_y(:,:,t)   = NaN*ones(bin,3);
+            end
+        end
+
     %% Create new data set
     % Now we add the newly computed parameters to the original Excel file
     % and create a new Excel file (a much bigger one): expData_xxx_kin_model
@@ -268,7 +306,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
         % -> normalized 100 samples for index and ulna: ONLY 2nd DECISION
-        data{t,ol(2)+11:ol(2)+819} = [...
+        data{t,ol(2)+11:ol(2)+1019} = [...
             time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
             time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
             spa_traj_index2(:,1)' spa_traj_ulna2(:,1)'...
