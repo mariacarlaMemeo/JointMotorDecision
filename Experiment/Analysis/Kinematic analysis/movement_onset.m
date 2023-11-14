@@ -28,12 +28,12 @@ succSample = 10; % number of continuous samples that should pass the velocity th
 % then 20 frames were added before that moment in Vicon, i.e., recording start = prompt-20
 preAcq     = 20; % preacquisition duration: 200 ms == 20 frames (10ms/0.01s = 1 frame)
 % figure settings
-plotxShift = 3.5; % default x-position for vertical text (left of line)
-yPos_text  = max(index); % yPos_text-300 is default position for start of vertical text
 blueCol    = [0 0.4470 0.7410]; % blue for ulna
 orangeCol  = [0.8500 0.3250 0.0980]; % orange for index
 startCol   = [0.3922 0.8314 0.0745]; % green for start
 moveCol    = [1 0 0]; % red for actual movement start (tmove)
+x_width    = 16; % figure width
+y_width    = 12; % figure height
 % *Reaction Time*:
 % "rt_mat" has been recorded during acquisition (and saved in original Matfile)
 % rt_mat = time from decision prompt to button release (i.e., without pre-acquisition)
@@ -46,7 +46,7 @@ indexTh    = findTh_cons(index,vel_th,succSample);
 ulnaTh     = findTh_cons(ulna,vel_th,succSample);
 
 %% Find movement start in a different way (-> function *find_tmove*)
-% This can be used to define movement start but is currently (Oct 2023) NOT used!
+% This can be used to define movement start but is currently NOT used!
 % Functionality: Selects the maximum peak and the minimum preceding it.
 % The output gives you the index of the minimum; this is tmove.
 tmove = find_tmove(ulna); % here we apply this to the ulna only
@@ -91,53 +91,62 @@ if startFrame > preAcq
 
         % 1. plot velocity and height for ULNA; use *left* y-axis of plot
         yyaxis left;
-        plot(samp,ulna);  % ulna velocity ("ulna")
+        plot(samp,ulna, 'Color',blueCol);  % ulna velocity ("ulna")
         hold on;
-        plot(samp,ulnaZ); % ulna height ("ulnaZ")
+        plot(samp,ulnaZ, 'Color',blueCol); % ulna height ("ulnaZ")
         ylabel('Velocity [mm/s]'); % label for left y-axis
         hold off;
         % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
         if ~isnan(ulnaTh(1))
-            xline(ulnaTh(1), 'Color',blueCol);
-            t_uln = text(ulnaTh(1)-plotxShift, yPos_text-300,' tstart ulna','Color',blueCol);
-            set(t_uln,'Rotation',90);
-            %         % optional: make trajectory bold (from passing of threshold until button press)
-            %         plot(ulnaTh(1):(samp(end)-10),ulna(ulnaTh(1):(samp(end)-10)),'-', 'Color',blueCol,'LineWidth',3);
+            xl = xline(ulnaTh(1),':'); xl.LineWidth = 1; xl.Color = blueCol;
+            xl.Label = 'tstart ulna';
+            xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
+            % optional: make trajectory bold (from passing of threshold until button press)
+            %plot(ulnaTh(1):(samp(end)-10),ulna(ulnaTh(1):(samp(end)-10)),'-', 'Color',blueCol,'LineWidth',3);
         end
 
         % 2. plot velocity and height for INDEX; use *right* y-axis of plot
         yyaxis right;
-        plot(samp,index);  % index velocity ("index")
+        plot(samp,index, 'Color',orangeCol);  % index velocity ("index")
         hold on;
-        plot(samp,indexZ); % index height ("indexZ")
+        plot(samp,indexZ, 'Color',orangeCol); % index height ("indexZ")
         hold off;
         % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
         if ~isnan(indexTh(1))
-            xline(indexTh(1), 'Color',orangeCol);
-            t_ind = text(indexTh(1)-plotxShift,yPos_text-300,' tstart index','Color', orangeCol);
-            set(t_ind,'Rotation',90);
+            xl = xline(indexTh(1),':'); xl.LineWidth = 1; xl.Color = orangeCol;
+            xl.Label = 'tstart index';
+            xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
         end
 
-        % 3. plot three more vertical lines:
-        xline(preAcq); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
-        t_pre    = text(preAcq-plotxShift,yPos_text-300,' decision prompt (t0)'); set(t_pre,'Rotation',90);
-        xline(rt_mat+preAcq); % "t1": moment of button release
-        t_rt_mat = text(rt_mat+preAcq-plotxShift,yPos_text-450,' button release (t1)'); set(t_rt_mat,'Rotation',90);
-        xline(samp(end)-10);  % "t2": moment of button press (i.e., 10 frames before end of recording)
-        t_post   = text((samp(end)-10)-plotxShift,yPos_text-300,' target press (t2)'); set(t_post,'Rotation',90);
+        % 3. plot bold GREEN vertical line on startFrame
+        xl_start = xline(startFrame, 'LineWidth',3, 'Color',startCol);
+        xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
+
+        % 4. plot three more vertical lines for t0, t1, t2
+        xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
+        xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
+        xl_t2 = xline(samp(end)-10,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+        xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
+        xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
+        xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
 
         % set x-axis limit as end of sample (=100 if normalized)
         xlim([0 samp(end)]);
+
+        % XXX create legend with only ulna and index
+        %a=get(gca,'Children');
+        %legend([a(8);a(6)], {'ulna','index'}, 'Location','northwest');
+
         % add title with pair no., acting agent, marker, matTrial, actual trial
-        title(['Pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
+        title(['pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
         xlabel('Samples');
+
+
 
         % *optional* stuff to add ---------------------------------------------
         %     % plot horizontal line to indicate height of velocity threshold
-        %     % of 20 mm/s (this is difficult if left and right axis have different units)
+        %     % (this is difficult if left and right axis have different units)
         %     yline(vel_th,'-',[num2str(vel_th) ' mm/s'], 'LineWidth',1, 'LabelVerticalAlignment','top','LabelHorizontalAlignment','left');
-        %     % plot vertical bold red line on tmove
-        xline(startFrame, 'LineWidth',3, 'Color',startCol);
         % ---------------------------------------------------------------------
 
     end % end of trial plot ---------------------------------------------------
@@ -158,7 +167,8 @@ if startFrame > preAcq
 
     %% Add possibility to change startFrame and endFrame MANUALLY
     if trial_plot
-        visual_check;
+        
+        visual_check; % go into visual_check.m
 
         % optional: if we decide to use "tmove"
         % % Check if tmove appears before startFrame - in that case tmove=startFrame
@@ -170,68 +180,70 @@ if startFrame > preAcq
         % end
 
         % Update start/endFrame (if visual_change is set to 1 in visual_check)
-        if visual_change && not(del_fig)% ----------------------------------------
+        if visual_change && not(del_fig) % --------------------------------
 
             v=figure('Name',['P' SUBJECTS{p}(2:end)]); % create figure v
             set(v, 'WindowStyle', 'Docked'); % dock figure
 
             % 1. plot velocity and height for ULNA; use *left* y-axis of plot
             yyaxis left;
-            plot(samp,ulna);  % ulna velocity ("ulna")
+            plot(samp,ulna, 'Color',blueCol);  % ulna velocity ("ulna")
             hold on;
-            plot(samp,ulnaZ); % ulna height ("ulnaZ")
+            plot(samp,ulnaZ, 'Color',blueCol); % ulna height ("ulnaZ")
             ylabel('Velocity [mm/s]'); % label for left y-axis
             hold off;
             % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
             if ~isnan(ulnaTh(1))
-                xline(ulnaTh(1), 'Color',blueCol);
-                t_uln = text(ulnaTh(1)-plotxShift, yPos_text-300,' tstart ulna','Color',blueCol);
-                set(t_uln,'Rotation',90);
+                xl = xline(ulnaTh(1),':'); xl.LineWidth = 1; xl.Color = blueCol;
+                xl.Label = 'tstart ulna';
+                xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
             end
 
             % 2. plot velocity and height for INDEX; use *right* y-axis of plot
             yyaxis right;
-            plot(samp,index);  % index velocity ("index")
+            plot(samp,index, 'Color',orangeCol);  % index velocity ("index")
             hold on;
-            plot(samp,indexZ); % index height ("indexZ")
+            plot(samp,indexZ, 'Color',orangeCol); % index height ("indexZ")
             hold off;
             % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
             if ~isnan(indexTh(1))
-                xline(indexTh(1), 'Color',orangeCol);
-                t_ind = text(indexTh(1)-plotxShift,yPos_text-300,' tstart index','Color', orangeCol);
-                set(t_ind,'Rotation',90);
+                xl = xline(indexTh(1),':'); xl.LineWidth = 1; xl.Color = orangeCol;
+                xl.Label = 'tstart index';
+                xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
             end
 
-            % 3. plot vertical line for startFrame (ulnaTh, indexTh, or button release)
+            % 3. plot bold RED vertical line on FINAL startFrame (ulnaTh, indexTh, or button release)
             if ~isnan(startFrame)
-                xline(startFrame, 'LineWidth',3, 'Color',startCol); % plot in bold
-                t_start=text(startFrame-plotxShift,yPos_text-300,' tstart', 'Color',startCol);
-                set(t_start,'Rotation',90);
+                xl_start = xline(startFrame, 'LineWidth',3, 'Color',startCol);
+                xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
+                %xl_start.Label = 'tstart';
+                xl_start.LabelHorizontalAlignment = "center"; xl_start.LabelVerticalAlignment = "bottom";
             end
 
-            % 4. plot three more vertical lines:
-            xline(preAcq); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
-            t_pre    = text(preAcq-plotxShift,yPos_text-300,' decision prompt (t0)'); set(t_pre,'Rotation',90);
-            xline(rt_mat+preAcq); % "t1": moment of button release
-            t_rt_mat = text(rt_mat+preAcq-plotxShift,yPos_text-450,' button release (t1)'); set(t_rt_mat,'Rotation',90);
-            xline(samp(end)-10);  % "t2": moment of button press (i.e., 10 frames before end of recording)
-            t_post   = text((samp(end)-10)-plotxShift,yPos_text-300,' target press (t2)'); set(t_post,'Rotation',90);
+            % 4. plot three more vertical lines for t0, t1, t2
+            xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
+            xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
+            xl_t2 = xline(samp(end)-10,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+            xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
+            xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
+            xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
 
             % optional: if we decide to use "tmove"
-            %     % plot vertical line for tmove
-            %     if ~isnan(tmove)
-            %         xline(tmove, 'LineWidth',3, 'Color',moveCol); % plot in bold
-            %         t_mv = text(tmove-plotxShift,yPos_text-300,' tmove', 'Color',moveCol);
-            %         set(t_mv,'Rotation',90);
-            %     end
+            % plot vertical line for tmove
+            %if ~isnan(tmove)
+            %    xl_mv = xline(tmove, 'LineWidth',3, 'Color',moveCol);
+            %    xl_mv.Label = 'tmove';
+            %    xl_mv.LabelHorizontalAlignment = "center"; xl_mv.LabelVerticalAlignment = "top";
+            %end
 
             % set x-axis limit as end of sample (=100 if normalized)
             xlim([0 samp(end)]);
             % add title with pair no., acting agent, marker, matTrial, actual trial
-            title(['Pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; matTrial: ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
+            title(['pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
             xlabel('Samples');
 
             % save the new figure
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v1.png'))
 
             % Update RT and MT according to new start/endFrame
@@ -250,7 +262,7 @@ else % if startFrame < preAcqu: movement started too early -> NaN
 end
 
 % If we decide to eliminate the trial in visual_check: fill with NaN values
-if exist('del_fig') && del_fig
+if exist('del_fig','var') && del_fig % if del_fig exists and equals 1
     startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;
 end
 

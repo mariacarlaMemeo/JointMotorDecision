@@ -63,8 +63,8 @@ if n_var==1
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col); % high confidence
         % Add trial number for each trajectory 
-        % indeces = 1:length(ave_all);
-        % sel_lab = indeces(pairS.at2ndDec==agents);
+        % indices = 1:length(ave_all);
+        % sel_lab = indices(pairS.at2ndDec==agents);
         % text(1:length(sel_lab),ave_all(1,pairS.at2ndDec==agents),string(sel_lab))
         hold on;
         plot(ave_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents),'color',lConf_col); % low confidence
@@ -76,7 +76,7 @@ if n_var==1
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
         end
 
-    elseif which_Dec == 3
+    elseif which_Dec == 3 % XXX only collective decision NOT FUNCTIONAL
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents),'color',hConf_col); % high confidence
         hold on;
@@ -89,7 +89,7 @@ if n_var==1
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
         end
 
-    elseif which_Dec == 4 % both first and second decision (collective is currently not included)
+    elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2),'color',hConf_col); % high confidence
         hold on;
@@ -113,7 +113,7 @@ if n_var==1
 
 
 % Plotting two variables (i.e., spatial x-y plots, not across time/frames)
-elseif n_var==2 % CURRENTLY NOT USED
+elseif n_var==2 % CURRENTLY NOT USED, n_var is always passed as 1
 
     % "squeeze" to adjust data format
     ave_x_all = squeeze(matrix_3d(:,1,:)); % 1st column is x
@@ -187,7 +187,7 @@ elseif n_var==2 % CURRENTLY NOT USED
                 'LineWidth',wd,'color',lConf_col_ave);
         end
 
-    elseif which_Dec == 3
+    elseif which_Dec == 3 % XXX only collective decision NOT FUNCTIONAL
         % plot single trials
         plot(ave_x_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents), ...
             ave_y_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents),'color',hConf_col);
@@ -212,7 +212,7 @@ elseif n_var==2 % CURRENTLY NOT USED
                 'LineWidth',wd,'color',lConf_col_ave);
         end
 
-    elseif which_Dec == 4 % both first and second decision (collective is currently not included)
+    elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
         % plot single trials
         plot(ave_x_all(:,pairS.curr_conf==2),ave_y_all(:,pairS.curr_conf==2),'color',hConf_col);
         hold on;
@@ -238,9 +238,10 @@ elseif n_var==2 % CURRENTLY NOT USED
     end
 
     title(title_plot);
+    
     % save each figure with the specified dimensions
     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
-    saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig))
+    saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig)); % note: save_path=path_kin
     hold off;
 
 end % end of plotting

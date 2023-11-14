@@ -5,8 +5,10 @@ function ind_va = findTh_cons(v,threshold,cons_ind)
 % -------------------------------------------------------------------------
 % This function is called from movement_onset.m
 % Input arguments are: velocity vector (v), threshold (threshold), 
-% no. of succesive samples that need to pass threshold (cons_ind)
-cons_ind = cons_ind - 1; % to find 10 consecutive elements we need to give 9 as an input because it's used with a "diff" function
+% no. of succesive samples that need to pass threshold (cons_ind=10)
+
+% to find 10 consecutive elements, input should be 9 (-> "diff" function)
+cons_ind = cons_ind - 1; 
 va       = find((v>threshold)); % find all elements that pass threshold
 ind_va   = va(strfind(diff(va)',ones(1,cons_ind)));
 % strfind(TEXT,PATTERN) returns the starting indices of any occurrences of PATTERN in TEXT.
@@ -25,7 +27,7 @@ end
 % If this is the case, then we include the index of the first element in
 % the new vector "ind_va". Then we go on to check for the next element
 % and so on, for all elements of the vector v.
-% *Note*: ind_va contains indeces, not the actual values
+% *Note*: ind_va contains indices, not the actual values
 
 % Example:
 % a  = [2 2 2 2 2 2 2 2 2 2 2 1 1 1 1 1 1 1 0 0 0 2 2 2 2 2 2 2 2 2 2 2]

@@ -11,8 +11,9 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
     early = 0; % set early-start-flag to 0 at beginning of each trial
 
-    % CHECK "early start"-column in Excel (early_release_A1/A2 == 1).
-    % CHECK additionally if RT is implausibly small (< 100 ms).
+    % CHECK "early start"-column in Excel (early_release_A1/A2 == 1)
+    % Note: We DO NOT INCLUDE early starts for collective decision.
+    % [CHECK additionally if RT is implausibly small (< 100 ms)]
     % If any of this is true, then exclude the entire trial!
     if (any([raw{t,end-2:end-1}]))% || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
         early = 1;
@@ -58,7 +59,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
     % AGENT ACTING FIRST --------------------------------------------------
 
-    label_agent = 'FIRSTDecision';
+    label_agent = 'FIRSTdecision';
 
     % 1. call movement_onset.m
     if not(early)
@@ -138,7 +139,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
     % AGENT ACTING SECOND -------------------------------------------------
 
-    label_agent = 'SECONDDecision';
+    label_agent = 'SECONDdecision';
 
     % 1. call movement_onset.m
     if not(early)
@@ -216,10 +217,10 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % ---------------------------------------------------------------------
 
     % Collective decision -------------------------------------------------
-    % Note: We currently DO NOT prepare the trajectory plots (with all
-    % trials for the collective decision (with all_time/spa_ data).
+    % XXX ADD the "all_time/spa_" matrices also for collective decision.
+    % Otherwise, collective cannot be plotted.
 
-    label_agent = 'COLLECTIVEDecision';
+    label_agent = 'COLLECTIVEdecision';
 
     % 1. call movement_onset.m
     if not(early)
@@ -236,7 +237,6 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         [tindexColl,tulnaColl,sindexColl,sulnaColl,sdindexColl, ...
             time_traj_indexColl,time_traj_ulnaColl,spa_traj_indexColl,spa_traj_ulnaColl] = ...
             movement_var(sMarkers,caa,SUBJECTS,p,agentExecColl,startFrameColl,endFrameColl,flag_bin);
-    
     else % otherwise fill with NaN
         tindexColl          = [NaN NaN NaN];
         tulnaColl           = [NaN NaN NaN];
@@ -252,44 +252,58 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     caa = caa +3; % increase decision counter
     % -----------------------------------------------------------------
 
-        % Check if there is one decision with startFrame==NaN and increase
-        % accordingly the counter
-        if not(early) && (isnan(startFrame1) || isnan(startFrame2))% || isnan(startFrameColl))
-            excl_trial = excl_trial + 1;
-            if flag_bin
-                startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN;
-                startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN;
+    % Check if 1st or 2nd decision has startFrame==NaN.
+    % This means we should exclude the entire trial.
+    % Thus: set all variables to NaN for this trial and increase counter.
+    if not(early) && (isnan(startFrame1) || isnan(startFrame2))% || isnan(startFrameColl))
+        
+        excl_trial = excl_trial + 1;
 
-                tindex1          = [NaN NaN NaN];
-                tulna1           = [NaN NaN NaN];
-                sindex1          = [NaN NaN NaN NaN];
-                sulna1           = [NaN NaN NaN NaN];
-                sdindex1         = [NaN NaN NaN NaN];
-                time_traj_index1 = ones(bin,3)*NaN;
-                time_traj_ulna1  = ones(bin,3)*NaN;
-                spa_traj_index1  = ones(bin,3)*NaN;
-                spa_traj_ulna1   = ones(bin,3)*NaN;
-                tindex2          = [NaN NaN NaN];
-                tulna2           = [NaN NaN NaN];
-                sindex2          = [NaN NaN NaN NaN];
-                sulna2           = [NaN NaN NaN NaN];
-                sdindex2         = [NaN NaN NaN NaN];
-                time_traj_index2 = ones(bin,3)*NaN;
-                time_traj_ulna2  = ones(bin,3)*NaN;
-                spa_traj_index2  = ones(bin,3)*NaN;
-                spa_traj_ulna2   = ones(bin,3)*NaN;
+        if flag_bin
+            startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN;
+            startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN;
+            %startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN;
+            
+            tindex1             = [NaN NaN NaN];
+            tulna1              = [NaN NaN NaN];
+            sindex1             = [NaN NaN NaN NaN];
+            sulna1              = [NaN NaN NaN NaN];
+            sdindex1            = [NaN NaN NaN NaN];
+            time_traj_index1    = ones(bin,3)*NaN;
+            time_traj_ulna1     = ones(bin,3)*NaN;
+            spa_traj_index1     = ones(bin,3)*NaN;
+            spa_traj_ulna1      = ones(bin,3)*NaN;
+            tindex2             = [NaN NaN NaN];
+            tulna2              = [NaN NaN NaN];
+            sindex2             = [NaN NaN NaN NaN];
+            sulna2              = [NaN NaN NaN NaN];
+            sdindex2            = [NaN NaN NaN NaN];
+            time_traj_index2    = ones(bin,3)*NaN;
+            time_traj_ulna2     = ones(bin,3)*NaN;
+            spa_traj_index2     = ones(bin,3)*NaN;
+            spa_traj_ulna2      = ones(bin,3)*NaN;
+%             tindexColl          = [NaN NaN NaN];
+%             tulnaColl           = [NaN NaN NaN];
+%             sindexColl          = [NaN NaN NaN NaN];
+%             sulnaColl           = [NaN NaN NaN NaN];
+%             sdindexColl         = [NaN NaN NaN NaN];
+%             time_traj_indexColl = ones(bin,3)*NaN;
+%             time_traj_ulnaColl  = ones(bin,3)*NaN;
+%             spa_traj_indexColl  = ones(bin,3)*NaN;
+%             spa_traj_ulnaColl   = ones(bin,3)*NaN;
 
-                all_time_traj_index_b(:,:,t) = NaN*ones(bin,3);
-                all_time_traj_ulna_b(:,:,t)  = NaN*ones(bin,3);
-                all_spa_traj_index_b(:,:,t)  = NaN*ones(bin,3);
-                all_spa_traj_ulna_b(:,:,t)   = NaN*ones(bin,3);
-                all_time_traj_index_y(:,:,t) = NaN*ones(bin,3);
-                all_time_traj_ulna_y(:,:,t)  = NaN*ones(bin,3);
-                all_spa_traj_index_y(:,:,t)  = NaN*ones(bin,3);
-                all_spa_traj_ulna_y(:,:,t)   = NaN*ones(bin,3);
-            end
+            all_time_traj_index_b(:,:,t) = NaN*ones(bin,3);
+            all_time_traj_ulna_b(:,:,t)  = NaN*ones(bin,3);
+            all_spa_traj_index_b(:,:,t)  = NaN*ones(bin,3);
+            all_spa_traj_ulna_b(:,:,t)   = NaN*ones(bin,3);
+            all_time_traj_index_y(:,:,t) = NaN*ones(bin,3);
+            all_time_traj_ulna_y(:,:,t)  = NaN*ones(bin,3);
+            all_spa_traj_index_y(:,:,t)  = NaN*ones(bin,3);
+            all_spa_traj_ulna_y(:,:,t)   = NaN*ones(bin,3);
         end
+    end
 
+    
     %% Create new data set
     % Now we add the newly computed parameters to the original Excel file
     % and create a new Excel file (a much bigger one): expData_xxx_kin_model
@@ -302,15 +316,16 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         % ADD TIME VARIABLES (i.e., append to end of original Excel file)
         % -> variables are added for current trial t
         data{t,ol(2)+1:ol(2)+10}   = [changeMind(t) rt_final1 rt_final2 rt_finalColl ...
-            dt_final1 dt_final2 dt_finalColl ...
-            mt_final1 mt_final2 mt_finalColl];
+                                        dt_final1 dt_final2 dt_finalColl ...
+                                        mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
         % -> normalized 100 samples for index and ulna: ONLY 2nd DECISION
+        % NOTE: change var counter (1019) if new variables are added!!!
         data{t,ol(2)+11:ol(2)+1019} = [...
             time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
             time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
-            spa_traj_index2(:,1)' spa_traj_ulna2(:,1)'...
-            spa_traj_index2(:,3)' spa_traj_ulna2(:,3)'...
+            spa_traj_index2(:,1)' spa_traj_ulna2(:,1)' ...
+            spa_traj_index2(:,3)' spa_traj_ulna2(:,3)' ...
             startFrame1 tmove1 endFrame1 ...
             startFrame2 tmove2 endFrame2 ...
             startFrameColl tmoveColl endFrameColl];
@@ -326,7 +341,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             crash = '0';
         end % -------------------------------------------------------------
 
-        % write the Excel file
+        % write the new Excel file
         if flag_write
             writetable(data,fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']));
         end

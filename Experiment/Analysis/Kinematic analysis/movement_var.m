@@ -76,7 +76,7 @@ if endFrame > tstart
     az_index = trapz(index.xyzf((range_index),3));
     az_ulna  = trapz(ulna.xyzf((range_ulna),3));
 
-    % Group temporal variables per marker
+    % Group spatial variables per marker
     sindex = [pz_index mz_index za_index az_index];
     sulna  = [pz_ulna mz_ulna za_ulna az_ulna];
 

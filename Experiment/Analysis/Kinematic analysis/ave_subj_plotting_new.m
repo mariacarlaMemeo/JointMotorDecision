@@ -4,8 +4,6 @@
 % -------------------------------------------------------------------------
 % This is called from "calc_kin_rt_mt.m"
 
-% XXX CHECK FIGURE NAMES (pre, abs, etc.)
-
 % Notes:
 % Temporal variables in matrix 'all_time_traj_ulna/index_'
 % Spatial variables in matrix 'all_spa_traj_ulna/index_'
@@ -58,9 +56,11 @@ for g = 1:length(agents) % -------------------------------------------
 
     end % end of marker loop
 
+    % Save number of plotted (i.e., clean!) trials in which either agent
+    % blue or yellow took 2nd decision (in sum, this is the total number of
+    % clean trials for this pair); SecDec_clean contains two values (b/y)
     SecDec_clean(g) = length(ave_all(~isnan(ave_all(1,pairS.at2ndDec==agents{g}))));
 
 end % end of agent loop ---------------------------------------------------
-
 
 % script version: 1 Nov 2023

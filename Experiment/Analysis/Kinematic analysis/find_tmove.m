@@ -9,7 +9,8 @@ function tmove = find_tmove(ulna)
 [~,max_peak_loc]  = max(peak); % finds the maximum peak and the corresponding indices
 min_loc           = find(islocalmin(ulna)); % finds the indices of all minima
 
-diff_loc_min_peak = min_loc - peak_loc(max_peak_loc); % subtract max peak index from minima indices 
+diff_loc_min_peak = min_loc - peak_loc(max_peak_loc); % subtract max peak index from minima indices
+% find minimum that is closest "to the left" (i.e., earlier in time) of the maximum
 tmove             = min_loc(max(find(diff_loc_min_peak<0)));
 
 if isempty(tmove)

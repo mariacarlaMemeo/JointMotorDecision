@@ -6,8 +6,11 @@
 % Set some parameters first
 visual_change = []; % did you make changes after visual inspection?
 del_fig       = []; % do you want to eliminate the trial?
-jpg_title     = [fullfile(figurepath,SUBJECTS{p}) '\' num2str(sMarkers{t}.info.trial_id) ...
-                '_trial_' agentExec];
+jpg_title     = [fullfile(figurepath,SUBJECTS{p}) '\trial_' num2str(sMarkers{t}.info.trial_id) ...
+                '_agent_' agentExec];
+x_width       = 16;
+y_width       = 12;
+
 % criterion to select the startFrame: it shows the markers accordingly
 switch start_criterion
     case 1
@@ -43,7 +46,8 @@ switch str2double(mod) % depending on user input, check respective case
     case 999 % no changes necessary
         disp('Good'); 
         visual_change = 0;
-        del_fig       = 0; 
+        del_fig       = 0;
+        set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
         saveas(gcf,strcat(jpg_title,'_v0.png'));        
     
     case 0  % delete trial but save figure anyway, with red diagonal line
@@ -51,10 +55,12 @@ switch str2double(mod) % depending on user input, check respective case
         plot([1,sMarkers{t}.info.nSamples],[-20 1700], 'r', 'LineWidth',5)
         visual_change = 0;
         del_fig       = 1;
+        set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
         saveas(gcf,strcat(jpg_title,'_elim.png'));
     
-    case 1 % change tstart and save original and new figure
+    case 1 % change tstart and save original figure
         if ~exist(strcat(jpg_title,'_v0.png'),'file')
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v0.png'))
         end
         disp('Insert tstart ');
@@ -66,8 +72,9 @@ switch str2double(mod) % depending on user input, check respective case
         visual_change = 1;
         del_fig       = 0;
     
-    case 2 % change tmove and save original and new figure
+    case 2 % change tmove and save original figure
         if ~exist(strcat(jpg_title,'_v0.png'),'file')
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v0.png'))
         end
         disp('Insert tmove ');
@@ -79,8 +86,9 @@ switch str2double(mod) % depending on user input, check respective case
         visual_change = 1;
         del_fig       = 0;
 
-    case 3 % change tstop and save original and new figure
+    case 3 % change tstop and save original figure
         if ~exist(strcat(jpg_title,'_v0.png'),'file')
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v0.png'))
         end
         disp('Insert tstop ');
@@ -92,8 +100,9 @@ switch str2double(mod) % depending on user input, check respective case
         visual_change = 1;
         del_fig       = 0;
 
-    case 4 % change tstart and tstop; save original and new figure
+    case 4 % change tstart and tstop; save original figure
         if ~exist(strcat(jpg_title,'_v0.png'),'file')
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v0.png'))
         end
         disp('Insert tstart and tstop ');

@@ -6,15 +6,16 @@
 % -------------------------------------------------------------------------
 
 % Functions and scripts called from within here:
-% 1. calc_kin_init
-% 2. calc_kin_trial
-% 3. ave_subj_plotting_new
+% 1. userInput
+% 2. calc_kin_init
+% 3. calc_kin_trial
+% 4. ave_subj_plotting_new
 
 % NOTE: AFTER RUNNING THE MAIN-C3D-TOOLBOX SCRIPT, COPY THE CREATED
-% .MAT FILES FROM THE REPO TO THE HARD DRIVE (SEE PATH KIN)
+% .MAT FILES FROM THE REPO TO THE HARD DRIVE (PATH_KIN)
 % !Watch out for pairs S110/S112 where 1/2 trials are missing!
 
-% Data structure in Excel file:
+% Data structure in original Excel file:
 % Each row contains 1 trial, which consists of 3 decisions.
 % Trial order is always:
 % ODD TRIAL : blue (individual) - yellow (individual) - blue (collective)
@@ -25,14 +26,15 @@ close all
 
 try % main try/catch statement
 
-%% First set flags (1=yes,0=no)
+%% First ask for user input and set flags ---------------------------------
 userInput;   
 
 if which_Dec ~= 2 % save Excel file only for 2nd decision
     flag_write = 0;
 end
+%% ------------------------------------------------------------------------
 
-%%%%%%%%%%%% initialize parameters in separate script %%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%% Initialize parameters in separate script %%%%%%%%%%%%%%%%%%%%%
 calc_kin_init;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -49,10 +51,9 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
 
     % *MAT FILE*: Locate 'session' struct for current pair
     path_kin_each  = fullfile(path_kin,[SUBJECTS{p},'.mat']);
-    % Load mat file and check time
-    tic
+    % Load mat file
     load(path_kin_each);
-    toc
+    
     % Create folder to save trial-by-trial plots for this pair    
     mkdir(fullfile(figurepath,SUBJECTS{p}));
     % Remove trials in 'session' cell to avoid inserting the (last?) trials
@@ -86,36 +87,37 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
                          'tstartColl' 'tmoveColl' 'tstopColl'];
     data = cell2table(raw); % convert to table
     
-    % Retrieve the decision data (1st, 2nd, collective)
-    at1stDec_ind   = strcmp('AgentTakingFirstDecision',txt);
-    pairS.at1stDec       = cell2mat(raw(:,at1stDec_ind));
-    at2ndDec_ind   = strcmp('AgentTakingSecondDecision',txt);
-    pairS.at2ndDec       = cell2mat(raw(:,at2ndDec_ind));
-    atCollDec_ind  = strcmp('AgentTakingCollDecision',txt);
-    pairS.atCollDec      = cell2mat(raw(:,atCollDec_ind));
-    % Retrieve the confidence of each agent (blue, yellow)
-    blue_Conf_ind  = strcmp('B_conf',txt);
-    pairS.blue_Conf      = cell2mat(raw(:,blue_Conf_ind));
-    yell_Conf_ind  = strcmp('Y_conf',txt);
-    pairS.yell_Conf      = cell2mat(raw(:,yell_Conf_ind));
-    Coll_Conf_ind  = strcmp('Coll_conf',txt);
-    pairS.Coll_Conf      = cell2mat(raw(:,Coll_Conf_ind));
-    % Retrieve the choice of each agent (blue, yellow, collective)
-    blue_Dec_ind   = strcmp('B_decision',txt);
-    pairS.blue_Dec       = cell2mat(raw(:,blue_Dec_ind));
-    yell_Dec_ind   = strcmp('Y_decision',txt);
-    pairS.yell_Dec       = cell2mat(raw(:,yell_Dec_ind));
-    Coll_Dec_ind   = strcmp('Coll_decision',txt);
-    pairS.Coll_Dec       = cell2mat(raw(:,Coll_Dec_ind));
+    % Retrieve information from Excel file and save in *pairS structure*
+    % Retrieve WHICH AGENT took which decision (1st, 2nd, collective)
+    at1stDec_ind    = strcmp('AgentTakingFirstDecision',txt);
+    pairS.at1stDec  = cell2mat(raw(:,at1stDec_ind));
+    at2ndDec_ind    = strcmp('AgentTakingSecondDecision',txt);
+    pairS.at2ndDec  = cell2mat(raw(:,at2ndDec_ind));
+    atCollDec_ind   = strcmp('AgentTakingCollDecision',txt);
+    pairS.atCollDec = cell2mat(raw(:,atCollDec_ind));
+    % Retrieve the CONFIDENCE of each agent (blue, yellow, collective)
+    blue_Conf_ind   = strcmp('B_conf',txt);
+    pairS.blue_Conf = cell2mat(raw(:,blue_Conf_ind));
+    yell_Conf_ind   = strcmp('Y_conf',txt);
+    pairS.yell_Conf = cell2mat(raw(:,yell_Conf_ind));
+    Coll_Conf_ind   = strcmp('Coll_conf',txt);
+    pairS.Coll_Conf = cell2mat(raw(:,Coll_Conf_ind));
+    % Retrieve the DECISION of each agent (blue, yellow, collective)
+    blue_Dec_ind    = strcmp('B_decision',txt);
+    pairS.blue_Dec  = cell2mat(raw(:,blue_Dec_ind));
+    yell_Dec_ind    = strcmp('Y_decision',txt);
+    pairS.yell_Dec  = cell2mat(raw(:,yell_Dec_ind));
+    Coll_Dec_ind    = strcmp('Coll_decision',txt);
+    pairS.Coll_Dec  = cell2mat(raw(:,Coll_Dec_ind));
     % Retrieve the RT of each agent (blue, yellow, collective)
-    blue_rt_ind    = strcmp('B_rt',txt);
-    blue_rt        = cell2mat(raw(:,blue_rt_ind));
-    yell_rt_ind    = strcmp('Y_rt',txt);
-    yell_rt        = cell2mat(raw(:,yell_rt_ind));
-    Coll_rt_ind    = strcmp('Coll_rt',txt);
-    Coll_rt        = cell2mat(raw(:,Coll_rt_ind));
+    blue_rt_ind     = strcmp('B_rt',txt);
+    blue_rt         = cell2mat(raw(:,blue_rt_ind));
+    yell_rt_ind     = strcmp('Y_rt',txt);
+    yell_rt         = cell2mat(raw(:,yell_rt_ind));
+    Coll_rt_ind     = strcmp('Coll_rt',txt);
+    Coll_rt         = cell2mat(raw(:,Coll_rt_ind));
 
-    % Indeces for 1st, 2nd and 3rd decision (needed in trial loop)
+    % Indices for 1st, 2nd and 3rd decision (needed in trial loop)
     % Note: each trial contains 3 decisions (160 trials = 480 decisions)
     faa = trialstart_num *3 - 2; % faa = first agent acting
     saa = trialstart_num *3 - 1; % saa = second agent acting
@@ -123,17 +125,19 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
 
     
     %%%%%%%%%%%%  Start trial loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    tic
+    t_trialstart = tic;
     calc_kin_trial; % this runs through all trials for one pair
-    toc
+    trialtime = toc(t_trialstart);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    % check how many times the pair started before decision prompt
+    % Display trial processing time and "early starts" (starts before decision prompt)
+    disp(['Processing time for pair ' SUBJECTS{p}(2:end) ': ' num2str(round(trialtime,1))]);
     disp(['Number of early starts for pair ' SUBJECTS{p}(2:end) ': ' num2str(early_count)]);
 
     % Save mat file for each pair
     if flag_write
-        save(fullfile(path_kin,[SUBJECTS{p},'_post']))
+         % add "_post" to distinguish from original acquisition .mat file
+        save(fullfile(path_kin,[SUBJECTS{p},'_post']));
     end
 
     % ---------------------------------------------------------------------    
@@ -148,7 +152,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
         bConf(bConf>median(bConf))  = 2; % if > median, classify as high (2)
         yConf(yConf<=median(yConf)) = 1;
         yConf(yConf>median(yConf))  = 2;
-        pairS.bConf = bConf;
+        pairS.bConf = bConf; % save high/low confidence in pairS structure
         pairS.yConf = yConf;
 
     else % if no median split, categorize as 1-3(low) and 4-6(high) anyway
@@ -157,21 +161,24 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
         bConf(bConf<4)  = 1;
         bConf(bConf>=4) = 2;
         yConf(yConf<4)  = 1; 
-        yConf(yConf>=4) = 2;
-        
+        yConf(yConf>=4) = 2;        
         pairS.bConf = bConf;
         pairS.yConf = yConf;
     end
     % ---------------------------------------------------------------------
 
-    % Re-name vector that specifies who took the 2nd decision
-    %SecondDec = at2ndDec;
-    
+      
     % display and save exploratory plots (1 plot per agent with all trials)
     if flag_plot
         ave_subj_plotting_new;
     end
-    % Write an additional Excel file to record the number of trial lost for early release of the button (per pair and per agent)
+
+    % Write additional Excel file to record the number of excluded trials
+    % early_start = if agent starts before decision prompt (on trial/pair basis)
+    % short_rt = if startFrame defined as NaN in movement_onset (on trial/pair basis)
+    % B_2ndDec = no. of plotted (i.e., clean!) trials in which B takes 2nd decision
+    % Y_2ndDec = no. of plotted (i.e., clean!) trials in which Y takes 2nd decision
+    % B_2ndDec + Y_2ndDec = total number of clean trials for the pair
     exc{p,1:5} = [str2double(SUBJECTS{p}(2:end)) early_count excl_trial SecDec_clean];
     exc.Properties.VariableNames = {'pair','early_start','short_rt','B_2ndDec','Y_2ndDec'};
     writetable(exc,fullfile(path_kin,'SecDec_cleanAll.xlsx'));
@@ -185,8 +192,7 @@ end % end of pair loop
 
 catch me
     % Save mat file as a backup in case of crash
-    % XXX change file name to indicate that data not complete!!?
-    save(fullfile(path_kin,[SUBJECTS{p},'_trial',num2str(t)]))
+    save(fullfile(path_kin,[SUBJECTS{p},'_trial',num2str(t),'_backup']))
 end
 
 % script version: 1 Nov 2023
