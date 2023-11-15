@@ -14,8 +14,8 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame]= ...
 
 %% Retrieve and define parameters
 % retrieve information from Vicon recording
-frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:}; % retrieve acquisition frame rate in Hz (Hz = 1 event per sec)
-model_name = [SUBJECTS{p} '_' agentExec '_' agentExec]; % retrieve names of hand models in Nexus, e.g., "S108_blue_blue"
+frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:}; % retrieve acquisition frame rate: 100Hz (Hz = 1 event per sec)
+model_name = [SUBJECTS{p} '_' agentExec '_' agentExec]; % retrieve names of hand models in Nexus, e.g., "S108_b_b"
 samp       = 1:sMarkers{t}.info.nSamples;
 index      = sMarkers{t}.markers.([model_name '_index']).Vm; % velocity module for index
 ulna       = sMarkers{t}.markers.([model_name '_ulna']).Vm;  % velocity module for ulna
@@ -32,7 +32,7 @@ blueCol    = [0 0.4470 0.7410]; % blue for ulna
 orangeCol  = [0.8500 0.3250 0.0980]; % orange for index
 startCol   = [0.3922 0.8314 0.0745]; % green for start
 moveCol    = [1 0 0]; % red for actual movement start (tmove)
-x_width    = 16; % figure width
+x_width    = 18; % figure width
 y_width    = 12; % figure height
 % *Reaction Time*:
 % "rt_mat" has been recorded during acquisition (and saved in original Matfile)
@@ -91,35 +91,44 @@ if startFrame > preAcq
 
         % 1. plot velocity and height for ULNA; use *left* y-axis of plot
         yyaxis left;
-        plot(samp,ulna, 'Color',blueCol);  % ulna velocity ("ulna")
+        uv=plot(samp,ulna, 'Color',blueCol);  % ulna velocity ("ulna")
         hold on;
-        plot(samp,ulnaZ, 'Color',blueCol); % ulna height ("ulnaZ")
+        uz=plot(samp,ulnaZ, 'Color',blueCol, 'LineStyle','--'); % ulna height ("ulnaZ")
+        uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
         ylabel('Velocity [mm/s]'); % label for left y-axis
-        hold off;
         % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
         if ~isnan(ulnaTh(1))
             xl = xline(ulnaTh(1),':'); xl.LineWidth = 1; xl.Color = blueCol;
             xl.Label = 'tstart ulna';
             xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
+            xl.Annotation.LegendInformation.IconDisplayStyle = 'off';
             % optional: make trajectory bold (from passing of threshold until button press)
             %plot(ulnaTh(1):(samp(end)-10),ulna(ulnaTh(1):(samp(end)-10)),'-', 'Color',blueCol,'LineWidth',3);
         end
+        hold off;
 
         % 2. plot velocity and height for INDEX; use *right* y-axis of plot
         yyaxis right;
-        plot(samp,index, 'Color',orangeCol);  % index velocity ("index")
+        iv=plot(samp,index, 'Color',orangeCol);  % index velocity ("index")
         hold on;
-        plot(samp,indexZ, 'Color',orangeCol); % index height ("indexZ")
-        hold off;
+        iz=plot(samp,indexZ, 'Color',orangeCol, 'LineStyle','--'); % index height ("indexZ")
+        iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
         % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
         if ~isnan(indexTh(1))
             xl = xline(indexTh(1),':'); xl.LineWidth = 1; xl.Color = orangeCol;
             xl.Label = 'tstart index';
             xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
+            xl.Annotation.LegendInformation.IconDisplayStyle = 'off';
         end
+        hold off;
+
+        % create legend with only ulna and index labeled
+        legend([uv,iv], {'ulna', 'index'}, 'Location','northwest');
+        
 
         % 3. plot bold GREEN vertical line on startFrame
         xl_start = xline(startFrame, 'LineWidth',3, 'Color',startCol);
+        xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
 
         % 4. plot three more vertical lines for t0, t1, t2
@@ -129,17 +138,17 @@ if startFrame > preAcq
         xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
         xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
         xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
+        xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        xl_t1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        xl_t2.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
-        % set x-axis limit as end of sample (=100 if normalized)
+        % set x-axis limit as end of sample
         xlim([0 samp(end)]);
 
-        % XXX create legend with only ulna and index
-        %a=get(gca,'Children');
-        %legend([a(8);a(6)], {'ulna','index'}, 'Location','northwest');
 
         % add title with pair no., acting agent, marker, matTrial, actual trial
         title(['pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
-        xlabel('Samples');
+        xlabel('Samples (1sample=10ms)');
 
 
 
@@ -187,30 +196,37 @@ if startFrame > preAcq
 
             % 1. plot velocity and height for ULNA; use *left* y-axis of plot
             yyaxis left;
-            plot(samp,ulna, 'Color',blueCol);  % ulna velocity ("ulna")
+            uv=plot(samp,ulna, 'Color',blueCol);  % ulna velocity ("ulna")
             hold on;
-            plot(samp,ulnaZ, 'Color',blueCol); % ulna height ("ulnaZ")
+            uz=plot(samp,ulnaZ, 'Color',blueCol, 'LineStyle','--'); % ulna height ("ulnaZ")
+            uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
             ylabel('Velocity [mm/s]'); % label for left y-axis
-            hold off;
             % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
             if ~isnan(ulnaTh(1))
                 xl = xline(ulnaTh(1),':'); xl.LineWidth = 1; xl.Color = blueCol;
                 xl.Label = 'tstart ulna';
                 xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
+                xl.Annotation.LegendInformation.IconDisplayStyle = 'off';
             end
+            hold off;
 
             % 2. plot velocity and height for INDEX; use *right* y-axis of plot
             yyaxis right;
-            plot(samp,index, 'Color',orangeCol);  % index velocity ("index")
+            iv=plot(samp,index, 'Color',orangeCol);  % index velocity ("index")
             hold on;
-            plot(samp,indexZ, 'Color',orangeCol); % index height ("indexZ")
-            hold off;
+            iz=plot(samp,indexZ, 'Color',orangeCol, 'LineStyle','--'); % index height ("indexZ")
+            iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
             % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
             if ~isnan(indexTh(1))
                 xl = xline(indexTh(1),':'); xl.LineWidth = 1; xl.Color = orangeCol;
                 xl.Label = 'tstart index';
                 xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
+                xl.Annotation.LegendInformation.IconDisplayStyle = 'off';
             end
+            hold off;
+
+            % create legend with only ulna and index labeled
+            legend([uv,iv], {'ulna', 'index'}, 'Location','northwest');
 
             % 3. plot bold RED vertical line on FINAL startFrame (ulnaTh, indexTh, or button release)
             if ~isnan(startFrame)
@@ -218,6 +234,7 @@ if startFrame > preAcq
                 xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
                 %xl_start.Label = 'tstart';
                 xl_start.LabelHorizontalAlignment = "center"; xl_start.LabelVerticalAlignment = "bottom";
+                xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
             end
 
             % 4. plot three more vertical lines for t0, t1, t2
@@ -227,6 +244,9 @@ if startFrame > preAcq
             xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
             xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
             xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
+            xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
+            xl_t1.Annotation.LegendInformation.IconDisplayStyle = 'off';
+            xl_t2.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
             % optional: if we decide to use "tmove"
             % plot vertical line for tmove
@@ -236,11 +256,12 @@ if startFrame > preAcq
             %    xl_mv.LabelHorizontalAlignment = "center"; xl_mv.LabelVerticalAlignment = "top";
             %end
 
-            % set x-axis limit as end of sample (=100 if normalized)
+            % set x-axis limit as end of sample
             xlim([0 samp(end)]);
+
             % add title with pair no., acting agent, marker, matTrial, actual trial
             title(['pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
-            xlabel('Samples');
+            xlabel('Samples (1sample=10ms)');
 
             % save the new figure
             set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);

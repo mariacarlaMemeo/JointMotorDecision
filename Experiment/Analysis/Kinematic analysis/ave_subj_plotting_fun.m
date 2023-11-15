@@ -13,7 +13,7 @@ wd            = 4;
 hConf_col     = [.6 0 0];  % red
 lConf_col     = [0.2 0.8 0.8]; % blueish
 lConf_col_ave = [0 .6 .6]; % slightly different blueish for averages
-x_width       = 16;
+x_width       = 18;
 y_width       = 12;
 
 %% Plotting trajectories (colored according to confidence - high/low)

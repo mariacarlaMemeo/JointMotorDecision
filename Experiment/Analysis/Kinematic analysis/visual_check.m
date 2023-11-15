@@ -8,7 +8,7 @@ visual_change = []; % did you make changes after visual inspection?
 del_fig       = []; % do you want to eliminate the trial?
 jpg_title     = [fullfile(figurepath,SUBJECTS{p}) '\trial_' num2str(sMarkers{t}.info.trial_id) ...
                 '_agent_' agentExec];
-x_width       = 16;
+x_width       = 18;
 y_width       = 12;
 
 % criterion to select the startFrame: it shows the markers accordingly
