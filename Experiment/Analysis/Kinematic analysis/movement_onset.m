@@ -1,4 +1,4 @@
-function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame]= ...
+function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame, trg]= ...
     movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,rt_mat,trial_plot,figurepath)
 
 % -------------------------------------------------------------------------
@@ -13,6 +13,9 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame]= ...
 % Note: input argument "figurepath" is needed for visual_check
 
 %% Retrieve and define parameters
+% trg-paramter: did agent change target (first left, then right) or not?
+trg = NaN;
+
 % retrieve information from Vicon recording
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:}; % retrieve acquisition frame rate: 100Hz (Hz = 1 event per sec)
 model_name = [SUBJECTS{p} '_' agentExec '_' agentExec]; % retrieve names of hand models in Nexus, e.g., "S108_b_b"

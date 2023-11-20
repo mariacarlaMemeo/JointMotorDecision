@@ -60,14 +60,14 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % AGENT ACTING FIRST --------------------------------------------------
 
     label_agent = 'FIRSTdecision';
-
+    
     % 1. call movement_onset.m
     if not(early)
-        [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1] = ...
+        [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1,trgChange1] = ...
             movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
             FirstRT,trial_plot,figurepath);
     else
-        startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN;
+        startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN; trgChange1=NaN;
     end
 
     % 2. call movement_var.m
@@ -140,14 +140,14 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % AGENT ACTING SECOND -------------------------------------------------
 
     label_agent = 'SECONDdecision';
-
+   
     % 1. call movement_onset.m
     if not(early)
-        [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2] = ...
+        [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2,trgChange2] = ...
             movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
             SecRT,trial_plot,figurepath);
     else
-        startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN;
+        startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN; trgChange2=NaN;
     end
 
     % 2. call movement_var.m
@@ -221,14 +221,14 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % Otherwise, collective cannot be plotted.
 
     label_agent = 'COLLECTIVEdecision';
-
+   
     % 1. call movement_onset.m
     if not(early)
-        [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl] = ...
+        [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl,trgChangeColl] = ...
             movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
             CollRT,trial_plot,figurepath);
     else
-        startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN;
+        startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN; trgChangeColl=NaN;
     end
 
     % 2. call movement_var.m
@@ -320,15 +320,16 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
                                         mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
         % -> normalized 100 samples for index and ulna: ONLY 2nd DECISION
-        % NOTE: change var counter (1019) if new variables are added!!!
-        data{t,ol(2)+11:ol(2)+1019} = [...
+        % NOTE: change var counter (1022) if new variables are added!!!
+        data{t,ol(2)+11:ol(2)+1022} = [...
             time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
             time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
             spa_traj_index2(:,1)' spa_traj_ulna2(:,1)' ...
             spa_traj_index2(:,3)' spa_traj_ulna2(:,3)' ...
             startFrame1 tmove1 endFrame1 ...
             startFrame2 tmove2 endFrame2 ...
-            startFrameColl tmoveColl endFrameColl];
+            startFrameColl tmoveColl endFrameColl ...
+            trgChange1 trgChange2 trgChangeColl];
 
         % Assign new header (created in calc_kin_rt_mt.m)
         data.Properties.VariableNames = txt;

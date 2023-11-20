@@ -100,24 +100,43 @@ switch str2double(mod) % depending on user input, check respective case
         visual_change = 1;
         del_fig       = 0;
 
-    case 4 % change tstart and tstop; save original figure
+    case 4 % change tstart, tmove, tstop; save original figure
         if ~exist(strcat(jpg_title,'_v0.png'),'file')
             set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v0.png'))
         end
-        disp('Insert tstart and tstop ');
+        disp('Insert tstart, tmove and tstop ');
         [x,~] = ginput(2); % 2(!) user inputs: select positions one after other
         rangex1 = (round(x(1))-3):(round(x(1))+3);
         rangex2 = (round(x(2))-3):(round(x(2))+3);
-        %rangex3 = (round(x(3))-3):(round(x(3))+3);
+        rangex3 = (round(x(3))-3):(round(x(3))+3);
         startFrame = rangex1(sMarkers{t}.markers.(mainmarker).Vm(rangex1)== ...
                          min(sMarkers{t}.markers.(mainmarker).Vm(rangex1)));       
-        endFrame   = rangex2(sMarkers{t}.markers.(mainmarker).Vm(rangex2)== ...
+        tmove      = rangex2(sMarkers{t}.markers.(mainmarker).Vm(rangex2)== ...
                          min(sMarkers{t}.markers.(mainmarker).Vm(rangex2)));        
-        %tmove      = rangex3(sMarkers{t}.markers.(mainmarker).Vm(rangex3)== ...
-        %                 min(sMarkers{t}.markers.(mainmarker).Vm(rangex3)));
+        endFrame   = rangex3(sMarkers{t}.markers.(mainmarker).Vm(rangex3)== ...
+                         min(sMarkers{t}.markers.(mainmarker).Vm(rangex3)));
         visual_change = 1;
         del_fig       = 0;
 end
+
+
+% "target change": insert yes/no depending on whether agent change target
+% (first left, then right, etc.)
+trg_check = 1;
+while trg_check
+    trg = input('0 = Change;\n1 = No change\n');
+    if trg == 0
+        disp('Agent did not change target.');
+        trg_check = 0;
+    elseif trg == 1
+        disp('Agent changed!');
+        trg_check = 0;
+    else
+        disp('Your input was invalid! Please choose again.');
+        trg_check = 1;
+    end
+end
+
 
 % script version: 1 Nov 2023
