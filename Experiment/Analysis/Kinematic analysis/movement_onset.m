@@ -34,6 +34,7 @@ preAcq     = 20; % preacquisition duration: 200 ms == 20 frames (10ms/0.01s = 1 
 blueCol    = [0 0.4470 0.7410]; % blue for ulna
 orangeCol  = [0.8500 0.3250 0.0980]; % orange for index
 startCol   = [0.3922 0.8314 0.0745]; % green for start
+startCol_2 = [0.2196 0.9608 0.2588]; % green for start
 moveCol    = [1 0 0]; % red for actual movement start (tmove)
 x_width    = 18; % figure width
 y_width    = 12; % figure height
@@ -152,7 +153,7 @@ if startFrame > preAcq
         % 4. plot three more vertical lines for t0, t1, t2
         xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
         xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
-        xl_t2 = xline(samp(end)-10,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+        xl_t2 = xline(endFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
         xl_t3 = xline(tmove,'-');  % tmove        
         xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
         xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
@@ -249,25 +250,31 @@ if startFrame > preAcq
             % create legend with only ulna and index labeled
             legend([uv,iv], {'ulna', 'index'}, 'Location','northwest');
 
-            % 3. plot bold RED vertical line on FINAL startFrame (ulnaTh, indexTh, or button release)
+            % 3. plot bold green vertical line on FINAL startFrame (ulnaTh, indexTh, or button release)
             if ~isnan(startFrame)
-                xl_start = xline(startFrame, 'LineWidth',3, 'Color',startCol);
+                xl_start = xline(startFrame, 'LineWidth',4, 'Color',startCol_2);
                 xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
                 %xl_start.Label = 'tstart';
                 xl_start.LabelHorizontalAlignment = "center"; xl_start.LabelVerticalAlignment = "bottom";
                 xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
             end
 
+            % XXX maybe insert tstop (as red line) and leave target press
+            % below (endFrame) unchanged!!!
+
             % 4. plot three more vertical lines for t0, t1, t2
             xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
             xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
-            xl_t2 = xline(samp(end)-10,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+            xl_t2 = xline(endFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+            xl_t3 = xline(tmove,'-');  % tmove
             xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
             xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
-            xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
+            xl_t2.LineWidth = 0.8; xl_t2.Label = 'tstop'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
+            xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "middle";
             xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
             xl_t1.Annotation.LegendInformation.IconDisplayStyle = 'off';
             xl_t2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+            xl_t3.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
             % optional: if we decide to use "tmove"
             % plot vertical line for tmove
@@ -305,7 +312,7 @@ end
 
 % If we decide to eliminate the trial in visual_check: fill with NaN values
 if exist('del_fig','var') && del_fig % if del_fig exists and equals 1
-    startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;
+    startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN; trg=NaN;
 end
 
 close all % close figure(s)
