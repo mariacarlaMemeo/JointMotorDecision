@@ -45,11 +45,6 @@ start_criterion  = 0; % which criterion was used to identify startFrame? (1=inde
 indexTh    = findTh_cons(index,vel_th,succSample);
 ulnaTh     = findTh_cons(ulna,vel_th,succSample);
 
-%% Find movement start in a different way (-> function *find_tmove*)
-% This can be used to define movement start but is currently NOT used!
-% Functionality: Selects the maximum peak and the minimum preceding it.
-% The output gives you the index of the minimum; this is tmove.
-tmove = find_tmove(ulna); % here we apply this to the ulna only
 
 %% Define TRIAL START (startFrame) & TRIAL END (endFrame), i.e., where to cut the movement
 % *startFrame* = indexTh or ulnaTh (whichever comes first) OR
@@ -70,7 +65,27 @@ if startFrame > rt_mat+preAcq % if chosen startFrame occurs later than button re
     start_criterion = 3;
 end
 
-endFrame               = (samp(end)-10); % time of target button press
+% define endFrame
+endFrame = (samp(end)-10); % time of target button press
+
+
+%% Find movement start in a different way (-> function *find_tmove*)
+% Functionality: Selects the maximum peak and the minimum preceding it.
+% The output gives you the index of the minimum; this is tmove.
+if start_criterion == 1
+    move_marker = index;
+elseif start_criterion == 2
+    move_marker = ulna;
+elseif start_criterion == 3
+    if ind_start == 1
+        move_marker = index;
+    elseif ind_start == 2
+        move_marker = ulna;
+    end
+end
+
+tmove = find_tmove(move_marker); % here we apply this to the ulna only
+
 
 % Check if the movement started *after* decision prompt
 if startFrame > preAcq
@@ -135,12 +150,15 @@ if startFrame > preAcq
         xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
         xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
         xl_t2 = xline(samp(end)-10,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+        xl_t3 = xline(tmove,'-');  % tmove        
         xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
         xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
         xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
+        xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "middle";
         xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_t1.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_t2.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        xl_t3.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
         % set x-axis limit as end of sample
         xlim([0 samp(end)]);
@@ -275,7 +293,7 @@ if startFrame > preAcq
 
     end
 
-    % Calculate deliberation time: tmove - startFrame - CURRENTLY NOT USED
+    % Calculate deliberation time: tmove - startFrame
     dt_final = (tmove-startFrame)/frameRate;
 
 else % if startFrame < preAcqu: movement started too early -> NaN
