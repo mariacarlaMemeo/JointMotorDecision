@@ -193,7 +193,7 @@ end % end of pair loop
 
 catch me
     % Save mat file as a backup in case of crash
-    save(fullfile(path_kin,[SUBJECTS{p},'_trial',num2str(t),'_backup']))
+    save(fullfile(path_kin,[SUBJECTS{p},'_start',num2str(trialstart_num),'_end',num2str(t),'_bkp']));
 end
 
 % script version: 1 Nov 2023

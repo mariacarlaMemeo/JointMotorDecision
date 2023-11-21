@@ -34,7 +34,8 @@ preAcq     = 20; % preacquisition duration: 200 ms == 20 frames (10ms/0.01s = 1 
 blueCol    = [0 0.4470 0.7410]; % blue for ulna
 orangeCol  = [0.8500 0.3250 0.0980]; % orange for index
 startCol   = [0.3922 0.8314 0.0745]; % green for start
-startCol_2 = [0.2196 0.9608 0.2588]; % green for start
+startCol_2 = [0.2196 0.9608 0.2588]; % dark green for "final" start
+stopCol    = [0.6353 0.0784 0.1843]; % red for end
 moveCol    = [1 0 0]; % red for actual movement start (tmove)
 x_width    = 18; % figure width
 y_width    = 12; % figure height
@@ -76,6 +77,8 @@ endFrame = (samp(end)-10); % time of target button press
 %% Find movement start in a different way (-> function *find_tmove*)
 % Functionality: Selects the maximum peak and the minimum preceding it.
 % The output gives you the index of the minimum; this is tmove.
+% NOTE: the function is applied to the marker which has been previously
+% used to define the startFrame.
 if start_criterion == 1
     move_marker = index;
 elseif start_criterion == 2
@@ -88,7 +91,7 @@ elseif start_criterion == 3
     end
 end
 
-tmove = find_tmove(move_marker); % here we apply this to the ulna only
+tmove = find_tmove(move_marker); % call find_tmove function
 
 
 % Check if the movement started *after* decision prompt
@@ -145,7 +148,7 @@ if startFrame > preAcq
         legend([uv,iv], {'ulna', 'index'}, 'Location','northwest');
         
 
-        % 3. plot bold GREEN vertical line on startFrame
+        % 3. plot bold green vertical line on FINAL startFrame (ulnaTh, indexTh, or button release)
         xl_start = xline(startFrame, 'LineWidth',3, 'Color',startCol);
         xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
@@ -158,7 +161,7 @@ if startFrame > preAcq
         xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
         xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
         xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
-        xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "middle";
+        xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "top";
         xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_t1.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_t2.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -167,12 +170,9 @@ if startFrame > preAcq
         % set x-axis limit as end of sample
         xlim([0 samp(end)]);
 
-
         % add title with pair no., acting agent, marker, matTrial, actual trial
         title(['pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
         xlabel('Samples (1sample=10ms)');
-
-
 
         % *optional* stuff to add ---------------------------------------------
         %     % plot horizontal line to indicate height of velocity threshold
@@ -250,39 +250,34 @@ if startFrame > preAcq
             % create legend with only ulna and index labeled
             legend([uv,iv], {'ulna', 'index'}, 'Location','northwest');
 
-            % 3. plot bold green vertical line on FINAL startFrame (ulnaTh, indexTh, or button release)
+            % 3. plot bold green vertical line on FINAL startFrame
             if ~isnan(startFrame)
                 xl_start = xline(startFrame, 'LineWidth',4, 'Color',startCol_2);
+                xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
                 xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
                 %xl_start.Label = 'tstart';
-                xl_start.LabelHorizontalAlignment = "center"; xl_start.LabelVerticalAlignment = "bottom";
-                xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
+                %xl_start.LabelHorizontalAlignment = "center"; xl_start.LabelVerticalAlignment = "bottom";              
             end
 
             % XXX maybe insert tstop (as red line) and leave target press
             % below (endFrame) unchanged!!!
-
+            xl_tstop = xline(endFrame, 'LineWidth',4, 'Color',stopCol);  % tstop (potentially manually adjusted)
+            xl_tstop.Annotation.LegendInformation.IconDisplayStyle = 'off';
+            xl_tstop.Alpha = 0.4; % transparency of line (0.7 is default)
+            
             % 4. plot three more vertical lines for t0, t1, t2
             xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
             xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
-            xl_t2 = xline(endFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+            xl_t2 = xline(samp(end)-10,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
             xl_t3 = xline(tmove,'-');  % tmove
             xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
             xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
-            xl_t2.LineWidth = 0.8; xl_t2.Label = 'tstop'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
-            xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "middle";
+            xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
+            xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "top";
             xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
             xl_t1.Annotation.LegendInformation.IconDisplayStyle = 'off';
             xl_t2.Annotation.LegendInformation.IconDisplayStyle = 'off';
             xl_t3.Annotation.LegendInformation.IconDisplayStyle = 'off';
-
-            % optional: if we decide to use "tmove"
-            % plot vertical line for tmove
-            %if ~isnan(tmove)
-            %    xl_mv = xline(tmove, 'LineWidth',3, 'Color',moveCol);
-            %    xl_mv.Label = 'tmove';
-            %    xl_mv.LabelHorizontalAlignment = "center"; xl_mv.LabelVerticalAlignment = "top";
-            %end
 
             % set x-axis limit as end of sample
             xlim([0 samp(end)]);
