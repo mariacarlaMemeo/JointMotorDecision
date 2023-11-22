@@ -36,7 +36,7 @@ orangeCol  = [0.8500 0.3250 0.0980]; % orange for index
 startCol   = [0.3922 0.8314 0.0745]; % green for start
 startCol_2 = [0.2196 0.9608 0.2588]; % dark green for "final" start
 stopCol    = [0.6353 0.0784 0.1843]; % red for end
-moveCol    = [1 0 0]; % red for actual movement start (tmove)
+stopCol_2 = [0.9020 0.1961 0.3255]; % bright red for "final" end
 x_width    = 18; % figure width
 y_width    = 12; % figure height
 % *Reaction Time*:
@@ -148,24 +148,29 @@ if startFrame > preAcq
         legend([uv,iv], {'ulna', 'index'}, 'Location','northwest');
         
 
-        % 3. plot bold green vertical line on FINAL startFrame (ulnaTh, indexTh, or button release)
-        xl_start = xline(startFrame, 'LineWidth',3, 'Color',startCol);
+        % 3. plot bold green vertical line on startFrame (ulnaTh, indexTh, or button release)
+        xl_start = xline(startFrame, 'LineWidth',4, 'Color',startCol);
         xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
+
+        % red line for endFrame
+        xl_tstop = xline(endFrame, 'LineWidth',4, 'Color',stopCol);
+        xl_tstop.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        xl_tstop.Alpha = 0.4; % transparency of line (0.7 is default)
 
         % 4. plot three more vertical lines for t0, t1, t2
         xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
         xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
         xl_t2 = xline(endFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
-        xl_t3 = xline(tmove,'-');  % tmove        
+        %xl_t3 = xline(tmove,'-');  % tmove        
         xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
         xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
         xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
-        xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "top";
+        %xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "top";
         xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_t1.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_t2.Annotation.LegendInformation.IconDisplayStyle = 'off';
-        xl_t3.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        %xl_t3.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
         % set x-axis limit as end of sample
         xlim([0 samp(end)]);
@@ -259,9 +264,8 @@ if startFrame > preAcq
                 %xl_start.LabelHorizontalAlignment = "center"; xl_start.LabelVerticalAlignment = "bottom";              
             end
 
-            % XXX maybe insert tstop (as red line) and leave target press
-            % below (endFrame) unchanged!!!
-            xl_tstop = xline(endFrame, 'LineWidth',4, 'Color',stopCol);  % tstop (potentially manually adjusted)
+            % red line for tstop (final endFrame)
+            xl_tstop = xline(endFrame, 'LineWidth',4, 'Color',stopCol_2);  % tstop (potentially manually adjusted)
             xl_tstop.Annotation.LegendInformation.IconDisplayStyle = 'off';
             xl_tstop.Alpha = 0.4; % transparency of line (0.7 is default)
             
