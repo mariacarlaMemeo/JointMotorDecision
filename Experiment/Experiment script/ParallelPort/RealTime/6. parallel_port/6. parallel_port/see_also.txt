@@ -1,0 +1,11 @@
+Hi. See also an application of this program:
+
+Stepper Motor Control with GUI
+
+http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=16439&objectType=FILE
+
+Diego Orlando Barragán Guerrero
+www.matpic.com
+diegokillemall@yahoo.com
+LOJA - ECUADOR
+Electronics and Telecommunications
