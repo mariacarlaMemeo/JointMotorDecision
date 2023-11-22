@@ -34,15 +34,20 @@ fprintf([label_criterion ' as the start criterion \n']);
 drawnow % this is to show changes to figure immediately
 
 % display options for user
-mod = input('0 = Erase trial;\n1 = Change TSTART;\n2 = Change TMOVE;\n3 = Change TSTOP;\n4 = Change TSTART TMOVE TSTOP\n999 = ALL GOOD\n','s');
+mod = input('n999 = ALL GOOD;\n0 = Erase trial;\n1 = Change TSTART;\n2 = Change TMOVE;\n3 = Change TSTOP;\n4 = Change TSTART TMOVE TSTOP\n42 = STOP and SAVE\n','s');
 
 % If mod is empty or non of the required inputs, then put 999
-if isempty(mod) || sum([strcmp(mod,'0'),strcmp(mod,'1'),strcmp(mod,'2'),strcmp(mod,'3'), strcmp(mod,'4')]) == 0
+if isempty(mod) || sum([strcmp(mod,'0'),strcmp(mod,'1'),strcmp(mod,'2'),strcmp(mod,'3'), strcmp(mod,'4'),strcmp(mod,'42')]) == 0
     mod = '999';
 end
 
 switch str2double(mod) % depending on user input, check respective case
     
+    case 42
+        savemat = 1;
+        visual_change = 0;
+        del_fig       = 0;
+
     case 999 % no changes necessary
         disp('Good'); 
         visual_change = 0;

@@ -1,4 +1,4 @@
-function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame, trg]= ...
+function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,npIndex,npUlna,savemat]= ...
     movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,rt_mat,trial_plot,figurepath)
 
 % -------------------------------------------------------------------------
@@ -15,13 +15,17 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame, trg]= ...
 %% Retrieve and define parameters
 % trg-paramter: did agent change target (first left, then right) or not?
 trg = NaN;
+% number of peak counter
+npIndex = NaN; npUlna = NaN;
+% flag to exit and save XXX put this somewhere else?
+savemat = 0;
 
 % retrieve information from Vicon recording
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:}; % retrieve acquisition frame rate: 100Hz (Hz = 1 event per sec)
 model_name = [SUBJECTS{p} '_' agentExec '_' agentExec]; % retrieve names of hand models in Nexus, e.g., "S108_b_b"
 samp       = 1:sMarkers{t}.info.nSamples;
-index      = sMarkers{t}.markers.([model_name '_index']).Vm; % velocity module for index
-ulna       = sMarkers{t}.markers.([model_name '_ulna']).Vm;  % velocity module for ulna
+indexV     = sMarkers{t}.markers.([model_name '_index']).Vm; % velocity module for index
+ulnaV      = sMarkers{t}.markers.([model_name '_ulna']).Vm;  % velocity module for ulna
 indexZ     = sMarkers{t}.markers.([model_name '_index']).xyzf(:,3); % height for index
 ulnaZ      = sMarkers{t}.markers.([model_name '_ulna']).xyzf(:,3);  % height for ulna
 % define variables
@@ -47,8 +51,8 @@ rt_mat           = round((rt_mat/1000)*frameRate);
 start_criterion  = 0; % which criterion was used to identify startFrame? (1=index;2=ulna;3=button)
 
 %% Find out when velocity threshold is passed (-> function *findTh_cons*)
-indexTh    = findTh_cons(index,vel_th,succSample);
-ulnaTh     = findTh_cons(ulna,vel_th,succSample);
+indexTh    = findTh_cons(indexV,vel_th,succSample);
+ulnaTh     = findTh_cons(ulnaV,vel_th,succSample);
 
 
 %% Define TRIAL START (startFrame) & TRIAL END (endFrame), i.e., where to cut the movement
@@ -80,14 +84,14 @@ endFrame = (samp(end)-10); % time of target button press
 % NOTE: the function is applied to the marker which has been previously
 % used to define the startFrame.
 if start_criterion == 1
-    move_marker = index;
+    move_marker = indexV;
 elseif start_criterion == 2
-    move_marker = ulna;
+    move_marker = ulnaV;
 elseif start_criterion == 3
     if ind_start == 1
-        move_marker = index;
+        move_marker = indexV;
     elseif ind_start == 2
-        move_marker = ulna;
+        move_marker = ulnaV;
     end
 end
 
@@ -113,7 +117,7 @@ if startFrame > preAcq
 
         % 1. plot velocity and height for ULNA; use *left* y-axis of plot
         yyaxis left;
-        uv=plot(samp,ulna, 'Color',blueCol);  % ulna velocity ("ulna")
+        uv=plot(samp,ulnaV, 'Color',blueCol);  % ulna velocity ("ulna")
         hold on;
         uz=plot(samp,ulnaZ, 'Color',blueCol, 'LineStyle','--'); % ulna height ("ulnaZ")
         uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -131,7 +135,7 @@ if startFrame > preAcq
 
         % 2. plot velocity and height for INDEX; use *right* y-axis of plot
         yyaxis right;
-        iv=plot(samp,index, 'Color',orangeCol);  % index velocity ("index")
+        iv=plot(samp,indexV, 'Color',orangeCol);  % index velocity ("index")
         hold on;
         iz=plot(samp,indexZ, 'Color',orangeCol, 'LineStyle','--'); % index height ("indexZ")
         iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -162,15 +166,15 @@ if startFrame > preAcq
         xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
         xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
         xl_t2 = xline(endFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
-        %xl_t3 = xline(tmove,'-');  % tmove        
+        xl_t3 = xline(tmove,'-');  % tmove        
         xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
         xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
         xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
-        %xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "top";
+        xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "top";
         xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_t1.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_t2.Annotation.LegendInformation.IconDisplayStyle = 'off';
-        %xl_t3.Annotation.LegendInformation.IconDisplayStyle = 'off';
+        xl_t3.Annotation.LegendInformation.IconDisplayStyle = 'off';
 
         % set x-axis limit as end of sample
         xlim([0 samp(end)]);
@@ -223,7 +227,7 @@ if startFrame > preAcq
 
             % 1. plot velocity and height for ULNA; use *left* y-axis of plot
             yyaxis left;
-            uv=plot(samp,ulna, 'Color',blueCol);  % ulna velocity ("ulna")
+            uv=plot(samp,ulnaV, 'Color',blueCol);  % ulna velocity ("ulna")
             hold on;
             uz=plot(samp,ulnaZ, 'Color',blueCol, 'LineStyle','--'); % ulna height ("ulnaZ")
             uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -239,7 +243,7 @@ if startFrame > preAcq
 
             % 2. plot velocity and height for INDEX; use *right* y-axis of plot
             yyaxis right;
-            iv=plot(samp,index, 'Color',orangeCol);  % index velocity ("index")
+            iv=plot(samp,indexV, 'Color',orangeCol);  % index velocity ("index")
             hold on;
             iz=plot(samp,indexZ, 'Color',orangeCol, 'LineStyle','--'); % index height ("indexZ")
             iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -298,12 +302,15 @@ if startFrame > preAcq
             rt_final = (startFrame-preAcq)/frameRate;
             mt_final = (endFrame-startFrame)/frameRate;
 
-        end % end of plotting after visual_check ----------------------------------
+        end % end of plotting after visual_check --------------------------
 
     end
 
     % Calculate deliberation time: tmove - startFrame
     dt_final = (tmove-startFrame)/frameRate;
+
+    % find peaks for ulna and index (only segmented trial)
+    [npIndex, npUlna] = nPeaks(indexV(startFrame:endFrame),ulnaV(startFrame:endFrame));
 
 else % if startFrame < preAcqu: movement started too early -> NaN
     startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;
