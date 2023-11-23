@@ -6,7 +6,7 @@
 % 1. movement_onset
 % 2. movement_var
 
-
+% XXX insert while loop to go back of 1 trial 
 for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisions
 
     early = 0; % set early-start-flag to 0 at beginning of each trial

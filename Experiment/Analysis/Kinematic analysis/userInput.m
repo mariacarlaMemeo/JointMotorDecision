@@ -30,7 +30,7 @@ subdetails =inputdlg(prompt,name,numlines,defaultanswer);
 % or start from backup (in case of previous crash)
 if ~isempty(subdetails{8}) && str2num(subdetails{8}) == 1
     [filename, pathname, filterindex] = uigetfile(pwd,'.mat');
-    load(fullfile(pathname,filename),'-regexp','^(?!subdetails$|filename$|pathname)\w');
+    load(fullfile(pathname,filename),'-regexp','^(?!subdetails$|filename$|pathname$|data_bkp)\w');
     data_bkp        = data; % 'data' is now 'data_bkp' to avoid overwriting
     file_split      = split(filename,'_');
     trial_crash_str = cell2mat(file_split(end-1));
