@@ -352,7 +352,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     end % end of adding data to Excel file
 
     % save data after each 3 decisions
-    if any(savemat1,savemat2,savematColl)
+    if any([savemat1,savemat2,savematColl])
         save(fullfile(path_kin,[SUBJECTS{p},'_start',num2str(trialstart_num),'_end',num2str(t),'_bkp']));
     end
 

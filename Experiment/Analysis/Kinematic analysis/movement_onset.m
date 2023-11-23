@@ -17,7 +17,7 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,npIndex,npUln
 trg = NaN;
 % number of peak counter
 npIndex = NaN; npUlna = NaN;
-% flag to exit and save XXX put this somewhere else?
+% flag to exit and save
 savemat = 0;
 
 % retrieve information from Vicon recording
