@@ -63,11 +63,11 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     
     % 1. call movement_onset.m
     if not(early)
-        [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1,trgChange1,npIndex1,npUlna1,savemat1] = ...
+        [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1,trgChange1,npIndex1,npUlna1,savemat1,mod1] = ...
             movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
             FirstRT,trial_plot,figurepath);
     else
-        startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN; trgChange1=NaN;npIndex1=NaN;npUlna1=NaN;savemat1=NaN;
+        startFrame1=NaN;tmove1=NaN;rt_final1=NaN;dt_final1=NaN;mt_final1=NaN;endFrame1=NaN;trgChange1=NaN;npIndex1=NaN;npUlna1=NaN;savemat1=NaN;mod1=NaN;
     end
 
     % 2. call movement_var.m
@@ -143,11 +143,11 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
    
     % 1. call movement_onset.m
     if not(early)
-        [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2,trgChange2,npIndex2,npUlna2,savemat2] = ...
+        [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2,trgChange2,npIndex2,npUlna2,savemat2,mod2] = ...
             movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
             SecRT,trial_plot,figurepath);
     else
-        startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN; trgChange2=NaN;npIndex2=NaN;npUlna2=NaN;savemat2=NaN;
+        startFrame2=NaN;tmove2=NaN;rt_final2=NaN;dt_final2=NaN;mt_final2=NaN;endFrame2=NaN;trgChange2=NaN;npIndex2=NaN;npUlna2=NaN;savemat2=NaN;mod2=NaN;
     end
 
     % 2. call movement_var.m
@@ -224,11 +224,11 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
    
     % 1. call movement_onset.m
     if not(early)
-        [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl,trgChangeColl,npIndexColl,npUlnaColl,savematColl] = ...
+        [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl,trgChangeColl,npIndexColl,npUlnaColl,savematColl,modColl] = ...
             movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
             CollRT,trial_plot,figurepath);
     else
-        startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN; trgChangeColl=NaN;npIndexColl=NaN;npUlnaColl=NaN;savematColl=NaN;
+        startFrameColl=NaN;tmoveColl=NaN;rt_finalColl=NaN;dt_finalColl=NaN;mt_finalColl=NaN;endFrameColl=NaN;trgChangeColl=NaN;npIndexColl=NaN;npUlnaColl=NaN;savematColl=NaN;modColl=NaN;
     end
 
     % 2. call movement_var.m
@@ -320,8 +320,8 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
                                         mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
         % -> normalized 100 samples for index and ulna: ONLY 2nd DECISION
-        % NOTE: change var counter (1028) if new variables are added!!!
-        data{t,ol(2)+11:ol(2)+1028} = [...
+        % NOTE: change var counter (1031) if new variables are added!!!
+        data{t,ol(2)+11:ol(2)+1031} = [...
             time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
             time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
             spa_traj_index2(:,1)' spa_traj_index2(:,3)' ...
@@ -329,9 +329,10 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             startFrame1 tmove1 endFrame1 ...
             startFrame2 tmove2 endFrame2 ...
             startFrameColl tmoveColl endFrameColl ...
-            trgChange1 trgChange2 trgChangeColl ...
-            npIndex1 npIndex2 npIndexColl...
-            npUlna1 npUlna2 npUlnaColl];
+            trgChange1 trgChange2 trgChangeColl ... % did agent change target on the fly?
+            npIndex1 npIndex2 npIndexColl... % number of velocity peaks index
+            npUlna1 npUlna2 npUlnaColl ... % number of velocity peaks ulna
+            mod1 mod2 modColl]; % did we change the figure manually?
 
         % Assign new header (created in calc_kin_rt_mt.m)
         data.Properties.VariableNames = txt;

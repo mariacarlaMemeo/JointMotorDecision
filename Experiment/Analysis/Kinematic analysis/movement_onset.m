@@ -1,4 +1,4 @@
-function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,npIndex,npUlna,savemat]= ...
+function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,npIndex,npUlna,savemat,mod]= ...
     movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,rt_mat,trial_plot,figurepath)
 
 % -------------------------------------------------------------------------
@@ -294,9 +294,11 @@ if startFrame > preAcq
             title(['pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
             xlabel('Samples (1sample=10ms)');
 
+            drawnow;
+
             % save the new figure
             set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
-            saveas(gcf,strcat(jpg_title,'_v1.png'))
+            saveas(gcf,strcat(jpg_title,'_v1.png'));
 
             % Update RT and MT according to new start/endFrame
             rt_final = (startFrame-preAcq)/frameRate;
