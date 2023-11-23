@@ -67,7 +67,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
             FirstRT,trial_plot,figurepath);
     else
-        startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN; trgChange1=NaN;
+        startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN; trgChange1=NaN;npIndex1=NaN;npUlna1=NaN;savemat1=NaN;
     end
 
     % 2. call movement_var.m
@@ -147,7 +147,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
             SecRT,trial_plot,figurepath);
     else
-        startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN; trgChange2=NaN;
+        startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN; trgChange2=NaN;npIndex2=NaN;npUlna2=NaN;savemat2=NaN;
     end
 
     % 2. call movement_var.m
@@ -228,7 +228,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
             CollRT,trial_plot,figurepath);
     else
-        startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN; trgChangeColl=NaN;
+        startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN; trgChangeColl=NaN;npIndexColl=NaN;npUlnaColl=NaN;savematColl=NaN;
     end
 
     % 2. call movement_var.m
@@ -337,8 +337,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         data.Properties.VariableNames = txt;
 
         % -----------------------------------------------------------------
-        % Note: The above does not work if started from backup; then you
-        % need to combine the bkp-data and the new data manually afterwards
+        % Here we merge the backup .mat file with the new data table 
         if str2double(crash)
             data(1:trialstart_num-1,:) = data_bkp(1:trialstart_num-1,:);
             crash = '0';
@@ -354,6 +353,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % save data after each 3 decisions
     if any([savemat1,savemat2,savematColl])
         save(fullfile(path_kin,[SUBJECTS{p},'_start',num2str(trialstart_num),'_end',num2str(t),'_bkp']));
+        break
     end
 
 end % end of trial loop (i.e., all trials for one pair were completed)

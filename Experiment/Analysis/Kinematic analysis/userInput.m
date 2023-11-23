@@ -26,6 +26,21 @@ numlines=1;
 defaultanswer={'1','1','0','1','1','0','2','0'};
 subdetails =inputdlg(prompt,name,numlines,defaultanswer);
 
+% Decide if you want to analyze the full data set 
+% or start from backup (in case of previous crash)
+if ~isempty(subdetails{8}) && str2num(subdetails{8}) == 1
+    [filename, pathname, filterindex] = uigetfile(pwd,'.mat');
+    load(fullfile(pathname,filename),'-regexp','^(?!subdetails$|filename$|pathname)\w');
+    data_bkp        = data; % 'data' is now 'data_bkp' to avoid overwriting
+    file_split      = split(filename,'_');
+    trial_crash_str = cell2mat(file_split(end-1));
+    trialstart_num  = sscanf(trial_crash_str,'end%d'); % start at later trial
+    crash = '1';
+elseif ~isempty(subdetails{8}) && str2num(subdetails{8}) == 0
+    trialstart_num = 1;
+    crash = '0';
+end
+
 % set flags according to user input
 if ~isempty(subdetails{1})
     flag_hd = str2num(subdetails{1});
@@ -47,19 +62,4 @@ if ~isempty(subdetails{6})
 end
 if ~isempty(subdetails{7})
     which_Dec  = str2num(subdetails{7});
-end
-
-% Decide if you want to analyze the full data set 
-% or start from backup (in case of previous crash)
-if ~isempty(subdetails{8}) && str2num(subdetails{8}) == 1
-    crash = '1';
-    [filename, pathname, filterindex] = uigetfile(pwd,'.mat');
-    load(fullfile(pathname,filename));
-    data_bkp        = data; % 'data' is now 'data_bkp' to avoid overwriting
-    file_split      = split(filename,'_');
-    trial_crash_str = cell2mat(file_split(end));
-    trialstart_num  = str2double(trial_crash_str(1:end-4)); % start at later trial
-elseif ~isempty(subdetails{8}) && str2num(subdetails{8}) == 0
-    crash = '0';
-    trialstart_num = 1;
 end
