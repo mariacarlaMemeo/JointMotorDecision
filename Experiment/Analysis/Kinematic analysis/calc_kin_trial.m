@@ -6,7 +6,6 @@
 % 1. movement_onset
 % 2. movement_var
 
-% XXX insert while loop to go back of 1 trial 
 for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisions
 
     early = 0; % set early-start-flag to 0 at beginning of each trial
@@ -60,14 +59,16 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % AGENT ACTING FIRST --------------------------------------------------
 
     label_agent = 'FIRSTdecision';
-    
+    fprintf(['\n---------- Trial n. ' num2str(sMarkers{faa}.info.trial_id) ' ----------\n']);
+   
     % 1. call movement_onset.m
     if not(early)
-        [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1,trgChange1,npIndex1,npUlna1,savemat1,mod1] = ...
+        [startFrame1,tmove1,rt_final1,dt_final1,mt_final1,endFrame1,trgChange1,pksInd1,pksUlna1,savemat1,mod1] = ...
             movement_onset(sMarkers,faa,SUBJECTS,p,agentExec1,label_agent, ...
             FirstRT,trial_plot,figurepath);
     else
-        startFrame1=NaN;tmove1=NaN;rt_final1=NaN;dt_final1=NaN;mt_final1=NaN;endFrame1=NaN;trgChange1=NaN;npIndex1=NaN;npUlna1=NaN;savemat1=NaN;mod1=NaN;
+        startFrame1=NaN;tmove1=NaN;rt_final1=NaN;dt_final1=NaN;mt_final1=NaN;
+        endFrame1=NaN;trgChange1=NaN;pksInd1=NaN;pksUlna1=NaN;savemat1=NaN;mod1=NaN;
     end
 
     % 2. call movement_var.m
@@ -140,14 +141,16 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % AGENT ACTING SECOND -------------------------------------------------
 
     label_agent = 'SECONDdecision';
+    fprintf(['\n---------- Trial n. ' num2str(sMarkers{saa}.info.trial_id) ' ----------\n']);
    
     % 1. call movement_onset.m
     if not(early)
-        [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2,trgChange2,npIndex2,npUlna2,savemat2,mod2] = ...
+        [startFrame2,tmove2,rt_final2,dt_final2,mt_final2,endFrame2,trgChange2,pksInd2,pksUlna2,savemat2,mod2] = ...
             movement_onset(sMarkers,saa,SUBJECTS,p,agentExec2,label_agent, ...
             SecRT,trial_plot,figurepath);
     else
-        startFrame2=NaN;tmove2=NaN;rt_final2=NaN;dt_final2=NaN;mt_final2=NaN;endFrame2=NaN;trgChange2=NaN;npIndex2=NaN;npUlna2=NaN;savemat2=NaN;mod2=NaN;
+        startFrame2=NaN;tmove2=NaN;rt_final2=NaN;dt_final2=NaN;mt_final2=NaN;
+        endFrame2=NaN;trgChange2=NaN;pksInd2=NaN;pksUlna2=NaN;savemat2=NaN;mod2=NaN;
     end
 
     % 2. call movement_var.m
@@ -221,14 +224,16 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % Otherwise, collective cannot be plotted.
 
     label_agent = 'COLLECTIVEdecision';
+    fprintf(['\n---------- Trial n. ' num2str(sMarkers{caa}.info.trial_id) ' ----------\n']);
    
     % 1. call movement_onset.m
     if not(early)
-        [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl,trgChangeColl,npIndexColl,npUlnaColl,savematColl,modColl] = ...
+        [startFrameColl,tmoveColl,rt_finalColl,dt_finalColl,mt_finalColl,endFrameColl,trgChangeColl,pksIndColl,pksUlnaColl,savematColl,modColl] = ...
             movement_onset(sMarkers,caa,SUBJECTS,p,agentExecColl,label_agent, ...
             CollRT,trial_plot,figurepath);
     else
-        startFrameColl=NaN;tmoveColl=NaN;rt_finalColl=NaN;dt_finalColl=NaN;mt_finalColl=NaN;endFrameColl=NaN;trgChangeColl=NaN;npIndexColl=NaN;npUlnaColl=NaN;savematColl=NaN;modColl=NaN;
+        startFrameColl=NaN;tmoveColl=NaN;rt_finalColl=NaN;dt_finalColl=NaN;mt_finalColl=NaN;
+        endFrameColl=NaN;trgChangeColl=NaN;pksIndColl=NaN;pksUlnaColl=NaN;savematColl=NaN;modColl=NaN;
     end
 
     % 2. call movement_var.m
@@ -315,12 +320,13 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
         % ADD TIME VARIABLES (i.e., append to end of original Excel file)
         % -> variables are added for current trial t
-        data{t,ol(2)+1:ol(2)+10}   = [changeMind(t) rt_final1 rt_final2 rt_finalColl ...
-                                        dt_final1 dt_final2 dt_finalColl ...
-                                        mt_final1 mt_final2 mt_finalColl];
+        data{t,ol(2)+1:ol(2)+10}   = [changeMind(t) ...
+                                      rt_final1 rt_final2 rt_finalColl ...
+                                      dt_final1 dt_final2 dt_finalColl ...
+                                      mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
-        % -> normalized 100 samples for index and ulna: ONLY 2nd DECISION
-        % NOTE: change var counter (1031) if new variables are added!!!
+        % -> normalized 100 samples for index and ulna only for 2nd DEC
+        % NOTE: change var counter (1043) if new variables are added!!!
         data{t,ol(2)+11:ol(2)+1031} = [...
             time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
             time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
@@ -330,9 +336,16 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             startFrame2 tmove2 endFrame2 ...
             startFrameColl tmoveColl endFrameColl ...
             trgChange1 trgChange2 trgChangeColl ... % did agent change target on the fly?
-            npIndex1 npIndex2 npIndexColl... % number of velocity peaks index
-            npUlna1 npUlna2 npUlnaColl ... % number of velocity peaks ulna
-            mod1 mod2 modColl]; % did we change the figure manually?
+            str2double(mod1) str2double(mod2) str2double(modColl) ... % did we change the figure manually?
+            pksInd1.npIndex pksInd2.npIndex pksIndColl.npIndex ... % number of velocity peaks index
+            pksUlna1.npUlna pksUlna2.npUlna pksUlnaColl.npUlna]; % number of velocity peaks ulna                      
+        
+        % Now add peak structures (values and locations of velocity peaks)
+        data{t,ol(2)+1032:ol(2)+1043} = [...
+            {pksInd1.peaks_index'} {pksInd2.peaks_index'} {pksIndColl.peaks_index'}...
+            {pksUlna1.peaks_ulna'} {pksUlna2.peaks_ulna'} {pksUlnaColl.peaks_ulna'}...
+            {pksInd1.peak_loc_index'} {pksInd2.peak_loc_index'} {pksIndColl.peak_loc_index'}... 
+            {pksUlna1.peak_loc_ulna'} {pksUlna2.peak_loc_ulna'} {pksUlnaColl.peak_loc_ulna'}];
 
         % Assign new header (created in calc_kin_rt_mt.m)
         data.Properties.VariableNames = txt;

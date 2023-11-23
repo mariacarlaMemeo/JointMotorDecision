@@ -1,4 +1,4 @@
-function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,npIndex,npUlna,savemat,mod]= ...
+function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,pksInd,pksUlna,savemat,mod]= ...
     movement_onset(sMarkers,t,SUBJECTS,p,agentExec,label_agent,rt_mat,trial_plot,figurepath)
 
 % -------------------------------------------------------------------------
@@ -13,14 +13,15 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,npIndex,npUln
 % Note: input argument "figurepath" is needed for visual_check
 
 %% Retrieve and define parameters
-% trg-paramter: did agent change target (first left, then right) or not?
-trg = NaN;
-% number of peak counter
-npIndex = NaN; npUlna = NaN;
-% flag to exit and save
-savemat = 0;
 
-% retrieve information from Vicon recording
+% Set parameters to NaN as default (needed if we don't go into visual_check)
+trg = NaN; % trg-paramter: did agent change target (first left, then right) or not?
+mod = NaN; % mod indicates whether tstart/tmove/tend was manually changed
+pksInd.peaks_index=NaN;pksInd.peak_loc_index=NaN;pksInd.npIndex=NaN; % peak struct (value,location,number)
+pksUlna.peaks_ulna=NaN;pksUlna.peak_loc_ulna=NaN;pksUlna.npUlna=NaN;
+savemat = 0; % flag to exit and save a backup (exit if savemat=1)
+
+% Retrieve information from Vicon recording
 frameRate  = sMarkers{t}.info.TRIAL.CAMERA_RATE{:}; % retrieve acquisition frame rate: 100Hz (Hz = 1 event per sec)
 model_name = [SUBJECTS{p} '_' agentExec '_' agentExec]; % retrieve names of hand models in Nexus, e.g., "S108_b_b"
 samp       = 1:sMarkers{t}.info.nSamples;
@@ -28,27 +29,30 @@ indexV     = sMarkers{t}.markers.([model_name '_index']).Vm; % velocity module f
 ulnaV      = sMarkers{t}.markers.([model_name '_ulna']).Vm;  % velocity module for ulna
 indexZ     = sMarkers{t}.markers.([model_name '_index']).xyzf(:,3); % height for index
 ulnaZ      = sMarkers{t}.markers.([model_name '_ulna']).xyzf(:,3);  % height for ulna
-% define variables
+
+% Define variables
 vel_th     = 20; % set velocity threshold at 20 [mm/s]
 succSample = 10; % number of continuous samples that should pass the velocity threshold
 % NOTE on preAcq: Vicon recording started with display of decision prompt in Matlab;
 % then 20 frames were added before that moment in Vicon, i.e., recording start = prompt-20
 preAcq     = 20; % preacquisition duration: 200 ms == 20 frames (10ms/0.01s = 1 frame)
-% figure settings
-blueCol    = [0 0.4470 0.7410]; % blue for ulna
-orangeCol  = [0.8500 0.3250 0.0980]; % orange for index
-startCol   = [0.3922 0.8314 0.0745]; % green for start
-startCol_2 = [0.2196 0.9608 0.2588]; % dark green for "final" start
-stopCol    = [0.6353 0.0784 0.1843]; % red for end
-stopCol_2 = [0.9020 0.1961 0.3255]; % bright red for "final" end
-x_width    = 18; % figure width
-y_width    = 12; % figure height
 % *Reaction Time*:
 % "rt_mat" has been recorded during acquisition (and saved in original Matfile)
 % rt_mat = time from decision prompt to button release (i.e., without pre-acquisition)
 % RT conversion: (convert rt from ms to s) and multiply by frameRate to get no. of frames
 rt_mat           = round((rt_mat/1000)*frameRate);
 start_criterion  = 0; % which criterion was used to identify startFrame? (1=index;2=ulna;3=button)
+
+% Figure settings
+blueCol    = [0 0.4470 0.7410]; % blue for ulna
+orangeCol  = [0.8500 0.3250 0.0980]; % orange for index
+startCol   = [0.3922 0.8314 0.0745]; % green for start
+startCol_2 = [0.2196 0.9608 0.2588]; % dark green for "final" start
+stopCol    = [0.6353 0.0784 0.1843]; % red for end
+stopCol_2  = [0.9020 0.1961 0.3255]; % bright red for "final" end
+x_width    = 18; % figure width
+y_width    = 12; % figure height
+
 
 %% Find out when velocity threshold is passed (-> function *findTh_cons*)
 indexTh    = findTh_cons(indexV,vel_th,succSample);
@@ -294,8 +298,6 @@ if startFrame > preAcq
             title(['pair: ' SUBJECTS{p} '; agent: ' agentExec '; ' label_agent '; ' sMarkers{t}.info.fullpath(end-11:end) '; trial: ' num2str(sMarkers{t}.info.trial_id)])
             xlabel('Samples (1sample=10ms)');
 
-            drawnow;
-
             % save the new figure
             set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v1.png'));
@@ -312,7 +314,7 @@ if startFrame > preAcq
     dt_final = (tmove-startFrame)/frameRate;
 
     % find peaks for ulna and index (only segmented trial)
-    [npIndex, npUlna] = nPeaks(indexV(startFrame:endFrame),ulnaV(startFrame:endFrame));
+    [pksInd,pksUlna] = nPeaks(indexV(startFrame:endFrame),ulnaV(startFrame:endFrame));
 
 else % if startFrame < preAcqu: movement started too early -> NaN
     startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;

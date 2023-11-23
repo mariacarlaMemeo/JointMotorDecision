@@ -29,10 +29,14 @@ end
 
 
 % display trial number in command window
-fprintf(['Trial n. ' num2str(sMarkers{t}.info.trial_id) '\n']);
-fprintf([label_criterion ' as the start criterion \n']);
+%fprintf(['Trial n. ' num2str(sMarkers{t}.info.trial_id) '\n']);
+fprintf(1, '\n');
+fprintf(['START criterion: ' label_criterion '\n']);
+fprintf(1, '\n');
 
 %%%%%%%%%%%%%%%%%% SHOW FIGURE AND ASK FOR USER INPUT %%%%%%%%%%%%%%%%%%%%%
+
+drawnow; % updates figure immediately (needed to draw red line for delete)
 
 while repeatTrial
 
@@ -41,24 +45,28 @@ while repeatTrial
 
     % display options for user
     % if all is good, you can put ENTER or anything (it will be set to 9)
-    mod = input('9 = ALL GOOD;\n0 = Erase trial;\n1 = Change TSTART;\n2 = Change TMOVE;\n3 = Change TSTOP;\n4 = Change TMOVE TSTOP\n','s');
+    mod = input(['Any CHANGES?\n' ...
+        '0 = Erase trial\n1 = Change TSTART\n2 = Change TMOVE\n' ...
+        '3 = Change TSTOP\n4 = Change TMOVE TSTOP\n' ...
+        '--> If ALL GOOD, press ENTER!\n'],'s');
 
     % If mod is empty or non of the required inputs, then put 9
-    if isempty(mod) || sum([strcmp(mod,'0'),strcmp(mod,'1'),strcmp(mod,'2'),strcmp(mod,'3'), strcmp(mod,'4'),strcmp(mod,'42')]) == 0
+    if isempty(mod) || sum([strcmp(mod,'0'),strcmp(mod,'1'),strcmp(mod,'2'),...
+                            strcmp(mod,'3'), strcmp(mod,'4'),strcmp(mod,'9')]) == 0
         mod = '9';
     end
 
     switch str2double(mod) % depending on user input, check respective case
 
         case 9 % no changes necessary
-            disp('Good\n');
+            disp('Good: no changes to figure!');
             set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v0.png'));
 
         case 0  % delete trial but save figure anyway, with red diagonal line
             yyaxis left;
             hold on;
-            redline = plot([1,sMarkers{t}.info.nSamples],[0 max(index)], 'r', 'LineWidth',5);
+            redline = plot([1,sMarkers{t}.info.nSamples],[0 max(indexV)], 'r', 'LineWidth',5);
             redline.Annotation.LegendInformation.IconDisplayStyle = 'off';
             hold off;
             del_fig = 1;
@@ -125,15 +133,15 @@ while repeatTrial
     % (first left, then right, etc.)
     trg_check = 1;
     while trg_check
-        trg = input('\nDid agent change target (1) or not (0)? ');
+        trg = input('\nTARGET CHOICE: Did agent change (1) or not (0)? ');
         if trg == 0
-            disp('Agent did not change target.');
+            disp('Agent did not change target.'); fprintf(1, '\n');
             trg_check = 0;
         elseif trg == 1
-            disp('Agent changed target!');
+            disp('Agent changed target!'); fprintf(1, '\n');
             trg_check = 0;
         else
-            disp('Your input was invalid! Please choose again.');
+            disp('Your input was invalid! Please choose again.'); fprintf(1, '\n');
             trg_check = 1;
         end
     end
@@ -141,22 +149,22 @@ while repeatTrial
     % do you want to repeat the decision or confirm to move on?
     nxt = 1;
     while nxt
-        nextStep = input('\nGo on (0), repeat decision (1) or exit (2)? ');
+        nextStep = input('\nNEXT STEP: Go on (0), repeat (1) or exit (2)? ');
         if nextStep == 0
-            disp('Go on, all fine.');
+            disp('Go on, all fine.'); fprintf(1, '\n');
             repeatTrial = 0;
             nxt = 0;
         elseif nextStep == 1
-            disp('REEEEPEAAAT.');
+            disp('REEEEPEAAAT.'); fprintf(1, '\n');
             repeatTrial = 1;
             nxt = 0;
         elseif nextStep == 2
-            disp('EXIT (after 3rd dec), keep calm and SAVE.');
+            disp('EXIT (after 3rd dec), keep calm and SAVE.'); fprintf(1, '\n');
             repeatTrial = 0;
             savemat = 1;
             nxt = 0;
         else
-            disp('Your input was invalid! Please choose again.');
+            disp('Your input was invalid! Please choose again.'); fprintf(1, '\n');
             nxt = 1;
         end
     end
