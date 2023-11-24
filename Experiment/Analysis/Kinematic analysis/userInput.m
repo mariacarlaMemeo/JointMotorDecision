@@ -2,6 +2,10 @@
 % Get input from the user or use default values
 % -------------------------------------------------------------------------
 
+% Add option to start from later trial (but without starting from backup)
+% but make sure NOT to write/save anything -> this would be useful if you
+% just want to inspect/check a certain trial
+
 % These are the options for the user:
 % flag_hd: retrieve data from which hard drive? [1/0] -> 1=IIT; 0=UKE 
 % flag_plot: 1 plot per agent with all trajectories ("exploratory plots")? [1/0]
@@ -13,7 +17,7 @@
 % Do you want to start from backup? [1/0]
 
 prompt = {'Which hard drive? (1=IIT/0=UKE)',...
-            'One figure per agent with all trajectories? (1/0)',...
+            'One figure per agent with all trajectories? (1/0) YES',...
             'One figure per trial (for cutting and visual inspection)? (1/0)',...
             'Median split for confidence? (1/0)', ...
             'Normalize trajectories to 100 bins? (1/0)',...

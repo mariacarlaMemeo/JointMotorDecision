@@ -5,13 +5,18 @@
 % November 2023
 % -------------------------------------------------------------------------
 
+% XXX TO DO:
+% 1. check number of early and excluded trials (see Excel file)
+% 2. decide if/how to include collective matrices (kin_trial line 234)
+% 3. run 110 together and start cutting
+
 % Functions and scripts called from within here:
 % 1. userInput
 % 2. calc_kin_init
 % 3. calc_kin_trial
 % 4. ave_subj_plotting_new
 
-% Data structure in original Excel file:
+% Data organization in original Excel file:
 % Each row contains 1 trial, which consists of 3 decisions.
 % Trial order is always:
 % ODD TRIAL : blue (individual) - yellow (individual) - blue (collective)
@@ -52,7 +57,13 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     load(path_kin_each);
     
     % Create folder to save trial-by-trial plots for this pair    
-    mkdir(fullfile(figurepath,SUBJECTS{p}));
+    if trial_plot && isfolder(fullfile(figurepath,SUBJECTS{p})) && crash==0
+        rmdir(fullfile(figurepath,SUBJECTS{p}),'s'); % delete folder with plots
+    end
+    if trial_plot
+        mkdir(fullfile(figurepath,SUBJECTS{p}));
+    end
+    
     % Remove trials in 'session' cell to avoid inserting the (last?) trials
     % in which the 'marker' field is missing
     mark     = cell2mat(cellfun(@(s) isfield(s,'markers'),session,'uni',0));
@@ -136,8 +147,9 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % Display trial processing time and "early starts" (starts before decision prompt)
-    disp(['Processing time for pair ' SUBJECTS{p}(2:end) ': ' num2str(round(trialtime,1))]);
+    disp(['Processing time for pair ' SUBJECTS{p}(2:end) ': ' num2str(round(trialtime,1)) ' seconds']);
     disp(['Number of early starts for pair ' SUBJECTS{p}(2:end) ': ' num2str(early_count)]);
+    disp(['Number of additional exclusions for pair ' SUBJECTS{p}(2:end) ': ' num2str(excl_trial)]);
 
     % Save mat file for each pair
     if flag_write
@@ -183,10 +195,11 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % short_rt = if startFrame defined as NaN in movement_onset (on trial/pair basis)
     % B_2ndDec = no. of plotted (i.e., clean!) trials in which B takes 2nd decision
     % Y_2ndDec = no. of plotted (i.e., clean!) trials in which Y takes 2nd decision
-    % B_2ndDec + Y_2ndDec = total number of clean trials for the pair
+    % -> B_2ndDec + Y_2ndDec            = total number of clean trials for the pair
+    % -> 160 - (early_start + short_rt) = total number of clean trials for the pair
     exc{p,1:5} = [str2double(SUBJECTS{p}(2:end)) early_count excl_trial SecDec_clean];
     exc.Properties.VariableNames = {'pair','early_start','short_rt','B_2ndDec','Y_2ndDec'};
-    writetable(exc,fullfile(path_kin,'SecDec_cleanAll.xlsx'));
+    writetable(exc,fullfile(path_kin,'overview_exclusions.xlsx'));
 
     % clear parameters for next pair
     clear sMarkers session bConf yConf blue_Dec yell_Dec

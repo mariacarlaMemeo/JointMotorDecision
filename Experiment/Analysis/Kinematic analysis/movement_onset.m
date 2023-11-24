@@ -7,8 +7,9 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,pksInd,pksUln
 % This function is called from calc_kin_rt_mt.m
 % Functions and scripts called from within here:
 % 1. findTh_cons
-% 2. find_tmove
+% 2. find_tmove, find_minstart
 % 3. visual_check
+% 4. nPeaks
 
 % Note: input argument "figurepath" is needed for visual_check
 
@@ -65,28 +66,53 @@ ulnaTh     = findTh_cons(ulnaV,vel_th,succSample);
 %                (IF the release occurs *before* indexTh/ulnaTh)
 %                NOTE: startFrame INCLUDES the 20 frames of preAcq
 % *endFrame*   = target press
-startVector            = [indexTh(1),ulnaTh(1)]; % take the 1st value that passed threshold
-[startFrame,ind_start] = min(startVector); % choose smaller value and its index [min value, index min value]
+
+% Notes on cutting --------------------------------------------------------
+% 24-05-23: decision to use *only the ulna* for finding movement start
+% 25-10-23: decision to use either ulna or index (whichever crosses the
+% velocity threshold first), but only if this happens *before* button release .
+% If button release occurs before passing of threshold, then the button
+% release is taken as movement start.
+% 24-11.23: first we looked for velocity threshold also within preAcqu),
+% but then this trial was automatically excluded if startFrame>preAcqu, so
+% we decided to change that (see below) so that we can also inspect those
+% trials
+% startVector            = [indexTh(1),ulnaTh(1)]; % take the 1st value that passed threshold
+% [startFrame,ind_start] = min(startVector); % choose smaller value and its index [min value, index min value]
+% -------------------------------------------------------------------------
+
+% Check for index and ulna the earliest passing of velocity threshold
+% NOTE: this moment must be AFTER preAcqu, i.e., index must be > preAcqu
+indCount=1; ulnCount=1;
+% 1. check for index
+while indexTh(indCount) <= preAcq % go until index is > preAcqu
+     indCount = indCount+1;
+end
+% 2. check for ulna
+while ulnaTh(ulnCount) <= preAcq
+     ulnCount = ulnCount+1;
+end
+% 3. define respective startFrames for index and ulna
+startIndex = indexTh(indCount);
+startUlna  = ulnaTh(ulnCount);
+% 4. finally, set startFrame as the one (index or ulna) that occured earlier
+[startFrame,ind_start] = min([startIndex,startUlna]);
+
 if ind_start == 1
-    start_criterion = 1;
+    start_criterion = 1; % index
 elseif ind_start == 2
-    start_criterion = 2;
+    start_criterion = 2; % ulna
 end
 
-if startFrame > rt_mat+preAcq % if chosen startFrame occurs later than button release, then re-define
+% Check if chosen startFrame (based on index or ulna velocity threshold)
+% occurs later than button release (rt_mat+preAcqu), then re-define start:
+% -> startFrame = button release
+if startFrame > rt_mat+preAcq 
     startFrame = rt_mat+preAcq;
     start_criterion = 3;
 end
 
-% define endFrame
-endFrame = (samp(end)-10); % time of target button press
-
-
-%% Find movement start in a different way (-> function *find_tmove*)
-% Functionality: Selects the maximum peak and the minimum preceding it.
-% The output gives you the index of the minimum; this is tmove.
-% NOTE: the function is applied to the marker which has been previously
-% used to define the startFrame.
+% Check which criterion was used to define the startFrame
 if start_criterion == 1
     move_marker = indexV;
 elseif start_criterion == 2
@@ -99,19 +125,25 @@ elseif start_criterion == 3
     end
 end
 
+% NOTE: if startFrame based on velocity threshold, then use find_minstart
+% to find the velocity minimum right before the threshold was passed
+if start_criterion == 1 || start_criterion == 2
+    startFrame = find_minstart(move_marker,startFrame);
+end
+
+% define endFrame
+endFrame = (samp(end)-10); % time of target button press
+
+% Find movement start in a different way (-> function *find_tmove*)
+% Functionality: Selects the maximum peak and the minimum preceding it.
+% The output gives you the index of the minimum; this is tmove.
+% NOTE: the function is applied to the marker which has been previously
+% used to define the startFrame.
 tmove = find_tmove(move_marker); % call find_tmove function
 
 
-% Check if the movement started *after* decision prompt
+%% START PLOTTING LOOP only if startFrame *after* decision prompt
 if startFrame > preAcq
-
-    % Notes on cutting --------------------------------------------------------
-    % 24-05-23: decision to use *only the ulna* for finding movement start
-    % 25-10-23: decision to use either ulna or index (whichever crosses the
-    % velocity threshold first), but only if this happens *before* button release .
-    % If button release occurs before passing of threshold, then the button
-    % release is taken as movement start.
-    % -------------------------------------------------------------------------
 
     %% Plot movement trajectories for one single trial (= one decision)
     if trial_plot % -----------------------------------------------------------
@@ -127,13 +159,13 @@ if startFrame > preAcq
         uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
         ylabel('Velocity [mm/s]'); % label for left y-axis
         % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
-        if ~isnan(ulnaTh(1))
-            xl = xline(ulnaTh(1),':'); xl.LineWidth = 1; xl.Color = blueCol;
+        if ~isnan(startUlna)
+            xl = xline(startUlna,':'); xl.LineWidth = 1; xl.Color = blueCol;
             xl.Label = 'tstart ulna';
             xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
             xl.Annotation.LegendInformation.IconDisplayStyle = 'off';
             % optional: make trajectory bold (from passing of threshold until button press)
-            %plot(ulnaTh(1):(samp(end)-10),ulna(ulnaTh(1):(samp(end)-10)),'-', 'Color',blueCol,'LineWidth',3);
+            %plot(startUlna:(samp(end)-10),ulna(startUlna:(samp(end)-10)),'-', 'Color',blueCol,'LineWidth',3);
         end
         hold off;
 
@@ -144,8 +176,8 @@ if startFrame > preAcq
         iz=plot(samp,indexZ, 'Color',orangeCol, 'LineStyle','--'); % index height ("indexZ")
         iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
         % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
-        if ~isnan(indexTh(1))
-            xl = xline(indexTh(1),':'); xl.LineWidth = 1; xl.Color = orangeCol;
+        if ~isnan(startIndex)
+            xl = xline(startIndex,':'); xl.LineWidth = 1; xl.Color = orangeCol;
             xl.Label = 'tstart index';
             xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
             xl.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -199,8 +231,8 @@ if startFrame > preAcq
     % rt_final = time from decision prompt until startFrame (see above)
     % NOTE: RT is now measured in frames such that 1 frame = 10ms (with frameRate 100Hz),
     %       so if you divide RT/frameRate, you get *SECONDS as final unit* (e.g., 10frames/100Hz = 0.1s)
-    rt_index = (indexTh(1)-preAcq)/frameRate;
-    rt_ulna  = (ulnaTh(1)-preAcq)/frameRate;
+    rt_index = (startIndex-preAcq)/frameRate;
+    rt_ulna  = (startUlna-preAcq)/frameRate;
     rt_final = (startFrame-preAcq)/frameRate;
 
     % mt_final = time between movement start and target press
@@ -214,7 +246,7 @@ if startFrame > preAcq
         
         visual_check; % go into visual_check.m
 
-        % optional: if we decide to use "tmove"
+        % optional: if we decide to use "tmove" to define startFrame
         % % Check if tmove appears before startFrame - in that case tmove=startFrame
         % if ~isnan(tmove)
         %     if tmove<startFrame && ~isempty(startFrame)
@@ -237,8 +269,8 @@ if startFrame > preAcq
             uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
             ylabel('Velocity [mm/s]'); % label for left y-axis
             % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
-            if ~isnan(ulnaTh(1))
-                xl = xline(ulnaTh(1),':'); xl.LineWidth = 1; xl.Color = blueCol;
+            if ~isnan(startUlna)
+                xl = xline(startUlna,':'); xl.LineWidth = 1; xl.Color = blueCol;
                 xl.Label = 'tstart ulna';
                 xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
                 xl.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -252,8 +284,8 @@ if startFrame > preAcq
             iz=plot(samp,indexZ, 'Color',orangeCol, 'LineStyle','--'); % index height ("indexZ")
             iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
             % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
-            if ~isnan(indexTh(1))
-                xl = xline(indexTh(1),':'); xl.LineWidth = 1; xl.Color = orangeCol;
+            if ~isnan(startIndex)
+                xl = xline(startIndex,':'); xl.LineWidth = 1; xl.Color = orangeCol;
                 xl.Label = 'tstart index';
                 xl.LabelHorizontalAlignment = "center"; xl.LabelVerticalAlignment = "top";
                 xl.Annotation.LegendInformation.IconDisplayStyle = 'off';

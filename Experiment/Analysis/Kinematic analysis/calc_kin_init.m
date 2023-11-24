@@ -43,10 +43,10 @@ SUBJECTS     = {folder_list.name};
 SUBJECT_LIST = cellfun(@(s) find(contains(s,'S1')),SUBJECTS,'uni',0);
 SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
-% Remove pair 119 because of too many early starts
+% Remove pair 119 because of too many early starts (XX)
 SUBJECTS(11) = []; 
 % *Change here if you want to check specific pairs only*
-SUBJECTS = [SUBJECTS(3)]; % try with 111 as a "good example"
+%SUBJECTS = [SUBJECTS(2)]; % try with 111 as a "good example"
 % -------------------------------------------------------------------------
 
 

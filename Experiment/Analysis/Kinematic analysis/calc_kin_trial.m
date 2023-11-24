@@ -8,13 +8,20 @@
 
 for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisions
 
+      
     early = 0; % set early-start-flag to 0 at beginning of each trial
+
+    % if pair=110 and t=159 ("Trial nr. 478-480), delete trial
+    % (we set it to early even though this is not true...)
+    if str2double(SUBJECTS{p}(2:end))==110 && t==159
+        early = 1;
+    end
 
     % CHECK "early start"-column in Excel (early_release_A1/A2 == 1)
     % Note: We DO NOT INCLUDE early starts for collective decision.
     % [CHECK additionally if RT is implausibly small (< 100 ms)]
     % If any of this is true, then exclude the entire trial!
-    if (any([raw{t,end-2:end-1}]))% || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
+    if (any([raw{t,end-2:end}]))% || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
         early = 1;
         early_count = early_count+1; % increase counter
     end
@@ -68,7 +75,9 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             FirstRT,trial_plot,figurepath);
     else
         startFrame1=NaN;tmove1=NaN;rt_final1=NaN;dt_final1=NaN;mt_final1=NaN;
-        endFrame1=NaN;trgChange1=NaN;pksInd1=NaN;pksUlna1=NaN;savemat1=NaN;mod1=NaN;
+        endFrame1=NaN;trgChange1=NaN;savemat1=NaN;mod1=NaN;
+        pksInd1.peaks_index=NaN;pksInd1.peak_loc_index=NaN;pksInd1.npIndex=NaN;
+        pksUlna1.peaks_ulna=NaN;pksUlna1.peak_loc_ulna=NaN;pksUlna1.npUlna=NaN;
     end
 
     % 2. call movement_var.m
@@ -150,7 +159,9 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             SecRT,trial_plot,figurepath);
     else
         startFrame2=NaN;tmove2=NaN;rt_final2=NaN;dt_final2=NaN;mt_final2=NaN;
-        endFrame2=NaN;trgChange2=NaN;pksInd2=NaN;pksUlna2=NaN;savemat2=NaN;mod2=NaN;
+        endFrame2=NaN;trgChange2=NaN;savemat2=NaN;mod2=NaN;
+        pksInd2.peaks_index=NaN;pksInd2.peak_loc_index=NaN;pksInd2.npIndex=NaN;
+        pksUlna2.peaks_ulna=NaN;pksUlna2.peak_loc_ulna=NaN;pksUlna2.npUlna=NaN;
     end
 
     % 2. call movement_var.m
@@ -233,7 +244,9 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             CollRT,trial_plot,figurepath);
     else
         startFrameColl=NaN;tmoveColl=NaN;rt_finalColl=NaN;dt_finalColl=NaN;mt_finalColl=NaN;
-        endFrameColl=NaN;trgChangeColl=NaN;pksIndColl=NaN;pksUlnaColl=NaN;savematColl=NaN;modColl=NaN;
+        endFrameColl=NaN;trgChangeColl=NaN;savematColl=NaN;modColl=NaN;
+        pksIndColl.peaks_index=NaN;pksIndColl.peak_loc_index=NaN;pksIndColl.npIndex=NaN;
+        pksUlnaColl.peaks_ulna=NaN;pksUlnaColl.peak_loc_ulna=NaN;pksUlnaColl.npUlna=NaN;
     end
 
     % 2. call movement_var.m
@@ -260,14 +273,14 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % Check if 1st or 2nd decision has startFrame==NaN.
     % This means we should exclude the entire trial.
     % Thus: set all variables to NaN for this trial and increase counter.
-    if not(early) && (isnan(startFrame1) || isnan(startFrame2))% || isnan(startFrameColl))
+    if not(early) && (isnan(startFrame1) || isnan(startFrame2) || isnan(startFrameColl))
         
         excl_trial = excl_trial + 1;
 
         if flag_bin
             startFrame1=NaN; tmove1=NaN; rt_final1=NaN; dt_final1=NaN; mt_final1=NaN; endFrame1=NaN;
             startFrame2=NaN; tmove2=NaN; rt_final2=NaN; dt_final2=NaN; mt_final2=NaN; endFrame2=NaN;
-            %startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN;
+            startFrameColl=NaN; tmoveColl=NaN; rt_finalColl=NaN; dt_finalColl=NaN; mt_finalColl=NaN; endFrameColl=NaN;
             
             tindex1             = [NaN NaN NaN];
             tulna1              = [NaN NaN NaN];
@@ -287,15 +300,15 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             time_traj_ulna2     = ones(bin,3)*NaN;
             spa_traj_index2     = ones(bin,3)*NaN;
             spa_traj_ulna2      = ones(bin,3)*NaN;
-%             tindexColl          = [NaN NaN NaN];
-%             tulnaColl           = [NaN NaN NaN];
-%             sindexColl          = [NaN NaN NaN NaN];
-%             sulnaColl           = [NaN NaN NaN NaN];
-%             sdindexColl         = [NaN NaN NaN NaN];
-%             time_traj_indexColl = ones(bin,3)*NaN;
-%             time_traj_ulnaColl  = ones(bin,3)*NaN;
-%             spa_traj_indexColl  = ones(bin,3)*NaN;
-%             spa_traj_ulnaColl   = ones(bin,3)*NaN;
+            tindexColl          = [NaN NaN NaN];
+            tulnaColl           = [NaN NaN NaN];
+            sindexColl          = [NaN NaN NaN NaN];
+            sulnaColl           = [NaN NaN NaN NaN];
+            sdindexColl         = [NaN NaN NaN NaN];
+            time_traj_indexColl = ones(bin,3)*NaN;
+            time_traj_ulnaColl  = ones(bin,3)*NaN;
+            spa_traj_indexColl  = ones(bin,3)*NaN;
+            spa_traj_ulnaColl   = ones(bin,3)*NaN;
 
             all_time_traj_index_b(:,:,t) = NaN*ones(bin,3);
             all_time_traj_ulna_b(:,:,t)  = NaN*ones(bin,3);
