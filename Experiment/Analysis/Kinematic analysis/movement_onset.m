@@ -11,7 +11,9 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,pksInd,pksUln
 % 3. visual_check
 % 4. nPeaks
 
-% Note: input argument "figurepath" is needed for visual_check
+% NOTEs:
+% 1. input argument "figurepath" is needed for visual_check
+% 2. t refers to decision number faa/saa/caa (not trial as in movement_onset)
 
 %% Retrieve and define parameters
 

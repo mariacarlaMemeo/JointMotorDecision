@@ -7,8 +7,8 @@
 % 2. movement_var
 
 for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisions
+    % NOTE: here, t is the TRIAL number, i.e., 1-160
 
-      
     early = 0; % set early-start-flag to 0 at beginning of each trial
 
     % if pair=110 and t=159 ("Trial nr. 478-480), delete trial
@@ -270,7 +270,34 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         spa_traj_indexColl  = ones(bin,3)*NaN;
         spa_traj_ulnaColl   = ones(bin,3)*NaN;
     end
+    
+    % NOTE: we put together all collective decision in one matrix; we do not
+    % separate per agent
+    if flag_bin % only if we want to bin/normalize trajectories
 
+        all_time_traj_index_coll(:,:,t) = time_traj_indexColl;
+        all_time_traj_ulna_coll(:,:,t)  = time_traj_ulnaColl;
+        all_spa_traj_index_coll(:,:,t)  = spa_traj_indexColl;
+        all_spa_traj_ulna_coll(:,:,t)   = spa_traj_ulnaColl;
+
+    else % only if we DO NOT bin/normalize trajectories
+
+        % Note: we currently exclude trials that are too long
+        % -> check setting of "max_samples" in calc_kin_init.m
+        if length(time_traj_index1) > max_samples
+            all_time_traj_index_coll(:,:,t) = NaN*ones(max_samples,3);
+            all_time_traj_ulna_coll(:,:,t)  = NaN*ones(max_samples,3);
+            all_spa_traj_index_coll(:,:,t)  = NaN*ones(max_samples,3);
+            all_spa_traj_ulna_coll(:,:,t)   = NaN*ones(max_samples,3);
+        else % for all trials with samples < max_samples (usual case)
+            all_time_traj_index_coll(:,:,t) = [time_traj_indexColl;NaN*ones((max_samples-length(time_traj_indexColl)),3)];
+            all_time_traj_ulna_coll(:,:,t)  = [time_traj_ulnaColl;NaN*ones((max_samples-length(time_traj_ulnaColl)),3)];
+            all_spa_traj_index_coll(:,:,t)  = [spa_traj_indexColl;NaN*ones((max_samples-length(spa_traj_indexColl)),3)];
+            all_spa_traj_ulna_coll(:,:,t)   = [spa_traj_ulnaColl;NaN*ones((max_samples-length(spa_traj_ulnaColl)),3)];
+        end
+
+    end
+  
     caa = caa +3; % increase decision counter
     % -----------------------------------------------------------------
 

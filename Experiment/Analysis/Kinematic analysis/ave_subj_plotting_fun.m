@@ -45,7 +45,7 @@ if n_var==1
     biv = figure(); % create figure
     set(biv, 'WindowStyle', 'Docked');
 
-    if which_Dec == 1
+    if which_Dec == 1 % plot only 1st decision
         % plot single trials
         plot(ave_all(:,pairS.curr_conf==2 & pairS.at1stDec==agents),'color',hConf_col); % high confidence
         hold on;
