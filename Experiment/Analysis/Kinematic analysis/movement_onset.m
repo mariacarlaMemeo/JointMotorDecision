@@ -142,7 +142,9 @@ endFrame = (samp(end)-10); % time of target button press
 % NOTE: the function is applied to the marker which has been previously
 % used to define the startFrame.
 tmove = find_tmove(move_marker); % call find_tmove function
-
+if tmove < startFrame
+    tmove = startFrame;
+end
 
 %% START PLOTTING LOOP only if startFrame *after* decision prompt
 if startFrame > preAcq
