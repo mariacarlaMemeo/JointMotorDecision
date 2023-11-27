@@ -16,7 +16,11 @@
 % z-coordinate  - 3rd column of matrix
 
 % Prepare for loop structure below
-agents      = {'B' 'Y'};
+if which_Dec == 1 || which_Dec ==2
+    agents = {'B' 'Y'};
+elseif which_Dec == 3
+    agents = {'coll'};
+end
 mrks        = {'index' 'ulna'};
 time_param  = {'velocity' 'acceleration' 'jerk'};
 spa_param   = {'x' 'y' 'z'};
@@ -31,8 +35,12 @@ for g = 1:length(agents) % -------------------------------------------
     elseif agents{g}=='Y'
         pairS.curr_conf = pairS.yConf;
         pairS.curr_dec  = pairS.yell_Dec;
+    elseif strcmp(agents{g},'coll')
+        pairS.curr_conf = pairS.collConf;
+        pairS.curr_dec  = pairS.Coll_Dec;
     end
-    
+
+      
     % marker loop: index, ulna
     for m = 1:length(mrks)
         
@@ -58,8 +66,10 @@ for g = 1:length(agents) % -------------------------------------------
 
     % Save number of plotted (i.e., clean!) trials in which either agent
     % blue or yellow took 2nd decision (in sum, this is the total number of
-    % clean trials for this pair); SecDec_clean contains two values (b/y)
-    SecDec_clean(g) = length(ave_all(~isnan(ave_all(1,pairS.at2ndDec==agents{g}))));
+    % clean trials for this pair); trials_clean contains two values (b/y)
+    if which_Dec == 1 || which_Dec ==2
+        trials_clean(g) = length(ave_all(~isnan(ave_all(1,pairS.at2ndDec==agents{g}))));
+    end
 
 end % end of agent loop ---------------------------------------------------
 

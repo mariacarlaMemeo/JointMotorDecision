@@ -10,9 +10,11 @@ function ave_all = ave_subj_plotting_fun(matrix_3d,clm,pairS,...
 
 % Set some parameters first
 wd            = 4;
-hConf_col     = [.6 0 0];  % red
-lConf_col     = [0.2 0.8 0.8]; % blueish
-lConf_col_ave = [0 .6 .6]; % slightly different blueish for averages
+hConf_col     = [0.4667 0.6745 0.1882]; % GREEN %[.6 0 0];  % red
+hConf_col_2   = [0.8353 0.3176 0.9412];
+lConf_col     = [0.4941 0.1843 0.5569]; % PURPLE %[0.2 0.8 0.8]; % blueish
+lConf_col_2   = [0.6471 0.9412 0.2627];
+lConf_col_ave = lConf_col;%[0 .6 .6]; % slightly different blueish for averages
 x_width       = 18;
 y_width       = 12;
 
@@ -54,9 +56,12 @@ if n_var==1
         if flag_bin
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col); % average high confidence
+            %highM.Annotation.LegendInformation.IconDisplayStyle = 'off';
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
+            %lowM.Annotation.LegendInformation.IconDisplayStyle = 'off';
         end
+        %legend([high, low],{'high', 'low'}, 'Location','northwest');
 
     elseif which_Dec == 2 % only second decision
 
@@ -77,16 +82,21 @@ if n_var==1
         end
 
     elseif which_Dec == 3 % XXX only collective decision NOT FUNCTIONAL
+        agentsColl = {'B' 'Y'};
+        styleColl = {':', '-'};
+        colorH = [hConf_col; hConf_col_2]; colorL = [lConf_col; lConf_col_2];
         % plot single trials
-        plot(ave_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents),'color',hConf_col); % high confidence
-        hold on;
-        plot(ave_all(:,pairS.curr_conf==1 & pairS.atCollDec==agents),'color',lConf_col); % low confidence
-        % plot average trajectories only if data has been normalized (not feasible otherwise)
-        if flag_bin
-            plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.atCollDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',hConf_col); % average high confidence
-            plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.atCollDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave); % average low confidence
+        for g = 1:length(agentsColl)
+            plot(ave_all(:,pairS.curr_conf==2 & pairS.atCollDec==agentsColl{g}),'color',colorH(g,:)); % high confidence
+            hold on;
+            plot(ave_all(:,pairS.curr_conf==1 & pairS.atCollDec==agentsColl{g}),'color',colorL(g,:)); % low confidence
+            % plot average trajectories only if data has been normalized (not feasible otherwise)
+            if flag_bin
+                plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.atCollDec==agentsColl{g}),3,'omitnan'), ...
+                    'LineWidth',wd,'LineStyle',styleColl{g},'color',colorH(g,:)); % average high confidence
+                plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.atCollDec==agentsColl{g}),3,'omitnan'), ...
+                    'LineWidth',wd,'LineStyle',styleColl{g},'color',colorL(g,:)); % average low confidence
+            end
         end
 
     elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
@@ -187,7 +197,7 @@ elseif n_var==2 % CURRENTLY NOT USED, n_var is always passed as 1
                 'LineWidth',wd,'color',lConf_col_ave);
         end
 
-    elseif which_Dec == 3 % XXX only collective decision NOT FUNCTIONAL
+    elseif which_Dec == 3 % only collective decision
         % plot single trials
         plot(ave_x_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents), ...
             ave_y_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents),'color',hConf_col);

@@ -158,24 +158,32 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % value in the middle that is most common (CHECK THIS).
     % Thus, low confidence would be 1-3 and high would be 4-6; see below.
     if med_split % XXX maybe use median(X,'omitnan')? 
-        bConf = pairS.blue_Conf;  % re-name to avoid overwriting
-        yConf = pairS.yell_Conf;
+        bConf    = pairS.blue_Conf;  % re-name to avoid overwriting
+        yConf    = pairS.yell_Conf;
+        collConf = pairS.Coll_Conf;
         bConf(bConf<=median(bConf)) = 1; % if <= median, classify as low (1)
         bConf(bConf>median(bConf))  = 2; % if > median, classify as high (2)
         yConf(yConf<=median(yConf)) = 1;
         yConf(yConf>median(yConf))  = 2;
+        collConf(collConf<=median(collConf)) = 1;
+        collConf(collConf>median(collConf))  = 2;
         pairS.bConf = bConf; % save high/low confidence in pairS structure
         pairS.yConf = yConf;
+        pairS.collConf = collConf;
 
     else % if no median split, categorize as 1-3(low) and 4-6(high) anyway
         bConf = pairS.blue_Conf;
         yConf = pairS.yell_Conf;
+        collConf = pairS.Coll_Conf;
         bConf(bConf<4)  = 1;
         bConf(bConf>=4) = 2;
         yConf(yConf<4)  = 1; 
-        yConf(yConf>=4) = 2;        
+        yConf(yConf>=4) = 2;
+        collConf(collConf<4)  = 1; 
+        collConf(collConf>=4) = 2; 
         pairS.bConf = bConf;
         pairS.yConf = yConf;
+        pairS.collConf = collConf;
     end
     % ---------------------------------------------------------------------
 
@@ -192,7 +200,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % Y_2ndDec = no. of plotted (i.e., clean!) trials in which Y takes 2nd decision
     % -> B_2ndDec + Y_2ndDec            = total number of clean trials for the pair
     % -> 160 - (early_start + short_rt) = total number of clean trials for the pair
-    exc{p,1:5} = [str2double(SUBJECTS{p}(2:end)) early_count excl_trial SecDec_clean];
+    exc{p,1:5} = [str2double(SUBJECTS{p}(2:end)) early_count excl_trial trials_clean];
     exc.Properties.VariableNames = {'pair','early_start','short_rt','B_2ndDec','Y_2ndDec'};
     writetable(exc,fullfile(path_kin,'overview_exclusions.xlsx'));
 
