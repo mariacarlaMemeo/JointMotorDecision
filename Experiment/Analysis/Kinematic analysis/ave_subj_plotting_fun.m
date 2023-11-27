@@ -49,30 +49,30 @@ if n_var==1
 
     if which_Dec == 1 % plot only 1st decision
         % plot single trials
-        plot(ave_all(:,pairS.curr_conf==2 & pairS.at1stDec==agents),'color',hConf_col); % high confidence
+        plot(ave_all(:,pairS.curr_conf==2 & pairS.at1stDec==agents),'color',hConf_col,'HandleVisibility','off'); % high confidence
+        %trajsH.Annotation.LegendInformation.IconDisplayStyle = 'off';
         hold on;
-        plot(ave_all(:,pairS.curr_conf==1 & pairS.at1stDec==agents),'color',lConf_col); % low confidence
+        plot(ave_all(:,pairS.curr_conf==1 & pairS.at1stDec==agents),'color',lConf_col,'HandleVisibility','off'); % low confidence
+        %trajsL.Annotation.LegendInformation.IconDisplayStyle = 'off';
         % plot average trajectories only if data has been normalized (not feasible otherwise)
         if flag_bin
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col); % average high confidence
-            %highM.Annotation.LegendInformation.IconDisplayStyle = 'off';
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
-            %lowM.Annotation.LegendInformation.IconDisplayStyle = 'off';
         end
-        %legend([high, low],{'high', 'low'}, 'Location','northwest');
+        legend({'high confidence', 'low confidence'}, 'Location','northwest');
 
     elseif which_Dec == 2 % only second decision
 
         % plot single trials
-        plot(ave_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col); % high confidence
+        plot(ave_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col,'HandleVisibility','off'); % high confidence
         % Add trial number for each trajectory 
         % indices = 1:length(ave_all);
         % sel_lab = indices(pairS.at2ndDec==agents);
         % text(1:length(sel_lab),ave_all(1,pairS.at2ndDec==agents),string(sel_lab))
         hold on;
-        plot(ave_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents),'color',lConf_col); % low confidence
+        plot(ave_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents),'color',lConf_col,'HandleVisibility','off'); % low confidence
         % plot average trajectories only if data has been normalized (not feasible otherwise)
         if flag_bin
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
@@ -80,16 +80,17 @@ if n_var==1
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',lConf_col_ave); % average low confidence
         end
+        legend({'high confidence', 'low confidence'}, 'Location','northwest');
 
-    elseif which_Dec == 3 % XXX only collective decision NOT FUNCTIONAL
+    elseif which_Dec == 3 % only collective decision
         agentsColl = {'B' 'Y'};
         styleColl = {':', '-'};
         colorH = [hConf_col; hConf_col_2]; colorL = [lConf_col; lConf_col_2];
         % plot single trials
         for g = 1:length(agentsColl)
-            plot(ave_all(:,pairS.curr_conf==2 & pairS.atCollDec==agentsColl{g}),'color',colorH(g,:)); % high confidence
+            plot(ave_all(:,pairS.curr_conf==2 & pairS.atCollDec==agentsColl{g}),'color',colorH(g,:),'HandleVisibility','off'); % high confidence
             hold on;
-            plot(ave_all(:,pairS.curr_conf==1 & pairS.atCollDec==agentsColl{g}),'color',colorL(g,:)); % low confidence
+            plot(ave_all(:,pairS.curr_conf==1 & pairS.atCollDec==agentsColl{g}),'color',colorL(g,:),'HandleVisibility','off'); % low confidence
             % plot average trajectories only if data has been normalized (not feasible otherwise)
             if flag_bin
                 plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.atCollDec==agentsColl{g}),3,'omitnan'), ...
@@ -98,6 +99,7 @@ if n_var==1
                     'LineWidth',wd,'LineStyle',styleColl{g},'color',colorL(g,:)); % average low confidence
             end
         end
+        legend({'high confidence B', 'low confidence B','high confidence Y', 'low confidence Y'}, 'Location','northwest');
 
     elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
         % plot single trials
