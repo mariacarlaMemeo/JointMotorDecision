@@ -216,7 +216,7 @@ catch me
     % CAREFUL: if you re-name this file (the "_end"-part), then the
     % bkp-function will NOT WORK anymore (see userInput, line 41 where the
     % trial number is identified by checking last part of file name)
-    save(fullfile(path_kin,[SUBJECTS{p},'_start',num2str(trialstart_num),'_end',num2str(t),'_bkp']));
+    save(fullfile(path_kin,[SUBJECTS{p},'_end',num2str(t),'_bkp']));
 end
 
 % script version: 1 Nov 2023
