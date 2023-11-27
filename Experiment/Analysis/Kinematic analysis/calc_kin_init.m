@@ -36,17 +36,17 @@ figurepath = fullfile(path_data,'..\Processed\trialPlots');
 
 % 4. Retrieve folder path to create list with pair numbers (S1xx)
 % We have 15 pairs: S108, S110-S118, S120-124 
-% Note: We need to exclude S119 because the pair had too many early starts.
+% Note: We need to exclude S119 because the pair had >20% early starts.
 folder_list  = dir(path_data);
 folder_list  = folder_list(~ismember({folder_list.name},{'.','..'}));
 SUBJECTS     = {folder_list.name};
 SUBJECT_LIST = cellfun(@(s) find(contains(s,'S1')),SUBJECTS,'uni',0);
 SUBJECT_LIST = ~cellfun(@isempty,SUBJECT_LIST);
 SUBJECTS     = SUBJECTS(SUBJECT_LIST);
-% Remove pair 119 because of too many early starts (XX)
+% Remove pair 119 because of too many early starts (43, i.e. 43/160=~27%)
 SUBJECTS(11) = []; 
 % *Change here if you want to check specific pairs only*
-%SUBJECTS = [SUBJECTS(2)]; % try with 111 as a "good example"
+%SUBJECTS = [SUBJECTS(11)]; % try with 111 as a "good example"
 % -------------------------------------------------------------------------
 
 

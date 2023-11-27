@@ -12,9 +12,13 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     early = 0; % set early-start-flag to 0 at beginning of each trial
 
     % if pair=110 and t=159 ("Trial nr. 478-480), delete trial
-    % (we set it to early even though this is not true...)
+    % (we exclude this trial because it was not properly re-constructed
+    %  [models switched] and we cannot correct it bc of the trial re-numbering
+    %  due to the lost trial... so we count this as "early start" even
+    %  though it is actually a technical error)
     if str2double(SUBJECTS{p}(2:end))==110 && t==159
         early = 1;
+        early_count = early_count+1; % increase counter
     end
 
     % CHECK "early start"-column in Excel (early_release_A1/A2 == 1)

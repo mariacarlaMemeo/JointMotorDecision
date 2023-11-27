@@ -5,11 +5,6 @@
 % November 2023
 % -------------------------------------------------------------------------
 
-% XXX TO DO:
-% 1. check number of early and excluded trials (see Excel file)
-% 2. decide if/how to include collective matrices (kin_trial line 234)
-% 3. run 110 together and start cutting
-
 % Functions and scripts called from within here:
 % 1. userInput
 % 2. calc_kin_init
@@ -210,6 +205,9 @@ end % end of pair loop
 
 catch me
     % Save mat file as a backup in case of crash
+    % CAREFUL: if you re-name this file (the "_end"-part), then the
+    % bkp-function will NOT WORK anymore (see userInput, line 41 where the
+    % trial number is identified by checking last part of file name)
     save(fullfile(path_kin,[SUBJECTS{p},'_start',num2str(trialstart_num),'_end',num2str(t),'_bkp']));
 end
 
