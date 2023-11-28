@@ -23,15 +23,10 @@ clc
 
 try % main try/catch statement
 
-%% First ask for user input and set flags ---------------------------------
-userInput;   
-
-if which_Dec ~= 2 % save Excel file only for 2nd decision
-    flag_write = 0;
-end
-%% ------------------------------------------------------------------------
-
-%%%%%%%%%%%% Initialize parameters in separate script %%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% First ask for user input and set flags 
+userInput;
+% Then initialize parameters in separate script
 calc_kin_init;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -182,48 +177,33 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     disp(['Number of additional exclusions for pair ' SUBJECTS{p}(2:end) ': ' num2str(excl_trial)]);
 
     % Save mat file for each pair
-    if flag_write
-         % add "_post" to distinguish from original acquisition .mat file
-        save(fullfile(path_kin,[SUBJECTS{p},'_post']));
-        disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
+    if flag_write && ~any([savemat1,savemat2,savematColl])
+        overwriteMatFile = true; % Default to overwriting or creating new file.
+        filenameMat = fullfile(path_kin,[SUBJECTS{p},'_post']);
+        if exist(filenameMat,'file') == 2
+            % if Excel file already exists, ask user before overwriting
+            promptMessage = sprintf('This file already exists:\n%s\nDo you want to overwrite it?', filenameMat);
+            titleBarCaption = 'Overwrite?';
+            % ButtonName = questdlg(Question, Title, Btn1, Btn2, DEFAULT);
+            buttonText = questdlg(promptMessage, titleBarCaption, 'Yes', 'No', 'Yes');
+            if strcmpi(buttonText, 'No') % User does not want to overwrite.
+                overwriteMatFile = false;
+            end
+            if overwriteMatFile % User wants to overwrite: delete old file and write new file
+                delete(filenameMat);
+                save(filenameMat);
+                % add "_post" to distinguish from original acquisition .mat file
+                disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
+            end
+        else
+            save(filenameMat);
+            % add "_post" to distinguish from original acquisition .mat file
+            disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
+        end
+%         save(fullfile(path_kin,[SUBJECTS{p},'_post']));
+%         disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
     end
-
-%     % ---------------------------------------------------------------------    
-%     % Classify confidence as high and low, using MEDIAN SPLIT
-%     % -> In our data sets, the median should usually be 3 because it is the
-%     % value in the middle that is most common (CHECK THIS).
-%     % Thus, low confidence would be 1-3 and high would be 4-6; see below.
-%     if med_split % XXX maybe use median(X,'omitnan')? 
-%         bConf    = pairS.blue_Conf;  % re-name to avoid overwriting
-%         yConf    = pairS.yell_Conf;
-%         collConf = pairS.Coll_Conf;
-%         bConf(bConf<=median(bConf)) = 1; % if <= median, classify as low (1)
-%         bConf(bConf>median(bConf))  = 2; % if > median, classify as high (2)
-%         yConf(yConf<=median(yConf)) = 1;
-%         yConf(yConf>median(yConf))  = 2;
-%         collConf(collConf<=median(collConf)) = 1;
-%         collConf(collConf>median(collConf))  = 2;
-%         pairS.bConf = bConf; % save high/low confidence in pairS structure
-%         pairS.yConf = yConf;
-%         pairS.collConf = collConf;
-% 
-%     else % if no median split, categorize as 1-3(low) and 4-6(high) anyway
-%         bConf = pairS.blue_Conf;
-%         yConf = pairS.yell_Conf;
-%         collConf = pairS.Coll_Conf;
-%         bConf(bConf<4)  = 1;
-%         bConf(bConf>=4) = 2;
-%         yConf(yConf<4)  = 1; 
-%         yConf(yConf>=4) = 2;
-%         collConf(collConf<4)  = 1; 
-%         collConf(collConf>=4) = 2; 
-%         pairS.bConf = bConf;
-%         pairS.yConf = yConf;
-%         pairS.collConf = collConf;
-%     end
-%     % ---------------------------------------------------------------------
-
-      
+    
     % display and save exploratory plots (1 plot per agent with all trials)
     if flag_plot
         ave_subj_plotting_new;
