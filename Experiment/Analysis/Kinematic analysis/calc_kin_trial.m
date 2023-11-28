@@ -408,9 +408,16 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
     end % end of adding data to Excel file
 
-    % save data after each 3 decisions
+    % EXIT and SAVE mat file if user decided to exit early
+    % NOTE: data is always saved after 1 full trial, i.e., a loop of 3 decisions
+    % (the filename will indicate the last processed trial, e.g., is user
+    % exits in trial 9, then the file will be called "_end9")
     if any([savemat1,savemat2,savematColl])
-        save(fullfile(path_kin,[SUBJECTS{p},'_start',num2str(trialstart_num),'_end',num2str(t),'_bkp']));
+        % CAREFUL: if you re-name this file (the "_end"-part), then the
+        % bkp-function will NOT WORK anymore (see userInput, line 41 where the
+        % trial number is identified by checking last part of file name)
+        save(fullfile(path_kin,[SUBJECTS{p},'_end',num2str(t),'_bkp']));
+        disp(['BACKUP MATFILE HAS BEEN SAVED SUCCESSFULLY after trial ', num2str(t), '. Exit now.']); fprintf(1, '\n');
         break
     end
 

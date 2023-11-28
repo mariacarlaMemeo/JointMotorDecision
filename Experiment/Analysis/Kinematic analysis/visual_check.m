@@ -163,7 +163,7 @@ while repeatTrial
             repeatTrial = 1;
             nxt = 0;
         elseif nextStep == 2
-            disp('EXIT (after 3rd dec), keep calm and SAVE.'); %fprintf(1, '\n');
+            disp('EXIT (after 3rd dec), keep calm and SAVE.'); fprintf(1, '\n');
             repeatTrial = 0;
             savemat = 1;
             nxt = 0;

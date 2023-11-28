@@ -213,10 +213,16 @@ end % end of pair loop
 
 catch me
     % Save mat file as a backup in case of crash
-    % CAREFUL: if you re-name this file (the "_end"-part), then the
-    % bkp-function will NOT WORK anymore (see userInput, line 41 where the
-    % trial number is identified by checking last part of file name)
-    save(fullfile(path_kin,[SUBJECTS{p},'_end',num2str(t),'_bkp']));
+    % NOTE: Only save in case of "true" crash, i.e., do not save here if
+    % the data was already saved earlier (i.e., if savemat=1) because
+    % the user decided to exit the script intentionally (i.e., no crash).
+    if ~any([savemat1,savemat2,savematColl])
+        % CAREFUL: if you re-name this file (the "_end"-part), then the
+        % bkp-function will NOT WORK anymore (see userInput, line 41 where the
+        % trial number is identified by checking last part of file name)
+        save(fullfile(path_kin,[SUBJECTS{p},'_end',num2str(t),'_bkp']));
+        disp(['CRASH in trial ', num2str(t), '. BACKUP MATFILE HAS BEEN SAVED SUCCESSFULLY.']); fprintf(1, '\n');
+    end
 end
 
 % script version: 1 Nov 2023
