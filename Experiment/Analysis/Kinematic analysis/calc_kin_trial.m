@@ -22,10 +22,12 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     end
 
     % CHECK "early start"-column in Excel (early_release_A1/A2 == 1)
-    % Note: We DO NOT INCLUDE early starts for collective decision.
-    % [CHECK additionally if RT is implausibly small (< 100 ms)]
-    % If any of this is true, then exclude the entire trial!
-    if (any([raw{t,end-2:end}]))% || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
+    % If early start for any of the 3 decisions, then EXCLUDE ENTIRE trial!
+    % Note: this means that these 3 decisions will be "jumped", i.e., we do
+    % not compute anything (do not call movement_onset and movement_var)
+    if (any([raw{t,end-2:end}]))
+        % add following to CHECK additionally if RT is implausibly small (< 100 ms)
+        % || (blue_rt(t)<rt_min) || (yell_rt(t)<rt_min) || (Coll_rt(t)<rt_min)
         early = 1;
         early_count = early_count+1; % increase counter
     end
@@ -86,6 +88,10 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
     % 2. call movement_var.m
     % only if start frame exists and start button was NOT pressed too early
+    % variable info (see movement_var): 
+    % tindex/ulna = [va_index aa_index ja_index] -> temp. variables: averages
+    % sindex/ulna = [pz_index mz_index za_index az_index] -> spatial variables
+    % sdindex = [ard mxd mnd ad] -> spatial deviationv variables (index only)
     if not(isnan(startFrame1)) && not(early)    
         [tindex1,tulna1,sindex1,sulna1,sdindex1, ...
             time_traj_index1,time_traj_ulna1,spa_traj_index1,spa_traj_ulna1] = ...
@@ -234,10 +240,8 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     saa = saa + 3; % increase decision counter
     % ---------------------------------------------------------------------
 
-    % Collective decision -------------------------------------------------
-    % XXX ADD the "all_time/spa_" matrices also for collective decision.
-    % Otherwise, collective cannot be plotted.
-
+    % COLLECTIVE DECISION -------------------------------------------------
+    
     label_agent = 'COLLECTIVEdecision';
     fprintf(['\n---------- Trial n. ' num2str(sMarkers{caa}.info.trial_id) ' ----------\n']);
    
@@ -341,14 +345,18 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             spa_traj_indexColl  = ones(bin,3)*NaN;
             spa_traj_ulnaColl   = ones(bin,3)*NaN;
 
-            all_time_traj_index_b(:,:,t) = NaN*ones(bin,3);
-            all_time_traj_ulna_b(:,:,t)  = NaN*ones(bin,3);
-            all_spa_traj_index_b(:,:,t)  = NaN*ones(bin,3);
-            all_spa_traj_ulna_b(:,:,t)   = NaN*ones(bin,3);
-            all_time_traj_index_y(:,:,t) = NaN*ones(bin,3);
-            all_time_traj_ulna_y(:,:,t)  = NaN*ones(bin,3);
-            all_spa_traj_index_y(:,:,t)  = NaN*ones(bin,3);
-            all_spa_traj_ulna_y(:,:,t)   = NaN*ones(bin,3);
+            all_time_traj_index_b(:,:,t)    = NaN*ones(bin,3);
+            all_time_traj_ulna_b(:,:,t)     = NaN*ones(bin,3);
+            all_spa_traj_index_b(:,:,t)     = NaN*ones(bin,3);
+            all_spa_traj_ulna_b(:,:,t)      = NaN*ones(bin,3);
+            all_time_traj_index_y(:,:,t)    = NaN*ones(bin,3);
+            all_time_traj_ulna_y(:,:,t)     = NaN*ones(bin,3);
+            all_spa_traj_index_y(:,:,t)     = NaN*ones(bin,3);
+            all_spa_traj_ulna_y(:,:,t)      = NaN*ones(bin,3);
+            all_time_traj_index_coll(:,:,t) = NaN*ones(bin,3);
+            all_time_traj_ulna_coll(:,:,t)  = NaN*ones(bin,3);
+            all_spa_traj_index_coll(:,:,t)  = NaN*ones(bin,3);
+            all_spa_traj_ulna_coll(:,:,t)   = NaN*ones(bin,3);
         end
     end
 

@@ -128,6 +128,41 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     Coll_rt_ind     = strcmp('Coll_rt',txt);
     Coll_rt         = cell2mat(raw(:,Coll_rt_ind));
 
+    % ---------------------------------------------------------------------
+    % Classify confidence as high and low, using MEDIAN SPLIT
+    % -> In our data sets, the median should usually be 3 because it is the
+    % value in the middle that is most common (CHECK THIS).
+    % Thus, low confidence would be 1-3 and high would be 4-6; see below.
+    if med_split % XXX maybe use median(X,'omitnan')?
+        bConf    = pairS.blue_Conf;  % re-name to avoid overwriting
+        yConf    = pairS.yell_Conf;
+        collConf = pairS.Coll_Conf;
+        bConf(bConf<=median(bConf)) = 1; % if <= median, classify as low (1)
+        bConf(bConf>median(bConf))  = 2; % if > median, classify as high (2)
+        yConf(yConf<=median(yConf)) = 1;
+        yConf(yConf>median(yConf))  = 2;
+        collConf(collConf<=median(collConf)) = 1;
+        collConf(collConf>median(collConf))  = 2;
+        pairS.bConf = bConf; % save high/low confidence in pairS structure
+        pairS.yConf = yConf;
+        pairS.collConf = collConf;
+
+    else % if no median split, categorize as 1-3(low) and 4-6(high) anyway
+        bConf = pairS.blue_Conf;
+        yConf = pairS.yell_Conf;
+        collConf = pairS.Coll_Conf;
+        bConf(bConf<4)  = 1;
+        bConf(bConf>=4) = 2;
+        yConf(yConf<4)  = 1;
+        yConf(yConf>=4) = 2;
+        collConf(collConf<4)  = 1;
+        collConf(collConf>=4) = 2;
+        pairS.bConf = bConf;
+        pairS.yConf = yConf;
+        pairS.collConf = collConf;
+    end
+    % ---------------------------------------------------------------------
+
     % Indices for 1st, 2nd and 3rd decision (needed in trial loop)
     % Note: each trial contains 3 decisions (160 trials = 480 decisions)
     faa = trialstart_num *3 - 2; % faa = first agent acting
@@ -153,40 +188,40 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
         disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
     end
 
-    % ---------------------------------------------------------------------    
-    % Classify confidence as high and low, using MEDIAN SPLIT
-    % -> In our data sets, the median should usually be 3 because it is the
-    % value in the middle that is most common (CHECK THIS).
-    % Thus, low confidence would be 1-3 and high would be 4-6; see below.
-    if med_split % XXX maybe use median(X,'omitnan')? 
-        bConf    = pairS.blue_Conf;  % re-name to avoid overwriting
-        yConf    = pairS.yell_Conf;
-        collConf = pairS.Coll_Conf;
-        bConf(bConf<=median(bConf)) = 1; % if <= median, classify as low (1)
-        bConf(bConf>median(bConf))  = 2; % if > median, classify as high (2)
-        yConf(yConf<=median(yConf)) = 1;
-        yConf(yConf>median(yConf))  = 2;
-        collConf(collConf<=median(collConf)) = 1;
-        collConf(collConf>median(collConf))  = 2;
-        pairS.bConf = bConf; % save high/low confidence in pairS structure
-        pairS.yConf = yConf;
-        pairS.collConf = collConf;
-
-    else % if no median split, categorize as 1-3(low) and 4-6(high) anyway
-        bConf = pairS.blue_Conf;
-        yConf = pairS.yell_Conf;
-        collConf = pairS.Coll_Conf;
-        bConf(bConf<4)  = 1;
-        bConf(bConf>=4) = 2;
-        yConf(yConf<4)  = 1; 
-        yConf(yConf>=4) = 2;
-        collConf(collConf<4)  = 1; 
-        collConf(collConf>=4) = 2; 
-        pairS.bConf = bConf;
-        pairS.yConf = yConf;
-        pairS.collConf = collConf;
-    end
-    % ---------------------------------------------------------------------
+%     % ---------------------------------------------------------------------    
+%     % Classify confidence as high and low, using MEDIAN SPLIT
+%     % -> In our data sets, the median should usually be 3 because it is the
+%     % value in the middle that is most common (CHECK THIS).
+%     % Thus, low confidence would be 1-3 and high would be 4-6; see below.
+%     if med_split % XXX maybe use median(X,'omitnan')? 
+%         bConf    = pairS.blue_Conf;  % re-name to avoid overwriting
+%         yConf    = pairS.yell_Conf;
+%         collConf = pairS.Coll_Conf;
+%         bConf(bConf<=median(bConf)) = 1; % if <= median, classify as low (1)
+%         bConf(bConf>median(bConf))  = 2; % if > median, classify as high (2)
+%         yConf(yConf<=median(yConf)) = 1;
+%         yConf(yConf>median(yConf))  = 2;
+%         collConf(collConf<=median(collConf)) = 1;
+%         collConf(collConf>median(collConf))  = 2;
+%         pairS.bConf = bConf; % save high/low confidence in pairS structure
+%         pairS.yConf = yConf;
+%         pairS.collConf = collConf;
+% 
+%     else % if no median split, categorize as 1-3(low) and 4-6(high) anyway
+%         bConf = pairS.blue_Conf;
+%         yConf = pairS.yell_Conf;
+%         collConf = pairS.Coll_Conf;
+%         bConf(bConf<4)  = 1;
+%         bConf(bConf>=4) = 2;
+%         yConf(yConf<4)  = 1; 
+%         yConf(yConf>=4) = 2;
+%         collConf(collConf<4)  = 1; 
+%         collConf(collConf>=4) = 2; 
+%         pairS.bConf = bConf;
+%         pairS.yConf = yConf;
+%         pairS.collConf = collConf;
+%     end
+%     % ---------------------------------------------------------------------
 
       
     % display and save exploratory plots (1 plot per agent with all trials)

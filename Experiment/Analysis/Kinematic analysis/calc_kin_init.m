@@ -52,19 +52,24 @@ SUBJECTS = [SUBJECTS(3)]; % !ALWAYS RESET TO 3 to avoid Github confusion!
 
 % Initialize time & space matrices for non-normalized trajectories (no bins)
 max_samples = 800; % 800 frames = 8 seconds
-max_trial   = 320; % 320 decisions XXX why not 160?
+max_trial   = 160; % maximum 160 trials (before we said 320 here... why!?)
 
 if not(flag_bin)
     % for blue agent
-    all_time_traj_index_b = NaN*ones(max_samples,3,max_trial);
-    all_time_traj_ulna_b  = NaN*ones(max_samples,3,max_trial);
-    all_spa_traj_index_b  = NaN*ones(max_samples,3,max_trial);
-    all_spa_traj_ulna_b   = NaN*ones(max_samples,3,max_trial);
+    all_time_traj_index_b     = NaN*ones(max_samples,3,max_trial);
+    all_time_traj_ulna_b      = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_index_b      = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_ulna_b       = NaN*ones(max_samples,3,max_trial);
     % for yellow agent
-    all_time_traj_index_y = NaN*ones(max_samples,3,max_trial);
-    all_time_traj_ulna_y  = NaN*ones(max_samples,3,max_trial);
-    all_spa_traj_index_y  = NaN*ones(max_samples,3,max_trial);
-    all_spa_traj_ulna_y   = NaN*ones(max_samples,3,max_trial);
+    all_time_traj_index_y     = NaN*ones(max_samples,3,max_trial);
+    all_time_traj_ulna_y      = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_index_y      = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_ulna_y       = NaN*ones(max_samples,3,max_trial);
+    % for collective decision
+    all_time_traj_index_coll = NaN*ones(max_samples,3,max_trial);
+    all_time_traj_ulna_coll  = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_index_coll  = NaN*ones(max_samples,3,max_trial);
+    all_spa_traj_ulna_coll   = NaN*ones(max_samples,3,max_trial);    
 end
 
 % Random note on median split:
