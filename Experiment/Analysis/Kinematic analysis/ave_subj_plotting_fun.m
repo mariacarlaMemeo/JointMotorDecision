@@ -10,11 +10,10 @@ function ave_all = ave_subj_plotting_fun(matrix_3d,clm,pairS,...
 
 % Set some parameters first
 wd            = 4;
-hConf_col     = [0.4667 0.6745 0.1882]; % GREEN %[.6 0 0];  % red
-hConf_col_2   = [0.8353 0.3176 0.9412];
-lConf_col     = [0.4941 0.1843 0.5569]; % PURPLE %[0.2 0.8 0.8]; % blueish
-lConf_col_2   = [0.6471 0.9412 0.2627];
-lConf_col_ave = lConf_col;%[0 .6 .6]; % slightly different blueish for averages
+hConf_col     = [0.4667 0.6745 0.1882]; % GREEN (previous red: [.6 0 0])
+hConf_col_2   = [0.3922 0.8314 0.0745]; % variation of green to distinguish agents
+lConf_col     = [0.4941 0.1843 0.5569]; % PURPLE (previous blueish: [0.2 0.8 0.8])
+lConf_col_2   = [0.7176 0.2745 1.0000]; % variation of purple to distinguish agents
 x_width       = 18;
 y_width       = 12;
 
@@ -59,7 +58,7 @@ if n_var==1
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.at1stDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col); % average high confidence
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at1stDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave); % average low confidence
+                'LineWidth',wd,'color',lConf_col); % average low confidence
         end
         legend({'high confidence', 'low confidence'}, 'Location','northwest');
 
@@ -78,7 +77,7 @@ if n_var==1
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col); % average high confidence
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave); % average low confidence
+                'LineWidth',wd,'color',lConf_col); % average low confidence
         end
         legend({'high confidence', 'low confidence'}, 'Location','northwest');
 
@@ -111,7 +110,7 @@ if n_var==1
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==2),3,'omitnan'), ...
                 'LineWidth',wd,'color',hConf_col); % average high confidence
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==1),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave); % average low confidence
+                'LineWidth',wd,'color',lConf_col); % average low confidence
         end
 
     end
@@ -168,10 +167,10 @@ elseif n_var==2 % CURRENTLY NOT USED, n_var is always passed as 1
             % low confidence - target 1 (left) and target 2 (right)
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave);
+                'LineWidth',wd,'color',lConf_col);
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave);
+                'LineWidth',wd,'color',lConf_col);
         end
 
     elseif which_Dec == 2 % only second decision
@@ -193,10 +192,10 @@ elseif n_var==2 % CURRENTLY NOT USED, n_var is always passed as 1
             % low confidence - target 1 (left) and target 2 (right)
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave);
+                'LineWidth',wd,'color',lConf_col);
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave);
+                'LineWidth',wd,'color',lConf_col);
         end
 
     elseif which_Dec == 3 % only collective decision
@@ -218,10 +217,10 @@ elseif n_var==2 % CURRENTLY NOT USED, n_var is always passed as 1
             % low confidence - target 1 (left) and target 2 (right)
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave);
+                'LineWidth',wd,'color',lConf_col);
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave);
+                'LineWidth',wd,'color',lConf_col);
         end
 
     elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
@@ -241,10 +240,10 @@ elseif n_var==2 % CURRENTLY NOT USED, n_var is always passed as 1
             % low confidence - target 1 (left) and target 2 (right)
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave);
+                'LineWidth',wd,'color',lConf_col);
             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2),3,'omitnan'), ...
                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col_ave);
+                'LineWidth',wd,'color',lConf_col);
         end
 
     end
