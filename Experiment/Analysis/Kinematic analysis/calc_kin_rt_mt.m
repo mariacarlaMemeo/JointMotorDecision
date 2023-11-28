@@ -150,6 +150,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     if flag_write
          % add "_post" to distinguish from original acquisition .mat file
         save(fullfile(path_kin,[SUBJECTS{p},'_post']));
+        disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
     end
 
     % ---------------------------------------------------------------------    
