@@ -16,18 +16,19 @@
 % which_Dec: select which decision to plot: 1=1st, 2=2nd, 3=coll., 4=1st&2nd
 % Do you want to start from backup? [1/0]
 
-prompt = {'Which hard drive? (1=IIT/0=UKE)',...
-            'One figure per agent with all trajectories? (1/0) YES',...
-            'One figure per trial (for cutting and visual inspection)? (1/0)',...
-            'Median split for confidence? (1/0)', ...
-            'Normalize trajectories to 100 bins? (1/0)',...
-            'Write Excel files and save mat files? (1/0)',...
-            'Which decision to plot? (1/2/3/4)',...
-            'Do you want to start from backup? (1/0)'};
+prompt = {'Which hard drive? (1=IIT / 0=UKE)',...
+          'One figure per agent with all trajectories? (1/0)',...
+          'One figure per trial (for cutting and visual inspection)? (1/0)',...
+          'Median split for confidence? (1/0)', ...
+          'Normalize trajectories to 100 bins? (1/0)',...
+          'Save Excel files and mat files? (1/0)',...
+          'Which decision to plot? (1/2/3)',...
+          'Start from backup? (1/0)',...
+          'Which trial number to start with? (1-160)'};
 
 name = 'Configuration details';
 numlines=1;
-defaultanswer={'1','1','0','1','1','0','2','0'};
+defaultanswer={'1','1','0','1','1','0','2','0','1'};
 subdetails =inputdlg(prompt,name,numlines,defaultanswer);
 
 % Decide if you want to analyze the full data set 
@@ -47,23 +48,26 @@ end
 
 % set flags according to user input
 if ~isempty(subdetails{1})
-    flag_hd = str2num(subdetails{1});
+    flag_hd         = str2num(subdetails{1});
 end
 if ~isempty(subdetails{2})
-    flag_plot = str2num(subdetails{2});
+    flag_plot       = str2num(subdetails{2});
 end
 if ~isempty(subdetails{3})
-    trial_plot = str2num(subdetails{3});
+    trial_plot      = str2num(subdetails{3});
 end
 if ~isempty(subdetails{4})
-    med_split  = str2num(subdetails{4});
+    med_split       = str2num(subdetails{4});
 end
 if ~isempty(subdetails{5})
-    flag_bin  = str2num(subdetails{5});
+    flag_bin        = str2num(subdetails{5});
 end
 if ~isempty(subdetails{6})
-    flag_write  = str2num(subdetails{6});
+    flag_write      = str2num(subdetails{6});
 end
 if ~isempty(subdetails{7})
-    which_Dec  = str2num(subdetails{7});
+    which_Dec      = str2num(subdetails{7});
+end
+if ~isempty(subdetails{9})
+    trialstart_num = str2num(subdetails{9});
 end

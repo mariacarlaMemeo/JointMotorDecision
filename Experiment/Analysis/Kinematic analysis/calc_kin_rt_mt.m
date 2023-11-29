@@ -28,6 +28,10 @@ try % main try/catch statement
 userInput;
 % Then initialize parameters in separate script
 calc_kin_init;
+% safety catch: only save full file if script is started at 1st trial
+if trialstart_num ~= 1
+    flag_write = 0;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -39,7 +43,10 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % re-set flags before starting new pair
     early_count    = 0; % counter for trials where agent started before prompt
     excl_trial     = 0; % counter for additional exclusions (should be 0) 
-    checkOverwrite = 1; % ask before overwriting Excel file
+    % create file names for current pair
+    %filenameExcel = fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']);
+    filenameExcel = fullfile(path_kin,['jmdData_S' SUBJECTS{p}(2:end) '.xlsx']);
+    filenameMat   = fullfile(path_kin,[SUBJECTS{p},'_post']);
 
     %% Locate and load data for current pair
 
@@ -180,7 +187,6 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
 
     % Save mat file for each pair
     if flag_write && ~any([savemat1,savemat2,savematColl])
-        filenameMat = fullfile(path_kin,[SUBJECTS{p},'_post']);
         if exist(filenameMat,'file') == 2
             % if .mat file already exists, ask user before overwriting
             promptMessage = sprintf('This file already exists:\n%s\nDo you want to overwrite it?', filenameMat);
@@ -227,7 +233,7 @@ end % end of pair loop
 
 
 catch me
-    % Save mat file as a backup in case of crash
+    % Save backup files in case of crash
     % NOTE: Only save in case of "true" crash, i.e., do not save here if
     % the data was already saved earlier (i.e., if savemat=1) because
     % the user decided to exit the script intentionally (i.e., no crash).
@@ -236,6 +242,7 @@ catch me
         % bkp-function will NOT WORK anymore (see userInput, line 41 where the
         % trial number is identified by checking last part of file name)
         save(fullfile(path_kin,[SUBJECTS{p},'_end',num2str(t),'_bkp']));
+        writetable(data,fullfile(path_kin,['jmdData_S' SUBJECTS{p}(2:end) '_end' num2str(t) '_bkp.xlsx']));
         disp(['CRASH in trial ', num2str(t), '. BACKUP MATFILE HAS BEEN SAVED SUCCESSFULLY.']); fprintf(1, '\n');
     end
 end

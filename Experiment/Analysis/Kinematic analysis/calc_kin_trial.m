@@ -7,7 +7,12 @@
 % 2. movement_var
 
 for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisions
-    % NOTE: here, t is the TRIAL number, i.e., 1-160
+    
+    % ***WATCH OUT***
+    % In this loop, t is the TRIAL number, i.e., 1-160.
+    % The decision number (1-480) is indicated by faa/saa/caa.
+    % Inside movement_onset, however, t refers to the decision number and
+    % also the labeling of the plots refer to the decision number.
 
     early = 0; % set early-start-flag to 0 at beginning of each trial
 
@@ -72,7 +77,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % AGENT ACTING FIRST --------------------------------------------------
 
     label_agent = 'FIRSTdecision';
-    fprintf(['\n---------- Trial n. ' num2str(sMarkers{faa}.info.trial_id) ' ----------\n']);
+    fprintf(['\n---------- Decision (1st) n. ' num2str(sMarkers{faa}.info.trial_id) ' ----- Trial n. ' num2str(t) ' ----------\n']);
    
     % 1. call movement_onset.m
     if not(early)
@@ -160,7 +165,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % AGENT ACTING SECOND -------------------------------------------------
 
     label_agent = 'SECONDdecision';
-    fprintf(['\n---------- Trial n. ' num2str(sMarkers{saa}.info.trial_id) ' ----------\n']);
+    fprintf(['\n---------- Decision (2nd) n. ' num2str(sMarkers{saa}.info.trial_id) ' ----- Trial n. ' num2str(t) ' ----------\n']);
    
     % 1. call movement_onset.m
     if not(early)
@@ -243,7 +248,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     % COLLECTIVE DECISION -------------------------------------------------
     
     label_agent = 'COLLECTIVEdecision';
-    fprintf(['\n---------- Trial n. ' num2str(sMarkers{caa}.info.trial_id) ' ----------\n']);
+    fprintf(['\n---------- Decision (col) n. ' num2str(sMarkers{caa}.info.trial_id) ' ----- Trial n. ' num2str(t) ' ----------\n']);
    
     % 1. call movement_onset.m
     if not(early)
@@ -363,15 +368,16 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     
     %% Create new data set
     % Now we add the newly computed parameters to the original Excel file
-    % and create a new Excel file (a much bigger one): expData_xxx_kin_model
+    % (this original data is now contained in a table called "data").
+    % We create a new Excel file (a much bigger one): expData_xxx_kin_model
+    % -> Variables are added for current trial t, row by row.
 
-    if flag_bin % write the new Excel file ONLY FOR binned data
+    if flag_bin % add data ONLY if trajectories have been binned
 
         % size of old header (from original Excel file)
         ol                         = size(txt_or);
 
         % ADD TIME VARIABLES (i.e., append to end of original Excel file)
-        % -> variables are added for current trial t
         data{t,ol(2)+1:ol(2)+10}   = [changeMind(t) ...
                                       rt_final1 rt_final2 rt_finalColl ...
                                       dt_final1 dt_final2 dt_finalColl ...
@@ -408,45 +414,47 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             data(1:trialstart_num-1,:) = data_bkp(1:trialstart_num-1,:);
             crash = '0';
         end % -------------------------------------------------------------
+           
 
-               
-        % write the new Excel file
-        if flag_write
-            filenameExcel = fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']);
-            if exist(filenameExcel,'file') == 2 && checkOverwrite == 1
-                % if Excel file already exists, ask user before overwriting
-                promptMessage = sprintf('This file already exists:\n%s\nDo you want to overwrite it?', filenameExcel);
-                titleBarCaption = 'Overwrite?';
-                % ButtonName = questdlg(Question, Title, Btn1, Btn2, DEFAULT);
-                buttonText = questdlg(promptMessage, titleBarCaption, 'Yes', 'No', 'Yes');
-                if strcmpi(buttonText, 'No') % User does not want to overwrite.
-                    overwriteFile = false;
-                end
-                if overwriteFile % User wants to overwrite: delete old file and write new file
-                    delete(filenameExcel);
-                    writetable(data,filenameExcel);
-                end
-                checkOverwrite = 0; % only ask once at the beginning
-            else
-                writetable(data,filenameExcel);
-            end
-        end
+    end % end of adding rows to data table
 
-    end % end of adding data to Excel file
-
-    % EXIT and SAVE mat file if user decided to exit early
+    % EXIT and SAVE .mat and Excel file if user decided to exit early
     % NOTE: data is always saved after 1 full trial, i.e., a loop of 3 decisions
     % (the filename will indicate the last processed trial, e.g., is user
     % exits in trial 9, then the file will be called "_end9")
     if any([savemat1,savemat2,savematColl])
-        % CAREFUL: if you re-name this file (the "_end"-part), then the
+        % CAREFUL: if you re-name the .mat file (the "_end"-part), then the
         % bkp-function will NOT WORK anymore (see userInput, line 41 where the
         % trial number is identified by checking last part of file name)
         save(fullfile(path_kin,[SUBJECTS{p},'_end',num2str(t),'_bkp']));
-        disp(['BACKUP MATFILE HAS BEEN SAVED SUCCESSFULLY after trial ', num2str(t), '. Exit now.']); fprintf(1, '\n');
+        % also save data in Excel file
+        writetable(data,fullfile(path_kin,['jmdData_S' SUBJECTS{p}(2:end) '_end' num2str(t) '_bkp.xlsx']));
+        disp(['BACKUP FILES HAVE BEEN SAVED SUCCESSFULLY after trial ', num2str(t), '. Exit now.']); fprintf(1, '\n');
         break
     end
 
 end % end of trial loop (i.e., all trials for one pair were completed)
+
+% Now write the new Excel file (with the full data table created above)
+if flag_write
+    if exist(filenameExcel,'file') == 2
+        % if Excel file already exists, ask user before overwriting
+        promptMessage = sprintf('This file already exists:\n%s\nDo you want to overwrite it?', filenameExcel);
+        titleBarCaption = 'Overwrite?';
+        % ButtonName = questdlg(Question, Title, Btn1, Btn2, DEFAULT);
+        buttonText = questdlg(promptMessage, titleBarCaption, 'Yes', 'No', 'Yes');
+        if strcmpi(buttonText, 'No') % User does not want to overwrite.
+            overwriteFile = false;
+        end
+        if overwriteFile % User wants to overwrite: delete old file and write new file
+            delete(filenameExcel);
+            writetable(data,filenameExcel);
+            disp(['Complete Excel file saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
+        end
+    else
+        writetable(data,filenameExcel);
+        disp(['Complete Excel file saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
+    end
+end
 
 % script version: Nov 2023

@@ -11,13 +11,14 @@ function [startFrame,tmove,rt_final,dt_final,mt_final,endFrame,trg,pksInd,pksUln
 % 3. visual_check
 % 4. nPeaks
 
-% NOTEs:
-% 1. input argument "figurepath" is needed for visual_check
-% 2. t refers to decision number faa/saa/caa (not trial as in movement_onset)
+% ***WATCH OUT***
+% 1. t refers to decision number faa/saa/caa (not trial number as in calc_kin_trial)
+% 2. Do not remove input argument "figurepath" (needed for visual_check)
 
 %% Retrieve and define parameters
 
 % Set parameters to NaN as default (needed if we don't go into visual_check)
+% NOTE: trg and mode will only be set if we check trial by trial
 trg = NaN; % trg-paramter: did agent change target (first left, then right) or not?
 mod = NaN; % mod indicates whether tstart/tmove/tend was manually changed
 pksInd.peaks_index=NaN;pksInd.peak_loc_index=NaN;pksInd.npIndex=NaN; % peak struct (value,location,number)
