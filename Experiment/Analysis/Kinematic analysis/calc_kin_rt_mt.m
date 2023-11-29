@@ -91,7 +91,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
                          'peaksUlna1' 'peaksUlna2' 'peaksUlnaColl' ...
                          'peaksLocIndex1' 'peaksLocIndex2' 'peaksLocIndexColl' ...
                          'peaksLocUlna1' 'peaksLocUlna2' 'peaksLocUlnaColl'];
-     data = cell2table(raw); % convert to table
+    data = cell2table(raw); % convert to table
     
     % Retrieve information from Excel file and save in *pairS structure*
     % Retrieve WHICH AGENT took which decision (1st, 2nd, collective)
@@ -129,7 +129,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % value in the middle that is most common (CHECK THIS).
     % Thus, low confidence would be 1-3 and high would be 4-6; see below.
     if med_split % XXX maybe use median(X,'omitnan')?
-        bConf    = pairS.blue_Conf;  % re-name to avoid overwriting
+        bConf    = pairS.blue_Conf; % re-name to avoid overwriting
         yConf    = pairS.yell_Conf;
         collConf = pairS.Coll_Conf;
         bConf(bConf<=median(bConf)) = 1; % if <= median, classify as low (1)
@@ -167,7 +167,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     
     %%%%%%%%%%%%  Start trial loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     t_trialstart = tic;
-    calc_kin_trial; % this runs through all trials for one pair
+    calc_kin_trial; % this runs through all trials for current pair p
     trialtime = toc(t_trialstart);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -180,7 +180,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     if flag_write && ~any([savemat1,savemat2,savematColl])
         filenameMat = fullfile(path_kin,[SUBJECTS{p},'_post']);
         if exist(filenameMat,'file') == 2
-            % if Excel file already exists, ask user before overwriting
+            % if .mat file already exists, ask user before overwriting
             promptMessage = sprintf('This file already exists:\n%s\nDo you want to overwrite it?', filenameMat);
             titleBarCaption = 'Overwrite?';
             % ButtonName = questdlg(Question, Title, Btn1, Btn2, DEFAULT);
@@ -190,12 +190,12 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
             end
             if overwriteMatFile % User wants to overwrite: delete old file and write new file
                 delete(filenameMat);
-                save(filenameMat);
+                save(filenameMat); % save all the variables in workspace
                 % add "_post" to distinguish from original acquisition .mat file
                 disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
             end
         else
-            save(filenameMat); % save all the variables
+            save(filenameMat); % save all the variables in workspace
             % add "_post" to distinguish from original acquisition .mat file
             disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
         end
@@ -238,4 +238,4 @@ catch me
     end
 end
 
-% script version: 1 Nov 2023
+% script version: Nov 2023

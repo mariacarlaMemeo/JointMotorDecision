@@ -47,13 +47,15 @@ while repeatTrial
     % if all is good, you can put ENTER or anything (it will be set to 9)
     mod = input(['Any CHANGES?\n' ...
         '1 = Change TSTART\n2 = Change TMOVE\n' ...
-        '3 = Change TSTOP\n4 = Change START TMOVE TSTOP\n' ...
-        '5 = Erase trial (be careful!)\n' ...
+        '3 = Change TSTOP\n4 = Change TMOVE TSTOP\n' ...
+        '5 = Change START TMOVE TSTOP\n' ...
+        '6 = Erase trial (be careful!)\n' ...
         '--> If ALL GOOD, press ENTER!\n'],'s');
 
     % If mod is empty or non of the required inputs, then put 9
-    if isempty(mod) || sum([strcmp(mod,'5'),strcmp(mod,'1'),strcmp(mod,'2'),...
-                            strcmp(mod,'3'), strcmp(mod,'4'),strcmp(mod,'9')]) == 0
+    if isempty(mod) || sum([strcmp(mod,'1'),strcmp(mod,'2'),strcmp(mod,'3'),...
+                            strcmp(mod,'4'), strcmp(mod,'5'),strcmp(mod,'6'),...
+                            strcmp(mod,'9'),]) == 0
         mod = '9';
     end
 
@@ -63,16 +65,6 @@ while repeatTrial
             disp('Good: no changes to figure!');
             set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
             saveas(gcf,strcat(jpg_title,'_v0.png'));
-
-        case 5  % delete trial but save figure anyway, with red diagonal line
-            yyaxis left;
-            hold on;
-            redline = plot([1,sMarkers{t}.info.nSamples],[0 max(indexV)], 'r', 'LineWidth',5);
-            redline.Annotation.LegendInformation.IconDisplayStyle = 'off';
-            hold off;
-            del_fig = 1;
-            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
-            saveas(gcf,strcat(jpg_title,'_elim.png'));
 
         case 1 % change tstart and save original figure
             if ~exist(strcat(jpg_title,'_v0.png'),'file')
@@ -113,12 +105,27 @@ while repeatTrial
                 min(sMarkers{t}.markers.(mainmarker).Vm(rangex)));
             visual_change = 1;
 
-        case 4 % change tmove, tstop; save original figure
+        case 4 % change tmove and tstop; save original figure
             if ~exist(strcat(jpg_title,'_v0.png'),'file')
                 set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
                 saveas(gcf,strcat(jpg_title,'_v0.png'))
             end
             disp('Insert tmove and tstop ');
+            [x,~]    = ginput(2); % user inputs: select positions one after other
+            rangex1  = (round(x(1))-3):(round(x(1))+3);
+            rangex2  = (round(x(2))-3):(round(x(2))+3);
+            tmove    = rangex1(sMarkers{t}.markers.(mainmarker).Vm(rangex1)== ...
+                min(sMarkers{t}.markers.(mainmarker).Vm(rangex1)));
+            endFrame = rangex2(sMarkers{t}.markers.(mainmarker).Vm(rangex2)== ...
+                min(sMarkers{t}.markers.(mainmarker).Vm(rangex2)));
+            visual_change = 1;
+
+        case 5 % change tstart, tmove, tstop; save original figure
+            if ~exist(strcat(jpg_title,'_v0.png'),'file')
+                set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+                saveas(gcf,strcat(jpg_title,'_v0.png'))
+            end
+            disp('Insert tstart tmove and tstop ');
             [x,~]    = ginput(3); % user inputs: select positions one after other
             rangex1  = (round(x(1))-3):(round(x(1))+3);
             rangex2  = (round(x(2))-3):(round(x(2))+3);
@@ -130,6 +137,16 @@ while repeatTrial
             endFrame    = rangex3(sMarkers{t}.markers.(mainmarker).Vm(rangex3)== ...
                 min(sMarkers{t}.markers.(mainmarker).Vm(rangex3)));
             visual_change = 1;
+
+        case 6  % delete trial but save figure anyway, with red diagonal line
+            yyaxis left;
+            hold on;
+            redline = plot([1,sMarkers{t}.info.nSamples],[0 max(indexV)], 'r', 'LineWidth',5);
+            redline.Annotation.LegendInformation.IconDisplayStyle = 'off';
+            hold off;
+            del_fig = 1;
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+            saveas(gcf,strcat(jpg_title,'_elim.png'));
 
     end
 
@@ -175,4 +192,4 @@ while repeatTrial
 
 end
 
-% script version: 1 Nov 2023
+% script version: Nov 2023

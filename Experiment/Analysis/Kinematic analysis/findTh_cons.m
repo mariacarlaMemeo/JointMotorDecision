@@ -37,4 +37,4 @@ end
 % ind_va = [1 2 22 23] -> this gives you the index of the elements (which pass
 % the threshold test) in the original vector a.
 
-% script version: 1 Nov 2023
+% script version: Nov 2023

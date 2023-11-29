@@ -9,7 +9,7 @@ exc = table();
 % number of bins for normalization
 bin = 100;
 
-% Default for overwriting an existing file.
+% default for overwriting an existing file
 overwriteFile = true; overwriteMatFile = true;
 
 % define RT threshold: if RT<rt_min, then classify as "early start".

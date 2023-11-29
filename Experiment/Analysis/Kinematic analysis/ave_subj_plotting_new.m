@@ -73,4 +73,4 @@ for g = 1:length(agents) % -------------------------------------------
 
 end % end of agent loop ---------------------------------------------------
 
-% script version: 1 Nov 2023
+% script version: Nov 2023

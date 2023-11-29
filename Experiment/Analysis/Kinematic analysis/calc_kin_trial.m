@@ -448,4 +448,4 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 
 end % end of trial loop (i.e., all trials for one pair were completed)
 
-% script version: 1 Nov 2023
+% script version: Nov 2023
