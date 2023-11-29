@@ -36,8 +36,10 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
 
     disp(['Start ' SUBJECTS{p}(2:end)]);
     close all
-    early_count = 0; % counter for trials where agent started before prompt
-    excl_trial  = 0;
+    % re-set flags before starting new pair
+    early_count    = 0; % counter for trials where agent started before prompt
+    excl_trial     = 0; % counter for additional exclusions (should be 0) 
+    checkOverwrite = 1; % ask before overwriting Excel file
 
     %% Locate and load data for current pair
 

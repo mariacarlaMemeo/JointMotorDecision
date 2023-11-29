@@ -413,7 +413,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
         % write the new Excel file
         if flag_write
             filenameExcel = fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']);
-            if exist(filenameExcel,'file') == 2
+            if exist(filenameExcel,'file') == 2 && checkOverwrite == 1
                 % if Excel file already exists, ask user before overwriting
                 promptMessage = sprintf('This file already exists:\n%s\nDo you want to overwrite it?', filenameExcel);
                 titleBarCaption = 'Overwrite?';
@@ -426,6 +426,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
                     delete(filenameExcel);
                     writetable(data,filenameExcel);
                 end
+                checkOverwrite = 0; % only ask once at the beginning
             else
                 writetable(data,filenameExcel);
             end
