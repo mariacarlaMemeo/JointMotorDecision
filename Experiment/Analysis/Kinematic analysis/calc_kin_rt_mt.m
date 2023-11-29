@@ -178,7 +178,6 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
 
     % Save mat file for each pair
     if flag_write && ~any([savemat1,savemat2,savematColl])
-        overwriteMatFile = true; % Default to overwriting or creating new file.
         filenameMat = fullfile(path_kin,[SUBJECTS{p},'_post']);
         if exist(filenameMat,'file') == 2
             % if Excel file already exists, ask user before overwriting
@@ -196,13 +195,11 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
                 disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
             end
         else
-            save(filenameMat);
+            save(filenameMat); % save all the variables
             % add "_post" to distinguish from original acquisition .mat file
             disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
         end
-%         save(fullfile(path_kin,[SUBJECTS{p},'_post']));
-%         disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
-    end
+   end
     
     % display and save exploratory plots (1 plot per agent with all trials)
     if flag_plot

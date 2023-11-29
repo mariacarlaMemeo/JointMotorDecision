@@ -412,7 +412,6 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
                
         % write the new Excel file
         if flag_write
-            overwriteFile = true; % Default to overwriting or creating new file.
             filenameExcel = fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']);
             if exist(filenameExcel,'file') == 2
                 % if Excel file already exists, ask user before overwriting
