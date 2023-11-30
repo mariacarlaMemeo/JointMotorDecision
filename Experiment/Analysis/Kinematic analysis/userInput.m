@@ -24,16 +24,16 @@ prompt = {'Which hard drive? (1=IIT / 0=UKE)',...
           'Save Excel files and mat files? (1/0)',...
           'Which decision to plot? (1/2/3)',...
           'Start from backup? (1/0)',...
-          'Which trial number to start with? (1-160)'};
+          'Which trial number to start with? (1-160) ONLY TO CHECK'};
 
 name = 'Configuration details';
-numlines=1;
-defaultanswer={'1','1','0','1','1','0','2','0','1'};
-subdetails =inputdlg(prompt,name,numlines,defaultanswer);
+numlines = 1;
+defaultanswer = {'1','1','0','1','1','0','2','0','1'};
+subdetails = inputdlg(prompt,name,numlines,defaultanswer);
 
 % Decide if you want to analyze the full data set 
 % or start from backup (in case of previous crash)
-if ~isempty(subdetails{8}) && str2num(subdetails{8}) == 1
+if ~isempty(subdetails{8}) && str2double(subdetails{8}) == 1
     [filename, pathname, filterindex] = uigetfile(pwd,'.mat');
     load(fullfile(pathname,filename),'-regexp','^(?!subdetails$|filename$|pathname$|data_bkp)\w');
     data_bkp        = data; % 'data' is now 'data_bkp' to avoid overwriting
@@ -41,33 +41,33 @@ if ~isempty(subdetails{8}) && str2num(subdetails{8}) == 1
     trial_crash_str = cell2mat(file_split(end-1));
     trialstart_num  = sscanf(trial_crash_str,'end%d'); % start at later trial
     crash = '1';
-elseif ~isempty(subdetails{8}) && str2num(subdetails{8}) == 0
+elseif ~isempty(subdetails{8}) && str2double(subdetails{8}) == 0
     trialstart_num = 1;
     crash = '0';
 end
 
 % set flags according to user input
 if ~isempty(subdetails{1})
-    flag_hd         = str2num(subdetails{1});
+    flag_hd         = str2double(subdetails{1});
 end
 if ~isempty(subdetails{2})
-    flag_plot       = str2num(subdetails{2});
+    flag_plot       = str2double(subdetails{2});
 end
 if ~isempty(subdetails{3})
-    trial_plot      = str2num(subdetails{3});
+    trial_plot      = str2double(subdetails{3});
 end
 if ~isempty(subdetails{4})
-    med_split       = str2num(subdetails{4});
+    med_split       = str2double(subdetails{4});
 end
 if ~isempty(subdetails{5})
-    flag_bin        = str2num(subdetails{5});
+    flag_bin        = str2double(subdetails{5});
 end
 if ~isempty(subdetails{6})
-    flag_write      = str2num(subdetails{6});
+    flag_write      = str2double(subdetails{6});
 end
 if ~isempty(subdetails{7})
-    which_Dec      = str2num(subdetails{7});
+    which_Dec      = str2double(subdetails{7});
 end
 if ~isempty(subdetails{9})
-    trialstart_num = str2num(subdetails{9});
+    trialstart_num = str2double(subdetails{9});
 end

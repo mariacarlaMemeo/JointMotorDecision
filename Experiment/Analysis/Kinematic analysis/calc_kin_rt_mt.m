@@ -28,9 +28,9 @@ try % main try/catch statement
 userInput;
 % Then initialize parameters in separate script
 calc_kin_init;
-% safety catch: only save full file if script is started at 1st trial
+% safety catch: only save full file and average plots if start = trial 1
 if trialstart_num ~= 1
-    flag_write = 0;
+    flag_write = 0; flag_plot = 0;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -215,8 +215,8 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     end
 
     % Write additional Excel file to record the number of excluded trials
-    % early_start = if agent starts before decision prompt (on trial/pair basis)
-    % short_rt = if startFrame defined as NaN in movement_onset (on trial/pair basis)
+    % early_start = if agent starts before decision prompt (on pair basis)
+    % short_rt = if startFrame=NaN in movement_onset (on pair basis) -> should be 0
     % B_2ndDec = no. of plotted (i.e., clean!) trials in which B takes 2nd decision
     % Y_2ndDec = no. of plotted (i.e., clean!) trials in which Y takes 2nd decision
     % -> B_2ndDec + Y_2ndDec            = total number of clean trials for the pair

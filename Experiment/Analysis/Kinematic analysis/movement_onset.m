@@ -209,7 +209,7 @@ if startFrame > preAcq
         xl_t2 = xline(endFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
         xl_t3 = xline(tmove,'-');  % tmove        
         xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
-        xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
+        xl_t1.LineWidth = 0.8; xl_t1.Label = 'button release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
         xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
         xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "top";
         xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -320,7 +320,7 @@ if startFrame > preAcq
             xl_t2 = xline(samp(end)-10,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
             xl_t3 = xline(tmove,'-');  % tmove
             xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
-            xl_t1.LineWidth = 0.8; xl_t1.Label = 'start release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
+            xl_t1.LineWidth = 0.8; xl_t1.Label = 'button release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
             xl_t2.LineWidth = 0.8; xl_t2.Label = 'target press t2'; xl_t2.LabelHorizontalAlignment = "center"; xl_t2.LabelVerticalAlignment = "middle";
             xl_t3.LineWidth = 0.8; xl_t3.Label = 'tmove'; xl_t3.LabelHorizontalAlignment = "center"; xl_t3.LabelVerticalAlignment = "top";
             xl_t0.Annotation.LegendInformation.IconDisplayStyle = 'off';
