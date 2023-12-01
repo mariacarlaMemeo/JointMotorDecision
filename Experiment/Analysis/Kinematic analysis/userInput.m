@@ -68,6 +68,6 @@ end
 if ~isempty(subdetails{7})
     which_Dec      = str2double(subdetails{7});
 end
-if ~isempty(subdetails{9})
+if ~isempty(subdetails{9}) && str2double(subdetails{8}) == 0
     trialstart_num = str2double(subdetails{9});
 end
