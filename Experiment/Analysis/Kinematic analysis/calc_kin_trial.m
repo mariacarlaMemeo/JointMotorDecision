@@ -436,7 +436,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 end % end of trial loop (i.e., all trials for one pair were completed)
 
 % Now write the new Excel file (with the full data table created above)
-if flag_write
+if flag_write && ~any([savemat1,savemat2,savematColl])
     if exist(filenameExcel,'file') == 2
         % if Excel file already exists, ask user before overwriting
         promptMessage = sprintf('This file already exists:\n%s\nDo you want to overwrite it?', filenameExcel);
