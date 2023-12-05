@@ -42,7 +42,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % create file names for current pair
     %filenameExcel = fullfile(path_kin,['expData_' SUBJECTS{p}(2:end) '_kin_model.xlsx']);
     filenameExcel = fullfile(path_kin,['jmdData_S' SUBJECTS{p}(2:end) '.xlsx']);
-    filenameMat   = fullfile(path_kin,[SUBJECTS{p},'_post']);
+    filenameMat   = fullfile(path_kin,[SUBJECTS{p},'_post.mat']);
 
     %% Locate and load data for current pair
 
@@ -198,12 +198,14 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
                 delete(filenameMat);
                 save(filenameMat); % save all the variables in workspace
                 % add "_post" to distinguish from original acquisition .mat file
-                disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
+                fprintf(1, '\n');
+                disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']);
             end
         else
             save(filenameMat); % save all the variables in workspace
             % add "_post" to distinguish from original acquisition .mat file
-            disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']); fprintf(1, '\n');
+            fprintf(1, '\n');
+            disp(['Complete "_post" matfile saved for pair ', num2str(SUBJECTS{p}), '.']);
         end
    end
     

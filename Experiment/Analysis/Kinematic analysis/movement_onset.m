@@ -142,6 +142,9 @@ lastFrame = (samp(end)-10); % time of target button press
 % then use this minimum as endFrame
 % FUNCTION HERE
 endFrame = find_tstop(indexV);
+if isnan(endFrame)
+    endFrame = lastFrame;
+end
 
 % Find movement start in a different way (-> function *find_tmove*)
 % Functionality: Selects the maximum peak and the minimum preceding it.

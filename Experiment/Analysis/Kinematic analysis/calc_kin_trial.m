@@ -394,8 +394,8 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             startFrame2 tmove2 endFrame2 ...
             startFrameColl tmoveColl endFrameColl ...
             trgChange1 trgChange2 trgChangeColl ... % did agent change target on the fly?
-            startCrt1 startCrt2 startCrtColl ... % criterion to determine movement start
             str2double(mod1) str2double(mod2) str2double(modColl) ... % did we change the figure manually?
+            startCrt1 startCrt2 startCrtColl ... % criterion to determine movement start
             pksInd1.npIndex pksInd2.npIndex pksIndColl.npIndex ... % number of velocity peaks index
             pksUlna1.npUlna pksUlna2.npUlna pksUlnaColl.npUlna]; % number of velocity peaks ulna                      
         
