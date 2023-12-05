@@ -14,7 +14,7 @@ x_width       = 18;
 y_width       = 12;
 
 
-% criterion to select the startFrame: it shows the markers accordingly
+% mainmarker is the one we used to define startFrame (if button, then index)
 switch start_criterion
     case 1
         mainmarker      = [model_name '_index'];
@@ -23,9 +23,13 @@ switch start_criterion
         mainmarker    = [model_name '_ulna'];
         label_criterion = 'Ulna';
     case 3
-        mainmarker    = [model_name '_index']; % this is related to the button release and we chose to select the startFrame on the index trajectories
+        mainmarker    = [model_name '_index'];
         label_criterion = 'Button';
 end
+
+% for tmove and tstop (true start and stop), always use index
+endmarker = [model_name '_index'];
+movemarker = endmarker;
 
 
 % display trial number in command window
@@ -88,8 +92,8 @@ while repeatTrial
             [x,~]  = ginput(1); % user input: x-position of cursor position
             rangex = (round(x)-3):(round(x)+3); % range of +-3 of selected x
             % define tmove as minimum value in selected range
-            tmove  = rangex(sMarkers{t}.markers.(mainmarker).Vm(rangex)== ...
-                min(sMarkers{t}.markers.(mainmarker).Vm(rangex)));
+            tmove  = rangex(sMarkers{t}.markers.(movemarker).Vm(rangex)== ...
+                min(sMarkers{t}.markers.(movemarker).Vm(rangex)));
             visual_change = 1;
 
         case 3 % change tstop and save original figure
@@ -101,8 +105,8 @@ while repeatTrial
             [x,~] = ginput(1); % user input: x-position of cursor position
             rangex = (round(x)-3):(round(x)+3); % range of +-3 of selected x
             % define endFrame as minimum value in selected range
-            endFrame = rangex(sMarkers{t}.markers.(mainmarker).Vm(rangex)== ...
-                min(sMarkers{t}.markers.(mainmarker).Vm(rangex)));
+            endFrame = rangex(sMarkers{t}.markers.(endmarker).Vm(rangex)== ...
+                min(sMarkers{t}.markers.(endmarker).Vm(rangex)));
             visual_change = 1;
 
         case 4 % change tmove and tstop; save original figure
@@ -114,10 +118,10 @@ while repeatTrial
             [x,~]    = ginput(2); % user inputs: select positions one after other
             rangex1  = (round(x(1))-3):(round(x(1))+3);
             rangex2  = (round(x(2))-3):(round(x(2))+3);
-            tmove    = rangex1(sMarkers{t}.markers.(mainmarker).Vm(rangex1)== ...
-                min(sMarkers{t}.markers.(mainmarker).Vm(rangex1)));
-            endFrame = rangex2(sMarkers{t}.markers.(mainmarker).Vm(rangex2)== ...
-                min(sMarkers{t}.markers.(mainmarker).Vm(rangex2)));
+            tmove    = rangex1(sMarkers{t}.markers.(movemarker).Vm(rangex1)== ...
+                min(sMarkers{t}.markers.(movemarker).Vm(rangex1)));
+            endFrame = rangex2(sMarkers{t}.markers.(endmarker).Vm(rangex2)== ...
+                min(sMarkers{t}.markers.(endmarker).Vm(rangex2)));
             visual_change = 1;
 
         case 5 % change tstart, tmove, tstop; save original figure
@@ -132,10 +136,10 @@ while repeatTrial
             rangex3  = (round(x(3))-3):(round(x(3))+3);
             startFrame  = rangex1(sMarkers{t}.markers.(mainmarker).Vm(rangex1)== ...
                 min(sMarkers{t}.markers.(mainmarker).Vm(rangex1)));
-            tmove       = rangex2(sMarkers{t}.markers.(mainmarker).Vm(rangex2)== ...
-                min(sMarkers{t}.markers.(mainmarker).Vm(rangex2)));
-            endFrame    = rangex3(sMarkers{t}.markers.(mainmarker).Vm(rangex3)== ...
-                min(sMarkers{t}.markers.(mainmarker).Vm(rangex3)));
+            tmove       = rangex2(sMarkers{t}.markers.(movemarker).Vm(rangex2)== ...
+                min(sMarkers{t}.markers.(movemarker).Vm(rangex2)));
+            endFrame    = rangex3(sMarkers{t}.markers.(endmarker).Vm(rangex3)== ...
+                min(sMarkers{t}.markers.(endmarker).Vm(rangex3)));
             visual_change = 1;
 
         case 6  % delete trial but save figure anyway, with red diagonal line

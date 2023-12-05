@@ -70,7 +70,7 @@ ulnaTh     = findTh_cons(ulnaV,vel_th,succSample);
 %                the moment of start button release
 %                (IF the release occurs *before* indexTh/ulnaTh)
 %                NOTE: startFrame INCLUDES the 20 frames of preAcq
-% *endFrame*   = target press
+% *endFrame*   = target press or velocity minimum
 
 % Notes on cutting --------------------------------------------------------
 % 24-05-23: decision to use *only the ulna* for finding movement start
@@ -137,7 +137,11 @@ if start_criterion == 1 || start_criterion == 2
 end
 
 % define endFrame
-endFrame = (samp(end)-10); % time of target button press
+lastFrame = (samp(end)-10); % time of target button press
+% If the minimum of index velocity occurs before or after the button press,
+% then use this minimum as endFrame
+% FUNCTION HERE
+endFrame = find_tstop(indexV);
 
 % Find movement start in a different way (-> function *find_tmove*)
 % Functionality: Selects the maximum peak and the minimum preceding it.
@@ -209,7 +213,7 @@ if startFrame > preAcq
         % 4. plot three more vertical lines for t0, t1, t2
         xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
         xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
-        xl_t2 = xline(endFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+        xl_t2 = xline(lastFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
         xl_t3 = xline(tmove,'-');  % tmove        
         xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
         xl_t1.LineWidth = 0.8; xl_t1.Label = 'button release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";
@@ -320,7 +324,7 @@ if startFrame > preAcq
             % 4. plot three more vertical lines for t0, t1, t2
             xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
             xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
-            xl_t2 = xline(samp(end)-10,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
+            xl_t2 = xline(lastFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
             xl_t3 = xline(tmove,'-');  % tmove
             xl_t0.LineWidth = 0.8; xl_t0.Label = 'decision prompt t0'; xl_t0.LabelHorizontalAlignment = "center"; xl_t0.LabelVerticalAlignment = "middle";
             xl_t1.LineWidth = 0.8; xl_t1.Label = 'button release t1'; xl_t1.LabelHorizontalAlignment = "center"; xl_t1.LabelVerticalAlignment = "middle";

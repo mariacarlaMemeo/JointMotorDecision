@@ -86,7 +86,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             FirstRT,trial_plot,figurepath);
     else
         startFrame1=NaN;tmove1=NaN;rt_final1=NaN;dt_final1=NaN;mt_final1=NaN;
-        endFrame1=NaN;trgChange1=NaN;savemat1=NaN;mod1=NaN;
+        endFrame1=NaN;trgChange1=NaN;savemat1=NaN;mod1=NaN;startCrt1=NaN;
         pksInd1.peaks_index=NaN;pksInd1.peak_loc_index=NaN;pksInd1.npIndex=NaN;
         pksUlna1.peaks_ulna=NaN;pksUlna1.peak_loc_ulna=NaN;pksUlna1.npUlna=NaN;
     end
@@ -174,7 +174,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             SecRT,trial_plot,figurepath);
     else
         startFrame2=NaN;tmove2=NaN;rt_final2=NaN;dt_final2=NaN;mt_final2=NaN;
-        endFrame2=NaN;trgChange2=NaN;savemat2=NaN;mod2=NaN;
+        endFrame2=NaN;trgChange2=NaN;savemat2=NaN;mod2=NaN;startCrt2=NaN;
         pksInd2.peaks_index=NaN;pksInd2.peak_loc_index=NaN;pksInd2.npIndex=NaN;
         pksUlna2.peaks_ulna=NaN;pksUlna2.peak_loc_ulna=NaN;pksUlna2.npUlna=NaN;
     end
@@ -257,7 +257,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             CollRT,trial_plot,figurepath);
     else
         startFrameColl=NaN;tmoveColl=NaN;rt_finalColl=NaN;dt_finalColl=NaN;mt_finalColl=NaN;
-        endFrameColl=NaN;trgChangeColl=NaN;savematColl=NaN;modColl=NaN;
+        endFrameColl=NaN;trgChangeColl=NaN;savematColl=NaN;modColl=NaN;startCrtColl=NaN;
         pksIndColl.peaks_index=NaN;pksIndColl.peak_loc_index=NaN;pksIndColl.npIndex=NaN;
         pksUlnaColl.peaks_ulna=NaN;pksUlnaColl.peak_loc_ulna=NaN;pksUlnaColl.npUlna=NaN;
     end
@@ -384,8 +384,8 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
                                       mt_final1 mt_final2 mt_finalColl];
         % ADD KINEMATIC DATA
         % -> normalized 100 samples for index and ulna only for 2nd DEC
-        % NOTE: change var counter (1043) if new variables are added!!!
-        data{t,ol(2)+11:ol(2)+1031} = [...
+        % NOTE: change var counter (1034) if new variables are added!!!
+        data{t,ol(2)+11:ol(2)+1034} = [...
             time_traj_index2(:,1)' time_traj_index2(:,2)' time_traj_index2(:,3)' ...
             time_traj_ulna2(:,1)' time_traj_ulna2(:,2)' time_traj_ulna2(:,3)' ...
             spa_traj_index2(:,1)' spa_traj_index2(:,3)' ...
@@ -400,7 +400,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             pksUlna1.npUlna pksUlna2.npUlna pksUlnaColl.npUlna]; % number of velocity peaks ulna                      
         
         % Now add peak structures (values and locations of velocity peaks)
-        data{t,ol(2)+1032:ol(2)+1043} = [...
+        data{t,ol(2)+1035:ol(2)+1046} = [...
             {pksInd1.peaks_index'} {pksInd2.peaks_index'} {pksIndColl.peaks_index'}...
             {pksUlna1.peaks_ulna'} {pksUlna2.peaks_ulna'} {pksUlnaColl.peaks_ulna'}...
             {pksInd1.peak_loc_index'} {pksInd2.peak_loc_index'} {pksIndColl.peak_loc_index'}... 

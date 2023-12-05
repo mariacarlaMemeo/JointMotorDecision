@@ -51,8 +51,9 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % Load mat file
     load(path_kin_each);
     
-    % Create folder to save trial-by-trial plots for this pair    
-    if trial_plot && isfolder(fullfile(figurepath,SUBJECTS{p})) && str2double(crash)==0
+    % Create folder to save trial-by-trial plots for this pair
+    % CHECK THIS
+    if trial_plot && isfolder(fullfile(figurepath,SUBJECTS{p})) && str2double(crash)==0 && debug==0
         rmdir(fullfile(figurepath,SUBJECTS{p}),'s'); % delete folder with plots
     end
     if trial_plot

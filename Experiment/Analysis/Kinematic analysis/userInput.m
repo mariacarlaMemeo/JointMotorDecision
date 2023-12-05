@@ -71,8 +71,10 @@ end
 % if you want to start from later trial, change trial_num here
 % BUT: only if you do not start from backup file - in this case,
 % trial_num is defined based on the backup file
+debug = 0;
 if ~isempty(subdetails{9}) && str2double(subdetails{8}) == 0
     trialstart_num = str2double(subdetails{9});
+    debug = 1; % start from later trial only to debug/check
 end
 
 % If you set trial_num to a later trial just to check something (and not
