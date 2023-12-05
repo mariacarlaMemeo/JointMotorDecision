@@ -369,7 +369,7 @@ end
 
 % If we decide to eliminate the trial in visual_check: fill with NaN values
 if exist('del_fig','var') && del_fig % if del_fig exists and equals 1
-    startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN; trg=NaN;
+    startFrame=NaN; tmove=NaN; rt_final=NaN; dt_final=NaN; mt_final=NaN; endFrame=NaN;
 end
 
 close all % close figure(s)

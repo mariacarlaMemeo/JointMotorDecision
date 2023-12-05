@@ -310,9 +310,9 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
     caa = caa +3; % increase decision counter
     % -----------------------------------------------------------------
 
-    % Check if 1st or 2nd decision has startFrame==NaN.
+    % Check if any decision has startFrame==NaN.
     % This means we should exclude the entire trial.
-    % Thus: set all variables to NaN for this trial and increase counter.
+    % Thus: set all kin. variables to NaN for this trial and increase counter.
     if not(early) && (isnan(startFrame1) || isnan(startFrame2) || isnan(startFrameColl))
         
         excl_trial = excl_trial + 1;
