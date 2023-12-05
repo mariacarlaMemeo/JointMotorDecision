@@ -28,10 +28,6 @@ try % main try/catch statement
 userInput;
 % Then initialize parameters in separate script
 calc_kin_init;
-% safety catch: only save full file and average plots if start = trial 1
-if trialstart_num ~= 1
-    flag_write = 0; flag_plot = 0;
-end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -56,7 +52,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     load(path_kin_each);
     
     % Create folder to save trial-by-trial plots for this pair    
-    if trial_plot && isfolder(fullfile(figurepath,SUBJECTS{p})) && crash==0
+    if trial_plot && isfolder(fullfile(figurepath,SUBJECTS{p})) && str2double(crash)==0
         rmdir(fullfile(figurepath,SUBJECTS{p}),'s'); % delete folder with plots
     end
     if trial_plot
@@ -221,6 +217,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % Y_2ndDec = no. of plotted (i.e., clean!) trials in which Y takes 2nd decision
     % -> B_2ndDec + Y_2ndDec            = total number of clean trials for the pair
     % -> 160 - (early_start + short_rt) = total number of clean trials for the pair
+    % NOTE: this file is created only if plots are created for dec1 or dec2
     if flag_plot == 1 && (which_Dec == 1 || which_Dec == 2)
         exc{p,1:5} = [str2double(SUBJECTS{p}(2:end)) early_count excl_trial trials_clean];
         exc.Properties.VariableNames = {'pair','early_start','short_rt','B_2ndDec','Y_2ndDec'};

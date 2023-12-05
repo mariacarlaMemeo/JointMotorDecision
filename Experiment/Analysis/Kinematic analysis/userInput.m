@@ -68,6 +68,16 @@ end
 if ~isempty(subdetails{7})
     which_Dec      = str2double(subdetails{7});
 end
+% if you want to start from later trial, change trial_num here
+% BUT: only if you do not start from backup file - in this case,
+% trial_num is defined based on the backup file
 if ~isempty(subdetails{9}) && str2double(subdetails{8}) == 0
     trialstart_num = str2double(subdetails{9});
+end
+
+% If you set trial_num to a later trial just to check something (and not
+% because you are starting from a backup), then in this case do not save
+% the final Excel and mat files, and do not plot the averages
+if trialstart_num ~= 1 && str2double(crash)==0
+    flag_write = 0; flag_plot = 0;
 end

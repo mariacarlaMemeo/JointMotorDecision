@@ -414,8 +414,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
             data(1:trialstart_num-1,:) = data_bkp(1:trialstart_num-1,:);
             crash = '0';
         end % -------------------------------------------------------------
-           
-
+          
     end % end of adding rows to data table
 
     % EXIT and SAVE .mat and Excel file if user decided to exit early
@@ -436,6 +435,7 @@ for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisio
 end % end of trial loop (i.e., all trials for one pair were completed)
 
 % Now write the new Excel file (with the full data table created above)
+% Note: Do this only if user did not exit early (in this case bkp file is saved)
 if flag_write && ~any([savemat1,savemat2,savematColl])
     if exist(filenameExcel,'file') == 2
         % if Excel file already exists, ask user before overwriting

@@ -15,7 +15,7 @@
 
 clear; close all; clc;
 
-pair ='S111_end5_bkp';
+pair ='S108_post';
 
 % load .mat file
 data_dir = 'D:\DATA\Processed';
@@ -23,7 +23,7 @@ file_dir  = fullfile(data_dir,[pair,'.mat']);
 load(file_dir);
 
 % Which decision do you want to plot? (1=1st,2=2nd,3=collective)
-which_Dec = 3;
+which_Dec = 1;
 % set other flags
 flag_bin = 1;
 
