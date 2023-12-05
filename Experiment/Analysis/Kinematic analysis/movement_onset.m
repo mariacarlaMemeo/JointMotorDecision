@@ -33,6 +33,8 @@ indexV     = sMarkers{t}.markers.([model_name '_index']).Vm; % velocity module f
 ulnaV      = sMarkers{t}.markers.([model_name '_ulna']).Vm;  % velocity module for ulna
 indexZ     = sMarkers{t}.markers.([model_name '_index']).xyzf(:,3); % height for index
 ulnaZ      = sMarkers{t}.markers.([model_name '_ulna']).xyzf(:,3);  % height for ulna
+indexY     = sMarkers{t}.markers.([model_name '_index']).xyzf(:,2); % y-axis (forward) for index
+ulnaY      = sMarkers{t}.markers.([model_name '_ulna']).xyzf(:,2);  % y-axis (forward) for ulna
 
 % Define variables
 vel_th     = 20; % set velocity threshold at 20 [mm/s]
@@ -142,8 +144,9 @@ endFrame = (samp(end)-10); % time of target button press
 % The output gives you the index of the minimum; this is tmove.
 % NOTE: the function is applied to the marker which has been previously
 % used to define the startFrame.
-tmove = find_tmove(move_marker); % call find_tmove function
-if tmove < startFrame
+% EDIT (05.12.23): ALWAYS use index velocity to define tmove
+tmove = find_tmove(indexV); % call find_tmove function
+if tmove < startFrame || isnan(tmove)
     tmove = startFrame;
 end
 
@@ -160,7 +163,7 @@ if startFrame > preAcq
         yyaxis left;
         uv=plot(samp,ulnaV, 'Color',blueCol);  % ulna velocity ("ulna")
         hold on;
-        uz=plot(samp,ulnaZ, 'Color',blueCol, 'LineStyle','--'); % ulna height ("ulnaZ")
+        uz=plot(samp,ulnaY, 'Color',blueCol, 'LineStyle','--'); % ulna forward ("ulnaY")
         uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
         ylabel('Velocity [mm/s]'); % label for left y-axis
         % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
@@ -178,7 +181,7 @@ if startFrame > preAcq
         yyaxis right;
         iv=plot(samp,indexV, 'Color',orangeCol);  % index velocity ("index")
         hold on;
-        iz=plot(samp,indexZ, 'Color',orangeCol, 'LineStyle','--'); % index height ("indexZ")
+        iz=plot(samp,indexY, 'Color',orangeCol, 'LineStyle','--'); % index forward ("indexY")
         iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
         % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
         if ~isnan(startIndex)
@@ -270,7 +273,7 @@ if startFrame > preAcq
             yyaxis left;
             uv=plot(samp,ulnaV, 'Color',blueCol);  % ulna velocity ("ulna")
             hold on;
-            uz=plot(samp,ulnaZ, 'Color',blueCol, 'LineStyle','--'); % ulna height ("ulnaZ")
+            uz=plot(samp,ulnaY, 'Color',blueCol, 'LineStyle','--'); % ulna forward ("ulnaY")
             uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
             ylabel('Velocity [mm/s]'); % label for left y-axis
             % plot blue vertical line (+ label) to illustrate passing of velocity threshold ulnaTh
@@ -286,7 +289,7 @@ if startFrame > preAcq
             yyaxis right;
             iv=plot(samp,indexV, 'Color',orangeCol);  % index velocity ("index")
             hold on;
-            iz=plot(samp,indexZ, 'Color',orangeCol, 'LineStyle','--'); % index height ("indexZ")
+            iz=plot(samp,indexY, 'Color',orangeCol, 'LineStyle','--'); % index forward ("indexY")
             iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
             % plot orange vertical line (+ label) to illustrate passing of velocity threshold indexTh
             if ~isnan(startIndex)
