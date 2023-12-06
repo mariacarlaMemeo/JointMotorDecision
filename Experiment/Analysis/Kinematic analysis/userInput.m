@@ -31,8 +31,8 @@ numlines = 1;
 defaultanswer = {'1','1','0','1','1','0','2','0','1'};
 subdetails = inputdlg(prompt,name,numlines,defaultanswer);
 
-% Decide if you want to analyze the full data set 
-% or start from backup (in case of previous crash)
+% (8) Decide if you want to analyze the full data set [crash=0]
+% or start from backup, in case of previous crash or exit [crash=1]
 if ~isempty(subdetails{8}) && str2double(subdetails{8}) == 1
     [filename, pathname, filterindex] = uigetfile(pwd,'.mat');
     load(fullfile(pathname,filename),'-regexp','^(?!subdetails$|filename$|pathname$|data_bkp)\w');
@@ -47,39 +47,40 @@ elseif ~isempty(subdetails{8}) && str2double(subdetails{8}) == 0
 end
 
 % set flags according to user input
-if ~isempty(subdetails{1})
+if ~isempty(subdetails{1}) % (1) which hard drive?
     flag_hd         = str2double(subdetails{1});
 end
-if ~isempty(subdetails{2})
+if ~isempty(subdetails{2}) % (2) create average plots?
     flag_plot       = str2double(subdetails{2});
 end
-if ~isempty(subdetails{3})
+if ~isempty(subdetails{3}) % (3) plot trial by trial?
     trial_plot      = str2double(subdetails{3});
 end
-if ~isempty(subdetails{4})
+if ~isempty(subdetails{4}) % (4) do median split?
     med_split       = str2double(subdetails{4});
 end
-if ~isempty(subdetails{5})
+if ~isempty(subdetails{5}) % (5) do binning?
     flag_bin        = str2double(subdetails{5});
 end
-if ~isempty(subdetails{6})
+if ~isempty(subdetails{6}) % (6) save Excel and mat files?
     flag_write      = str2double(subdetails{6});
 end
-if ~isempty(subdetails{7})
+if ~isempty(subdetails{7}) % (7) which decision to plot?
     which_Dec      = str2double(subdetails{7});
 end
-% if you want to start from later trial, change trial_num here
+% (9) start at later trial (~=1) for debugging/checking purposes?
+% If you want to start from later trial, change trial_num here
 % BUT: only if you do not start from backup file - in this case,
-% trial_num is defined based on the backup file
+% trial_num is defined based on the backup file (see above, (8))
 debug = 0;
-if ~isempty(subdetails{9}) && str2double(subdetails{9})~=1 && str2double(subdetails{8}) == 0
+if ~isempty(subdetails{9}) && str2double(subdetails{9})~=1 && str2double(subdetails{8})==0
     trialstart_num = str2double(subdetails{9});
     debug = 1; % start from later trial only to debug/check
 end
 
-% If you set trial_num to a later trial just to check something (and not
-% because you are starting from a backup), then in this case do not save
-% the final Excel and mat files, and do not plot the averages
-if trialstart_num ~= 1 && str2double(crash)==0
-    flag_write = 0; flag_plot = 0;
-end
+% % If you set trial_num to a later trial just to check something (and not
+% % because you are starting from a backup), then in this case do not save
+% % the final Excel and mat files, and do not plot the averages
+% if trialstart_num ~= 1 && str2double(crash)==0
+%     flag_write = 0; flag_plot = 0;
+% end
