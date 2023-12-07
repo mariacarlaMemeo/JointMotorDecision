@@ -6,7 +6,7 @@
 % 1. movement_onset
 % 2. movement_var
 
-for t = trialstart_num:length(raw) % trial loop which goes through all 3 decisions
+for t = trialstart_num:length(raw) % trial loop goes through all 3 decisions
     
     % ***WATCH OUT***
     % In this loop, t is the TRIAL number, i.e., 1-160.
@@ -446,6 +446,8 @@ if flag_write && ~any([savemat1,savemat2,savematColl])
         buttonText = questdlg(promptMessage, titleBarCaption, 'Yes', 'No', 'Yes');
         if strcmpi(buttonText, 'No') % User does not want to overwrite.
             overwriteFile = false;
+        elseif strcmpi(buttonText, 'Yes')
+            overwriteFile = true;
         end
         if overwriteFile % User wants to overwrite: delete old file and write new file
             delete(filenameExcel);

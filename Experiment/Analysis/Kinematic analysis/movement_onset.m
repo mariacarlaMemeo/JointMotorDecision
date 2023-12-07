@@ -261,14 +261,13 @@ if startFrame > preAcq
         
         visual_check; % go into visual_check.m
 
-        % optional: if we decide to use "tmove" to define startFrame
-        % % Check if tmove appears before startFrame - in that case tmove=startFrame
-        % if ~isnan(tmove)
-        %     if tmove<startFrame && ~isempty(startFrame)
-        %         tmove         = startFrame;
-        %         visual_change = 1;
-        %     end
-        % end
+        % Check if tmove appears before startFrame - in that case tmove=startFrame
+        if ~isnan(tmove)
+            if tmove<startFrame && ~isempty(startFrame)
+                tmove         = startFrame;
+                visual_change = 1;
+            end
+        end
 
         % Update start/endFrame (if visual_change is set to 1 in visual_check)
         if visual_change && not(del_fig) % --------------------------------

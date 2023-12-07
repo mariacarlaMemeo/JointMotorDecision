@@ -34,6 +34,11 @@ calc_kin_init;
 %% Start pair loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
 
+    % clear variables before loading next pair
+    if length(SUBJECTS)>1
+        clear sMarkers session bConf yConf blue_Dec yell_Dec
+    end
+    
     disp(['Start ' SUBJECTS{p}(2:end)]);
     close all
     % re-set flags before starting new pair
@@ -195,6 +200,8 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
             buttonText = questdlg(promptMessage, titleBarCaption, 'Yes', 'No', 'Yes');
             if strcmpi(buttonText, 'No') % User does not want to overwrite.
                 overwriteMatFile = false;
+            elseif strcmpi(buttonText, 'Yes')
+                overwriteMatFile = true;
             end
             if overwriteMatFile % User wants to overwrite: delete old file and write new file
                 delete(filenameMat);
@@ -230,9 +237,6 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
         writetable(exc,fullfile(path_kin,'overview_exclusions.xlsx'));
     end
 
-    % clear parameters for next pair
-    clear sMarkers session bConf yConf blue_Dec yell_Dec
- 
 end % end of pair loop
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
