@@ -20,7 +20,7 @@ rt_min = 100;
 
 % 1. Set main data path (where the original EXCEL FILES are located)
 if flag_hd 
-    path_data = 'F:\joint-motor-decision\kin_data\Cleaned';
+    path_data = 'D:\joint-motor-decision\kin_data\Cleaned';%'F:\joint-motor-decision\kin_data\Cleaned';
 else
     path_data = 'D:\DATA\Cleaned';
 end
