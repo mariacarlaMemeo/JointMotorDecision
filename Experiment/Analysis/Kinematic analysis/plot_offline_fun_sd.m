@@ -1,6 +1,6 @@
 function ave_all = plot_offline_fun(matrix_3d,clm,pairS,...
     agents,title_plot,title_fig,save_path,n_var,threshold, ...
-    which_Dec,flag_bin,str)
+    which_Dec,flag_bin,str,dev)
 
 % -------------------------------------------------------------------------
 % -> We plot kin. variables for all trials (only 2nd decision), per agent.
@@ -14,8 +14,11 @@ hConf_col     = [0.4667 0.6745 0.1882]; % GREEN
 hConf_col_2   = [0.3922 0.8314 0.0745]; % variation of green to distinguish agents
 lConf_col     = [0.4941 0.1843 0.5569]; % PURPLE
 lConf_col_2   = [0.7176 0.2745 1.0000]; % variation of purple to distinguish agents
+HiFill        = [0.7529 0.9412 0.5059];
+LoFill        = [0.8235 0.4392 0.9020];
 x_width       = 18;
 y_width       = 12;
+x = [1:100, fliplr(1:100)]; % sample length of x-axis
 
 %% Plotting trajectories (colored according to confidence - high/low)
 
@@ -48,22 +51,51 @@ if n_var==1
 
     if which_Dec == 1 % plot only 1st decision
         % plot single trials
-        plot(ave_all(:,pairS.curr_conf(1:size(ave_all,2))==2 & pairS.at1stDec(1:size(ave_all,2))==agents),'color',hConf_col,'HandleVisibility','off'); % high confidence
+        %plot(ave_all(:,pairS.curr_conf(1:size(ave_all,2))==2 & pairS.at1stDec(1:size(ave_all,2))==agents),'color',hConf_col,'HandleVisibility','off'); % high confidence
         %trajsH.Annotation.LegendInformation.IconDisplayStyle = 'off';
-        hold on;
-        plot(ave_all(:,pairS.curr_conf(1:size(ave_all,2))==1 & pairS.at1stDec(1:size(ave_all,2))==agents),'color',lConf_col,'HandleVisibility','off'); % low confidence
+        %hold on;
+        %plot(ave_all(:,pairS.curr_conf(1:size(ave_all,2))==1 & pairS.at1stDec(1:size(ave_all,2))==agents),'color',lConf_col,'HandleVisibility','off'); % low confidence
         %trajsL.Annotation.LegendInformation.IconDisplayStyle = 'off';
         % plot average trajectories only if data has been normalized (not feasible otherwise)
         if flag_bin
             % average high confidence
             meanH=mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+            sdH=std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+            sdHPlus=(meanH+sdH)';
+            sdHMin=(meanH-sdH)';
+            semH=sdH/sqrt(length(meanH));
+            semHPlus=(meanH+semH)';
+            semHMin=(meanH-semH)';
             plot(meanH,'LineWidth',wd,'color',hConf_col);
             hold on;
+            %plot(sdHPlus,'LineWidth',wd,'color',hConf_col, 'LineStyle',':');
+            %plot(sdHMin,'LineWidth',wd,'color',hConf_col, 'LineStyle',':');
+            if dev==1
+                inBetweenH = [sdHMin, fliplr(sdHPlus)];
+            else
+                inBetweenH = [semHMin, fliplr(semHPlus)];
+            end
+            fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5);
             % average low confidence
-            plot(mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col);
+            meanL=mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+            sdL=std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+            sdLPlus=(meanL+sdL)';
+            sdLMin=(meanL-sdL)';
+            semL=sdL/sqrt(length(meanL));
+            semLPlus=(meanL+semL)';
+            semLMin=(meanL-semL)';
+            plot(meanL,'LineWidth',wd,'color',lConf_col);
+            hold on;
+            %plot(sdLPlus,'LineWidth',wd,'color',lConf_col, 'LineStyle',':');
+            %plot(sdLMin,'LineWidth',wd,'color',lConf_col, 'LineStyle',':');
+            if dev==1
+                inBetweenL = [sdLMin, fliplr(sdLPlus)];
+            else
+                inBetweenL = [semLMin, fliplr(semLPlus)];
+            end
+            fill(x, inBetweenL, LoFill, 'FaceAlpha',0.5);
         end
-        legend({'high confidence', 'low confidence'}, 'Location','northwest');
+        %legend({'high confidence', 'low confidence'}, 'Location','northwest');
         % display count of high/lo confidence decisions
         xL=xlim; yL=ylim;
         text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');

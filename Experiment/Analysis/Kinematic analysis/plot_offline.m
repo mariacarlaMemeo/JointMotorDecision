@@ -15,7 +15,13 @@
 
 clear; close all; clc;
 
-pair ='S108_post';
+pair ='S116_post';
+
+% median split (yes=1, no=0)
+% if no median split, then 1-3=lo, 4-6=high
+show_med_split=1;
+% which variance to plot?
+dev=2; % 1=SD, 2=SEM
 
 % load .mat file
 data_dir = 'D:\DATA\Processed';
@@ -26,6 +32,24 @@ load(file_dir);
 which_Dec = 1;
 % set other flags
 flag_bin = 1;
+% plot sd?
+plot_sd=1;
+
+% XXX adapt this for many pairs
+if show_med_split==0
+    bConf = pairS.blue_Conf;
+    yConf = pairS.yell_Conf;
+    collConf = pairS.Coll_Conf;
+    bConf(bConf<4)  = 1;
+    bConf(bConf>=4) = 2;
+    yConf(yConf<4)  = 1;
+    yConf(yConf>=4) = 2;
+    collConf(collConf<4)  = 1;
+    collConf(collConf>=4) = 2;
+    pairS.bConf = bConf;
+    pairS.yConf = yConf;
+    pairS.collConf = collConf;
+end
 
 % Prepare for loop structure below
 if which_Dec == 1 || which_Dec ==2
@@ -52,27 +76,40 @@ for g = 1:length(agents) % -------------------------------------------
         pairS.curr_dec  = pairS.Coll_Dec;
     end
 
-      
+    lo=sum(pairS.curr_conf(pairS.curr_conf==1));
+    hi=sum(pairS.curr_conf(pairS.curr_conf==2))/2;
+    strCount=['CountHi: ' num2str(hi) ', CountLo: ' num2str(lo)];
+
     % marker loop: index, ulna
     for m = 1:length(mrks)
         
         % time parameter loop: velocity, acceleration, jerk
-        for param = 1:length(time_param)
+        for param = 1:1%length(time_param)
             title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
             title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) 'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
             % go into plotting function
-            ave_all = plot_offline_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),param,pairS,...
-                agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin);
+            if plot_sd
+                ave_all = plot_offline_fun_sd(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),param,pairS,...
+                    agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin,strCount,dev);
+            else
+                ave_all = plot_offline_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),param,pairS,...
+                    agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin,strCount);
+            end
         end
         
         % spatial parameter loop: x-dimension (left-right), z-dimension (height)
-        for sparam = 1:2:length(spa_param)
-            title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
-            title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-            % go into plotting function
-            ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS,...
-                agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin);
-        end
+%         for sparam = 1:2:length(spa_param)
+%             title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+%             title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+%             % go into plotting function
+%             if plot_sd
+%                 ave_all = plot_offline_fun_sd(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS,...
+%                     agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin,strCount.dev);
+%             else
+%                 ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS,...
+%                     agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin,strCount);
+%             end
+%         end
 
     end % end of marker loop
 
