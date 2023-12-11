@@ -15,25 +15,25 @@
 
 clear; close all; clc;
 
-pair ='S116_post';
-
-% median split (yes=1, no=0)
-% if no median split, then 1-3=lo, 4-6=high
-show_med_split=1;
-% which variance to plot?
-dev=2; % 1=SD, 2=SEM
+% Which pair(s) to plot?
+pair = 'S116_post';
 
 % load .mat file
-data_dir = 'D:\DATA\Processed';
+data_dir  = 'D:\DATA\Processed';
 file_dir  = fullfile(data_dir,[pair,'.mat']);
 load(file_dir);
 
-% Which decision do you want to plot? (1=1st,2=2nd,3=collective)
-which_Dec = 1;
-% set other flags
-flag_bin = 1;
-% plot sd?
-plot_sd=1;
+% Set flags ---------------------------------------------------------------
+% Which decision do you want to plot? (1=1st, 2=2nd, 3=collective)
+which_Dec      = 3;
+% Do you want to plot means +- variability (SD or SEM)
+plot_sd        = 1;
+% Do you want to apply a median split (yes=1, no=0)
+% If no median split, then assigment is the following: 1-3=lo, 4-6=high
+show_med_split = 1;
+% Which variability to plot?
+dev            = 1; % 1=SD, 2=SEM
+% -------------------------------------------------------------------------
 
 % XXX adapt this for many pairs
 if show_med_split==0
@@ -78,7 +78,7 @@ for g = 1:length(agents) % -------------------------------------------
 
     lo=sum(pairS.curr_conf(pairS.curr_conf==1));
     hi=sum(pairS.curr_conf(pairS.curr_conf==2))/2;
-    strCount=['CountHi: ' num2str(hi) ', CountLo: ' num2str(lo)];
+    strCount=['Hi: ' num2str(hi) ', Lo: ' num2str(lo)];
 
     % marker loop: index, ulna
     for m = 1:length(mrks)
@@ -90,10 +90,10 @@ for g = 1:length(agents) % -------------------------------------------
             % go into plotting function
             if plot_sd
                 ave_all = plot_offline_fun_sd(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),param,pairS,...
-                    agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin,strCount,dev);
+                    agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount,dev);
             else
                 ave_all = plot_offline_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),param,pairS,...
-                    agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin,strCount);
+                    agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount);
             end
         end
         
@@ -104,10 +104,10 @@ for g = 1:length(agents) % -------------------------------------------
 %             % go into plotting function
 %             if plot_sd
 %                 ave_all = plot_offline_fun_sd(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS,...
-%                     agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin,strCount.dev);
+%                     agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount,dev);
 %             else
 %                 ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS,...
-%                     agents{g},title_plot,title_fig,path_kin,1,[],which_Dec,flag_bin,strCount);
+%                     agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount);
 %             end
 %         end
 
@@ -121,5 +121,3 @@ for g = 1:length(agents) % -------------------------------------------
     end
 
 end % end of agent loop ---------------------------------------------------
-
-% script version: 1 Nov 2023
