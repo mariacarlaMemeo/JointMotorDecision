@@ -18,6 +18,9 @@ LoFill        = [0.8235 0.4392 0.9020];
 x_width       = 18;
 y_width       = 12;
 x = [1:100, fliplr(1:100)]; % sample length of x-axis
+if which_Dec==3
+    title_fig=title_fig(1:end-4);
+end
 
 %% Plotting trajectories (colored according to confidence - high/low)
 
@@ -129,6 +132,14 @@ if n_var==1
         styleColl  = {'-', '-'};
         colorH     = [hConf_col; hConf_col_2]; colorL = [lConf_col; lConf_col_2];
         for g = 1:length(agentsColl)
+            % confidence count
+            lo3=sum(pairS.curr_conf(pairS.curr_conf==1 & pairS.atCollDec==agentsColl{g}));
+            hi3=sum(pairS.curr_conf(pairS.curr_conf==2 & pairS.atCollDec==agentsColl{g}))/2;
+            str=['Hi: ' num2str(hi3) ', Lo: ' num2str(lo3)];
+            if g==2
+                biv = figure(); % create figure
+                set(biv, 'WindowStyle', 'Docked');
+            end
             % high confidence (mean +- variability)
             meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{g}),3,'omitnan');
             sdH     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{g}),0,3,'omitnan');
@@ -157,8 +168,24 @@ if n_var==1
                 inBetweenL = [semLMin, fliplr(semLPlus)];
             end
             fill(x, inBetweenL, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off');
+            if g==1
+                legend({'high confidence B', 'low confidence B'}, 'Location','northwest');
+                xL=xlim; yL=ylim;
+                text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
+                title(title_plot);
+                set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+                saveas(gcf,fullfile(save_path,'meanPlots',[title_fig '_' agentsColl{g} '.png']));
+                hold off;
+            elseif g==2
+                legend({'high confidence Y', 'low confidence Y'}, 'Location','northwest');
+                xL=xlim; yL=ylim;
+                text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
+                title(title_plot);
+                set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+                saveas(gcf,fullfile(save_path,'meanPlots',[title_fig '_' agentsColl{g} '.png']));
+                hold off;
+            end
         end
-        legend({'high confidence B', 'low confidence B','high confidence Y', 'low confidence Y'}, 'Location','northwest');
 
     elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
         % plot single trials
@@ -175,13 +202,14 @@ if n_var==1
 
     end
 
-    title(title_plot);
+    if which_Dec==1 || which_Dec==2
+        title(title_plot);
+        % save each figure with the specified dimensions
+        set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+        saveas(gcf,fullfile(save_path,'meanPlots',title_fig));
+        hold off;
+    end
     
-    % save each figure with the specified dimensions
-    set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
-    saveas(gcf,fullfile(save_path,'meanPlots',title_fig));
-    hold off;
-
 end
 
 % % Plotting two variables (i.e., spatial x-y plots, not across time/frames)

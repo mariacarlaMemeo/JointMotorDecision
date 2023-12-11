@@ -76,9 +76,17 @@ for g = 1:length(agents) % -------------------------------------------
         pairS.curr_dec  = pairS.Coll_Dec;
     end
 
-    lo=sum(pairS.curr_conf(pairS.curr_conf==1));
-    hi=sum(pairS.curr_conf(pairS.curr_conf==2))/2;
-    strCount=['Hi: ' num2str(hi) ', Lo: ' num2str(lo)];
+    lo1=sum(pairS.curr_conf(pairS.curr_conf==1 & pairS.at1stDec==agents{g}));
+    hi1=sum(pairS.curr_conf(pairS.curr_conf==2 & pairS.at1stDec==agents{g}))/2;
+    lo2=sum(pairS.curr_conf(pairS.curr_conf==1 & pairS.at2ndDec==agents{g}));
+    hi2=sum(pairS.curr_conf(pairS.curr_conf==2 & pairS.at2ndDec==agents{g}))/2;
+    if which_Dec==1
+        strCount=['Hi: ' num2str(hi1) ', Lo: ' num2str(lo1)];
+    elseif which_Dec==2
+        strCount=['Hi: ' num2str(hi2) ', Lo: ' num2str(lo2)];
+    elseif which_Dec==3
+        strCount=[];
+    end
 
     % marker loop: index, ulna
     for m = 1:length(mrks)
