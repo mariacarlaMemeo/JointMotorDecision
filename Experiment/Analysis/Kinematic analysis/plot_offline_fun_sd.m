@@ -1,4 +1,4 @@
-function ave_all = plot_offline_fun(matrix_3d,clm,pairS,...
+function ave_all = plot_offline_fun_sd(ave_all,matrix_3d,marker,clm,pairS,...
     agents,title_plot,title_fig,save_path,n_var,threshold, ...
     which_Dec,flag_bin,str,dev)
 
@@ -28,37 +28,37 @@ end
 if n_var==1
 
     % "squeeze" first to change format XXX
-    ave_all = squeeze(matrix_3d(:,clm,:)); % data named "ave_all" now
+    matrix_sqz = squeeze(matrix_3d(:,clm,:)); % data named "ave_all" now
 
     % The following is done to remove weird trials, -----------------------
     % but we currently do NOT use this: "threshold" = []
     if length(threshold)==1
         if threshold>0
-            [~,c]=find(ave_all>threshold);
+            [~,c]=find(matrix_sqz>threshold);
         else
-            [~,c]=find(ave_all<threshold);
+            [~,c]=find(matrix_sqz<threshold);
         end
     elseif length(threshold)==2
-        [~,c]=find(ave_all<threshold(1) | ave_all>threshold(2));
+        [~,c]=find(matrix_sqz<threshold(1) | matrix_sqz>threshold(2));
     elseif isempty(threshold)
         c=[];
     end
     % ---------------------------------------------------------------------
 
     matrix_3d(:,clm,unique(c)) = nan;
-    ave_all(:,unique(c))       = nan;
+    matrix_sqz(:,unique(c))   = nan;
 
     biv = figure(); % create figure
     set(biv, 'WindowStyle', 'Docked');
 
     if which_Dec == 1 % plot only 1st decision
         % high confidence (mean +- variability)
-        meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
         sdH     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdHPlus = (meanH+sdH)'; sdHMin=(meanH-sdH)';
-        semH    = sdH/sqrt(length(meanH));
-        semHPlus=(meanH+semH)'; semHMin=(meanH-semH)';
-        plot(meanH,'LineWidth',wd,'color',hConf_col); %mean
+        sdHPlus = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
+        semH    = sdH/sqrt(length(ave_all.(marker).meanH));
+        semHPlus=(ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
+        plot(ave_all.(marker).meanH,'LineWidth',wd,'color',hConf_col); %mean
         hold on;
         if dev==1 % SD
             %plot(sdHPlus,'LineWidth',wd,'color',hConf_col, 'LineStyle',':'); %mean+SD
@@ -71,12 +71,12 @@ if n_var==1
         end
         fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
         % low confidence (mean +- variability)
-        meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
         sdL     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdLPlus = (meanL+sdL)'; sdLMin=(meanL-sdL)';
-        semL    = sdL/sqrt(length(meanL));
-        semLPlus= (meanL+semL)'; semLMin=(meanL-semL)';
-        plot(meanL,'LineWidth',wd,'color',lConf_col);
+        sdLPlus = (ave_all.(marker).meanL+sdL)'; sdLMin=(ave_all.(marker).meanL-sdL)';
+        semL    = sdL/sqrt(length(ave_all.(marker).meanL));
+        semLPlus= (ave_all.(marker).meanL+semL)'; semLMin=(ave_all.(marker).meanL-semL)';
+        plot(ave_all.(marker).meanL,'LineWidth',wd,'color',lConf_col);
         hold on;
         if dev==1
             %plot(sdLPlus,'LineWidth',wd,'color',lConf_col, 'LineStyle',':'); %mean+SD
@@ -95,12 +95,12 @@ if n_var==1
 
     elseif which_Dec == 2 % only second decision
         % high confidence (mean +- variability)
-        meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),3,'omitnan');
         sdH     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdHPlus = (meanH+sdH)'; sdHMin=(meanH-sdH)';
-        semH    = sdH/sqrt(length(meanH));
-        semHPlus=(meanH+semH)'; semHMin=(meanH-semH)';
-        plot(meanH,'LineWidth',wd,'color',hConf_col); %mean
+        sdHPlus = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
+        semH    = sdH/sqrt(length(ave_all.(marker).meanH));
+        semHPlus=(ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
+        plot(ave_all.(marker).meanH,'LineWidth',wd,'color',hConf_col); %mean
         hold on;
         if dev==1 % SD
             inBetweenH = [sdHMin, fliplr(sdHPlus)];
@@ -109,12 +109,12 @@ if n_var==1
         end
         fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
         % low confidence (mean +- variability)
-        meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),3,'omitnan');
         sdL     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdLPlus = (meanL+sdL)'; sdLMin=(meanL-sdL)';
-        semL    = sdL/sqrt(length(meanL));
-        semLPlus= (meanL+semL)'; semLMin=(meanL-semL)';
-        plot(meanL,'LineWidth',wd,'color',lConf_col);
+        sdLPlus = (ave_all.(marker).meanL+sdL)'; sdLMin=(ave_all.(marker).meanL-sdL)';
+        semL    = sdL/sqrt(length(ave_all.(marker).meanL));
+        semLPlus= (ave_all.(marker).meanL+semL)'; semLMin=(ave_all.(marker).meanL-semL)';
+        plot(ave_all.(marker).meanL,'LineWidth',wd,'color',lConf_col);
         hold on;
         if dev==1
             inBetweenL = [sdLMin, fliplr(sdLPlus)];
@@ -132,6 +132,9 @@ if n_var==1
         styleColl  = {'-', '-'};
         colorH     = [hConf_col; hConf_col_2]; colorL = [lConf_col; lConf_col_2];
         for g = 1:length(agentsColl)
+            % add a field to the output structure 
+            ave_all.(marker).agent = agentsColl{g};
+
             % confidence count
             lo3=sum(pairS.curr_conf(pairS.curr_conf==1 & pairS.atCollDec==agentsColl{g}));
             hi3=sum(pairS.curr_conf(pairS.curr_conf==2 & pairS.atCollDec==agentsColl{g}))/2;
@@ -141,12 +144,12 @@ if n_var==1
                 set(biv, 'WindowStyle', 'Docked');
             end
             % high confidence (mean +- variability)
-            meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{g}),3,'omitnan');
+            ave_all.(marker).meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{g}),3,'omitnan');
             sdH     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{g}),0,3,'omitnan');
-            sdHPlus = (meanH+sdH)'; sdHMin=(meanH-sdH)';
-            semH    = sdH/sqrt(length(meanH));
-            semHPlus=(meanH+semH)'; semHMin=(meanH-semH)';
-            plot(meanH,'LineWidth',wd,'color',colorH(g,:)); %mean
+            sdHPlus = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
+            semH    = sdH/sqrt(length(ave_all.(marker).meanH));
+            semHPlus=(ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
+            plot(ave_all.(marker).meanH,'LineWidth',wd,'color',colorH(g,:)); %mean
             hold on;
             if dev==1 % SD
                 inBetweenH = [sdHMin, fliplr(sdHPlus)];
@@ -155,12 +158,12 @@ if n_var==1
             end
             fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
             % low confidence (mean +- variability)
-            meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{g}),3,'omitnan');
+            ave_all.(marker).meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{g}),3,'omitnan');
             sdL     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{g}),0,3,'omitnan');
-            sdLPlus = (meanL+sdL)'; sdLMin=(meanL-sdL)';
-            semL    = sdL/sqrt(length(meanL));
-            semLPlus= (meanL+semL)'; semLMin=(meanL-semL)';
-            plot(meanL,'LineWidth',wd,'color',colorL(g,:));
+            sdLPlus = (ave_all.(marker).meanL+sdL)'; sdLMin=(ave_all.(marker).meanL-sdL)';
+            semL    = sdL/sqrt(length(ave_all.(marker).meanL));
+            semLPlus= (ave_all.(marker).meanL+semL)'; semLMin=(ave_all.(marker).meanL-semL)';
+            plot(ave_all.(marker).meanL,'LineWidth',wd,'color',colorL(g,:));
             hold on;
             if dev==1
                 inBetweenL = [sdLMin, fliplr(sdLPlus)];
@@ -189,9 +192,9 @@ if n_var==1
 
     elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
         % plot single trials
-        plot(ave_all(:,pairS.curr_conf==2),'color',hConf_col); % high confidence
+        plot(ave_all.(marker)(:,pairS.curr_conf==2),'color',hConf_col); % high confidence
         hold on;
-        plot(ave_all(:,pairS.curr_conf==1),'color',lConf_col); % low confidence
+        plot(ave_all.(marker)(:,pairS.curr_conf==1),'color',lConf_col); % low confidence
         % plot average trajectories only if data has been normalized (not feasible otherwise)
         if flag_bin
             plot(mean(matrix_3d(:,clm,pairS.curr_conf==2),3,'omitnan'), ...
