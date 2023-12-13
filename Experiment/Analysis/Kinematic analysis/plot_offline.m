@@ -15,6 +15,9 @@
 
 clear; close all; clc;
 
+% Do you want to plot the individual agents or just the grand average?
+plot_indiv = 0;
+
 % Check the computer running the script
 [~, name] = system('hostname');
 
@@ -55,7 +58,7 @@ for sel_p=1:n_pr
 
     % Set flags ---------------------------------------------------------------
     % Which decision do you want to plot? (1=1st, 2=2nd, 3=collective)
-    which_Dec      = 1;
+    which_Dec      = 2;
     % Do you want to plot means +- variability (SD or SEM)
     plot_sd        = 1;
     % Do you want to apply a median split (yes=1, no=0)
@@ -128,7 +131,7 @@ for sel_p=1:n_pr
                 % go into plotting function
                 if plot_sd
                     ave_all.time = plot_offline_fun_sd(ave_all.time,eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),mrks{m},param,pairS,...
-                        agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount,dev);
+                        agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
                 else
                     ave_all = plot_offline_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),mrks{m},param,pairS,...
                         agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount);
@@ -136,18 +139,25 @@ for sel_p=1:n_pr
             end
 
             % spatial parameter loop: x-dimension (left-right), z-dimension (height)
-            %         for sparam = 1:2:length(spa_param)
-            %             title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
-            %             title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-            %             % go into plotting function
-            %             if plot_sd
-            %                 ave_all.space = plot_offline_fun_sd(ave_all.space,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
-            %                     agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount,dev);
-            %             else
-            %                 ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
-            %                     agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount);
-            %             end
-            %         end
+            for sparam = 1:2:length(spa_param)
+                title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+                title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+                % go into plotting function
+                if plot_sd
+                    for n=1:2
+                        if n==2
+                            title_plot = [title_plot '_Yaxis'];
+                            title_fig  = [title_fig(1:end-4) '_Yaxis.png'];
+                        end
+                        ave_all.space = plot_offline_fun_sd(ave_all.space,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
+                            agents{g},title_plot,title_fig,data_dir,n,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+                    end
+                else
+                    ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
+                        agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount);
+                end
+            end
+
 
         end % end of marker loop
 
@@ -171,12 +181,12 @@ for sel_p=1:n_pr
 
         %store ave_all struct in a new variable updated per pair and agent
         name_struct = [(ave_all.pairID) 'mean' agents{g}];
-        eval([(name_struct) '= ave_all']);
+        eval([(name_struct) '= ave_all;'])
 
 
     end % end of agent loop ---------------------------------------------------
 
-    clearvars -except ave_all name data_dir sel_p n_pr file path meanHall meanLall flag_multiple mrks
+    clearvars -except ave_all name data_dir sel_p n_pr file path meanHall meanLall flag_multiple mrks plot_indiv
 end
 
 % this is just temporary to do the plot
@@ -217,7 +227,7 @@ if flag_multiple
         fill(x, grandinBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off');
         plot(grandAveL,'Color',lConf_col);
         fill(x, grandinBetweenL, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off');
-  
+
     end
 end
 
