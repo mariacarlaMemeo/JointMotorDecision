@@ -15,9 +15,6 @@
 
 clear; close all; clc;
 
-% Do you want to plot the individual agents or just the grand average?
-plot_indiv = 0;
-
 % Check the computer running the script
 [~, name] = system('hostname');
 
@@ -32,12 +29,10 @@ end
 % If the user select only one file it just load .mat file. Otherwise it
 % loads one .mat file in a for loop and keeps the info about the mean
 % trajectories of each agent and each level of confidence (1-2)
-ave_all.time   = [];
-ave_all.space  = [];
-meanHall.index = [];
-meanLall.index = [];
-meanHall.ulna  = [];
-meanLall.ulna  = [];
+ave_all.V.time   = []; ave_all.A.time   = []; ave_all.J.time   = [];
+ave_all.X.space  = []; ave_all.Y.space  = []; ave_all.Z.space  = [];
+meanHall_V.index = []; meanLall_V.index = []; meanHall_V.ulna  = []; meanLall_V.ulna  = [];
+meanHall_A.index = []; meanLall_A.index = []; meanHall_A.ulna  = []; meanLall_A.ulna  = [];
 
 if ischar(file)%only 1 input
     n_pr = 1;%number of pairs
@@ -58,7 +53,7 @@ for sel_p=1:n_pr
 
     % Set flags ---------------------------------------------------------------
     % Which decision do you want to plot? (1=1st, 2=2nd, 3=collective)
-    which_Dec      = 2;
+    which_Dec      = 1;
     % Do you want to plot means +- variability (SD or SEM)
     plot_sd        = 1;
     % Do you want to apply a median split (yes=1, no=0)
@@ -66,6 +61,10 @@ for sel_p=1:n_pr
     show_med_split = 1;
     % Which variability to plot?
     dev            = 1; % 1=SD, 2=SEM
+    % Do you want to plot the individual agents or just the grand average?
+    plot_indiv = 0;
+    %number of variables to plot
+    n_var = 1;
     % -------------------------------------------------------------------------
 
     % XXX adapt this for many pairs
@@ -124,42 +123,91 @@ for sel_p=1:n_pr
         % marker loop: index, ulna
         for m = 1:length(mrks)
 
-            % time parameter loop: velocity, acceleration, jerk
-            for param = 1:1%length(time_param)
-                title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
-                title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) 'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-                % go into plotting function
-                if plot_sd
-                    ave_all.time = plot_offline_fun_sd(ave_all.time,eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),mrks{m},param,pairS,...
-                        agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
-                else
-                    ave_all = plot_offline_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),mrks{m},param,pairS,...
-                        agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount);
-                end
-            end
-
-            % spatial parameter loop: x-dimension (left-right), z-dimension (height)
-            for sparam = 1:2:length(spa_param)
-                title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
-                title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-                % go into plotting function
-                if plot_sd
-                    for n=1:2
-                        if n==2
-                            title_plot = [title_plot '_Yaxis'];
-                            title_fig  = [title_fig(1:end-4) '_Yaxis.png'];
-                        end
-                        ave_all.space = plot_offline_fun_sd(ave_all.space,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
-                            agents{g},title_plot,title_fig,data_dir,n,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+            if n_var == 1
+                % time parameter loop: velocity, acceleration, jerk
+                for param = 1:2%length(time_param)
+                    if param == 1
+                        lab_time = 'V';
+                    elseif param == 2
+                        lab_time = 'A';
+                    elseif param == 3
+                        lab_time = 'J';
                     end
-                else
-                    ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
-                        agents{g},title_plot,title_fig,data_dir,1,[],which_Dec,flag_bin,strCount);
+                    title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+                    title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) 'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+                    %go into plotting function
+                    if plot_sd
+                        ave_all.(lab_time).time = plot_offline_fun_sd(ave_all.(lab_time).time,eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),mrks{m},param,pairS,...
+                            agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+                    else
+                        ave_all = plot_offline_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),mrks{m},param,pairS,...
+                            agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount);
+                    end
+                end
+
+                % spatial parameter loop: x-dimension (left-right), z-dimension (height)
+                for sparam = 1:2:length(spa_param)
+                    if sparam == 1
+                        lab_space = 'X';
+                    elseif sparam == 2
+                        lab_space = 'Y';
+                    elseif sparam == 3
+                        lab_space = 'Z';
+                    end
+                    title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+                    title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+                    % go into plotting function
+                    if plot_sd
+                        ave_all.(lab_space).space = plot_offline_fun_sd(ave_all.(lab_space).space,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
+                            agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+                    else
+                        ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
+                            agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount);
+                    end
                 end
             end
 
+            % x-y and y-z plots
+            if n_var == 2
+                title_plot = [upper(mrks{m}) ' - ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+                title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+
+                ave_all_2d.space = plot_offline_fun_sd(ave_all_2d.space,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},[],pairS,...
+                    agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+            end
 
         end % end of marker loop
+
+        %build a pragmatic matrix
+        if n_var ==1
+            %ave_all1 represents the velocity
+            meanHall_V.index = [meanHall_V.index, ave_all.V.time.index.meanH];
+            meanLall_V.index = [meanLall_V.index,ave_all.V.time.index.meanL];
+            meanHall_V.ulna  = [meanHall_V.ulna,ave_all.V.time.ulna.meanH];
+            meanLall_V.ulna  = [meanLall_V.ulna,ave_all.V.time.ulna.meanL];
+            %store ave_all struct in a new variable updated per pair and agent
+            name_struct = [(ave_all.pairID) 'mean_V' agents{g}];
+            eval([(name_struct) '= ave_all.V;'])
+
+            %ave_all1 represents the acceleration
+            meanHall_A.index = [meanHall_A.index, ave_all.A.time.index.meanH];
+            meanLall_A.index = [meanLall_A.index,ave_all.A.time.index.meanL];
+            meanHall_A.ulna  = [meanHall_A.ulna,ave_all.A.time.ulna.meanH];
+            meanLall_A.ulna  = [meanLall_A.ulna,ave_all.A.time.ulna.meanL];
+            %store ave_all struct in a new variable updated per pair and agent
+            name_struct = [(ave_all.pairID) 'mean_A' agents{g}];
+            eval([(name_struct) '= ave_all.A;'])
+
+        elseif n_var ==2
+%             %ave_all_2d represents the velocity
+%             meanHall_V.index = [meanHall_V.index, ave_all_2d.space.index.meanH];
+%             meanLall_V.index = [meanLall_V.index,ave_all_2d.space.index.meanL];
+%             meanHall_V.ulna  = [meanHall_V.ulna,ave_all_2d.space.ulna.meanH];
+%             meanLall_V.ulna  = [meanLall_V.ulna,ave_all_2d.space.ulna.meanL];
+%             %store ave_all struct in a new variable updated per pair and agent
+%             name_struct = [(ave_all1.pairID) 'mean_V' agents{g}];
+%             eval([(name_struct) '= ave_all1;'])
+        end
 
         % Save number of plotted (i.e., clean!) trials in which either agent
         % blue or yellow took 2nd decision (in sum, this is the total number of
@@ -172,22 +220,11 @@ for sel_p=1:n_pr
                 trials_clean(g) = length(ave_all(~isnan(ave_all(1,pairS.at2ndDec(1:size(ave_all,2))==agents{g}))));
             end
         end
-
-        %build a pragmatic matrix
-        meanHall.index = [meanHall.index, ave_all.time.index.meanH];
-        meanLall.index = [meanLall.index,ave_all.time.index.meanL];
-        meanHall.ulna  = [meanHall.ulna,ave_all.time.ulna.meanH];
-        meanLall.ulna  = [meanLall.ulna,ave_all.time.ulna.meanL];
-
-        %store ave_all struct in a new variable updated per pair and agent
-        name_struct = [(ave_all.pairID) 'mean' agents{g}];
-        eval([(name_struct) '= ave_all;'])
-
-
     end % end of agent loop ---------------------------------------------------
+    clearvars -except ave_all name data_dir sel_p n_pr file path flag_multiple mrks plot_indiv...
+                        meanHall_V meanLall_V meanHall_A meanLall_A 
 
-    clearvars -except ave_all name data_dir sel_p n_pr file path meanHall meanLall flag_multiple mrks plot_indiv
-end
+end % end of pair loop ---------------------------------------------------
 
 % this is just temporary to do the plot
 wd            = 4; % line width
@@ -202,10 +239,10 @@ x = [1:100, fliplr(1:100)]; % sample length of x-axis
 % Calculate the average across multiple pairs
 if flag_multiple
     for m = 1:length(mrks)
-        grandAveH = mean(meanHall.(mrks{m}),2);
-        grandAveL = mean(meanLall.(mrks{m}),2);
-        grandSdH  = std(meanHall.(mrks{m}),0,2);
-        grandSdL  = std(meanLall.(mrks{m}),0,2);
+        grandAveH = mean(meanHall_V.(mrks{m}),2);
+        grandAveL = mean(meanLall_V.(mrks{m}),2);
+        grandSdH  = std(meanHall_V.(mrks{m}),0,2);
+        grandSdL  = std(meanLall_V.(mrks{m}),0,2);
 
         grandSemH = grandSdH/sqrt(length(grandAveH));
         grandSemL = grandSdL/sqrt(length(grandAveH));

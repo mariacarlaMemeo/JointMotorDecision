@@ -98,7 +98,7 @@ if n_var==1
             xL=xlim; yL=ylim;
             text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
         end
-    
+
     elseif which_Dec == 2 % only second decision
         % high confidence (mean +- variability)
         ave_all.(marker).meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),3,'omitnan');
@@ -142,7 +142,7 @@ if n_var==1
         styleColl  = {'-', '-'};
         colorH     = [hConf_col; hConf_col_2]; colorL = [lConf_col; lConf_col_2];
         for g = 1:length(agentsColl)
-            % add a field to the output structure 
+            % add a field to the output structure
             ave_all.(marker).agent = agentsColl{g};
             % confidence count
             lo3=sum(pairS.curr_conf(pairS.curr_conf==1 & pairS.atCollDec==agentsColl{g}));
@@ -225,139 +225,202 @@ if n_var==1
         saveas(gcf,fullfile(save_path,'meanPlots',title_fig));
         hold off;
     end
-    
-end
 
-% % Plotting two variables (i.e., spatial x-y plots, not across time/frames)
-% elseif n_var==2 % CURRENTLY NOT USED, n_var is always passed as 1
-% 
-%     % "squeeze" to adjust data format
-%     ave_x_all = squeeze(matrix_3d(:,1,:)); % 1st column is x
-%     ave_y_all = squeeze(matrix_3d(:,2,:)); % 2nd column is y
-% 
-%     % remove outliers - CURRENTLY NOT USED --------------------------------
-%     if length(threshold)>1
-%         [~,cx] = find(ave_x_all<threshold(1) | ave_x_all>threshold(2));
-%         [~,cy] = find(ave_y_all<threshold(3) | ave_y_all>threshold(4));
-%         c_out  = unique([unique(cx); unique(cy)]);
-%     elseif isempty(threshold)
-%         c_out=[];
-%     end
-%     % ---------------------------------------------------------------------
-% 
-%     matrix_3d(:,1,c_out) = nan;
-%     matrix_3d(:,2,c_out) = nan;
-%     ave_x_all(:,c_out)   = nan;
-%     ave_y_all(:,c_out)   = nan;
-% 
-%     yiz=figure(); % create figure
-%     set(yiz, 'WindowStyle', 'Docked');
-% 
-%     if which_Dec == 1
-%         % plot single trials
-%         plot(ave_x_all(:,pairS.curr_conf==2 & pairS.at1stDec==agents), ...
-%             ave_y_all(:,pairS.curr_conf==2 & pairS.at1stDec==agents),'color',hConf_col);
-%         hold on;
-%         plot(ave_x_all(:,pairS.curr_conf==1 & pairS.at1stDec==agents), ...
-%             ave_y_all(:,pairS.curr_conf==1 & pairS.at1stDec==agents),'color',lConf_col);
-%         % plot average trajectories only if data has been normalized (not feasible otherwise)
-%         if flag_bin
-%             % high confidence - target 1 (left) and target 2 (right)
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',hConf_col);
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',hConf_col);
-%             % low confidence - target 1 (left) and target 2 (right)
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at1stDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',lConf_col);
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at1stDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',lConf_col);
-%         end
-% 
-%     elseif which_Dec == 2 % only second decision
-%         % plot single trials
-%         plot(ave_x_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents), ...
-%             ave_y_all(:,pairS.curr_conf==2 & pairS.at2ndDec==agents),'color',hConf_col);
-%         hold on;
-%         plot(ave_x_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents), ...
-%             ave_y_all(:,pairS.curr_conf==1 & pairS.at2ndDec==agents),'color',lConf_col);
-%         % plot average trajectories only if data has been normalized (not feasible otherwise)
-%         if flag_bin
-%             % high confidence - target 1 (left) and target 2 (right)
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',hConf_col);
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',hConf_col);
-%             % low confidence - target 1 (left) and target 2 (right)
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',lConf_col);
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',lConf_col);
-%         end
-% 
-%     elseif which_Dec == 3 % only collective decision
-%         % plot single trials
-%         plot(ave_x_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents), ...
-%             ave_y_all(:,pairS.curr_conf==2 & pairS.atCollDec==agents),'color',hConf_col);
-%         hold on;
-%         plot(ave_x_all(:,pairS.curr_conf==1 & pairS.atCollDec==agents), ...
-%             ave_y_all(:,pairS.curr_conf==1 & pairS.atCollDec==agents),'color',lConf_col);
-%         % plot average trajectories only if data has been normalized (not feasible otherwise)
-%         if flag_bin
-%             % high confidence - target 1 (left) and target 2 (right)
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',hConf_col);
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',hConf_col);
-%             % low confidence - target 1 (left) and target 2 (right)
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',lConf_col);
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',lConf_col);
-%         end
-% 
-%     elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
-%         % plot single trials
-%         plot(ave_x_all(:,pairS.curr_conf==2),ave_y_all(:,pairS.curr_conf==2),'color',hConf_col);
-%         hold on;
-%         plot(ave_x_all(:,pairS.curr_conf==1),ave_y_all(:,pairS.curr_conf==1),'color',lConf_col);
-%         % plot average trajectories only if data has been normalized (not feasible otherwise)
-%         if flag_bin
-%             % high confidence - target 1 (left) and target 2 (right)
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',hConf_col);
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',hConf_col);
-%             % low confidence - target 1 (left) and target 2 (right)
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',lConf_col);
-%             plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2),3,'omitnan'), ...
-%                 mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2),3,'omitnan'), ...
-%                 'LineWidth',wd,'color',lConf_col);
-%         end
-% 
-%     end
-% 
-%     title(title_plot);
-%     
-%     % save each figure with the specified dimensions
-%     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
-%     saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig)); % note: save_path=path_kin
-%     hold off;
-% 
-% end % end of plotting
+
+    % Plotting two variables (i.e., spatial x-y plots, not across time/frames)
+elseif n_var==2
+
+    % titles
+    title_plotX = [title_plot ', XYaxis'];
+    title_figX  = [title_fig(1:end-4) '_XYaxis.png'];
+    title_plotZ = [title_plot ', YZaxis'];
+    title_figZ  = [title_fig(1:end-4) '_YZaxis.png'];
+
+    % "squeeze" to adjust data format
+    matrix_sqz_X = squeeze(matrix_3d(:,1,:)); % 1st column is x
+    matrix_sqz_Y = squeeze(matrix_3d(:,2,:)); % 2nd column is y
+    matrix_sqz_Z = squeeze(matrix_3d(:,3,:)); % 3rd column is z
+
+    % remove outliers - CURRENTLY NOT USED --------------------------------
+    if length(threshold)>1
+        [~,cx] = find(matrix_sqz_X<threshold(1) | matrix_sqz_X>threshold(2));
+        [~,cy] = find(matrix_sqz_Y<threshold(3) | matrix_sqz_Y>threshold(4));
+        [~,cz] = find(matrix_sqz_Z<threshold(5) | matrix_sqz_Z>threshold(6));
+        c_out  = unique([unique(cx); unique(cy); unique(cz)]);
+    elseif isempty(threshold)
+        c_out=[];
+    end
+    % ---------------------------------------------------------------------
+
+    matrix_3d(:,1,c_out)  = nan; matrix_3d(:,2,c_out)  = nan; matrix_3d(:,3,c_out)  = nan;
+    matrix_sqz_X(:,c_out) = nan; matrix_sqz_Y(:,c_out) = nan; matrix_sqz_Z(:,c_out) = nan;
+
+    if which_Dec == 1
+        
+        %% X-Y plots
+        % high confidence - target 1 (left) and target 2 (right)
+        % high confidence (mean +- variability)
+        ave_all.(marker).meanH_x1   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_x2   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_y1   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_y2   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_z1   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_z2   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        %for both decisions
+        ave_all.(marker).meanH_y    = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_z    = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+
+        sdH_x1   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_x2   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_y1   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_y2   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_z1   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_z2   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        %for both decisions
+        sdH_y    = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_z    = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        
+        sdHPlus_x1 = (ave_all.(marker).meanH_x1+sdH_x1)'; sdHMin_x1=(ave_all.(marker).meanH_x1-sdH_x1)';
+        sdHPlus_x2 = (ave_all.(marker).meanH_x2+sdH_x2)'; sdHMin_x2=(ave_all.(marker).meanH_x2-sdH_x2)';
+        sdHPlus_y1 = (ave_all.(marker).meanH_y1+sdH_y1)'; sdHMin_y1=(ave_all.(marker).meanH_y1-sdH_y1)';
+        sdHPlus_y2 = (ave_all.(marker).meanH_y2+sdH_y2)'; sdHMin_y2=(ave_all.(marker).meanH_y2-sdH_y2)';
+        sdHPlus_z1 = (ave_all.(marker).meanH_z1+sdH_z1)'; sdHMin_z1=(ave_all.(marker).meanH_z1-sdH_z1)';
+        sdHPlus_z2 = (ave_all.(marker).meanH_z2+sdH_z2)'; sdHMin_z2=(ave_all.(marker).meanH_z2-sdH_z2)';
+        %for both decisions
+        sdHPlus_y  = (ave_all.(marker).meanH_y+sdH_y)'; sdHMin_y=(ave_all.(marker).meanH_y-sdH_y)';
+        sdHPlus_z  = (ave_all.(marker).meanH_z+sdH_z)'; sdHMin_z=(ave_all.(marker).meanH_z-sdH_z)';
+        
+
+        % low confidence (mean +- variability)
+        ave_all.(marker).meanL_x1   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_x2   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_y1   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_y2   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_z1   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_z2   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        %for both decisions
+        ave_all.(marker).meanL_y    = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_z    = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+
+        sdL_x1   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_x2   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_y1   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_y2   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_z1   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_z2   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        %for both decisions
+        sdL_y    = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_z    = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        
+        sdLPlus_x1 = (ave_all.(marker).meanL_x1+sdL_x1)'; sdLMin_x1=(ave_all.(marker).meanL_x1-sdL_x1)';
+        sdLPlus_x2 = (ave_all.(marker).meanL_x2+sdL_x2)'; sdLMin_x2=(ave_all.(marker).meanL_x2-sdL_x2)';
+        sdLPlus_y1 = (ave_all.(marker).meanL_y1+sdL_y1)'; sdLMin_y1=(ave_all.(marker).meanL_y1-sdL_y1)';
+        sdLPlus_y2 = (ave_all.(marker).meanL_y2+sdL_y2)'; sdLMin_y2=(ave_all.(marker).meanL_y2-sdL_y2)';
+        sdLPlus_z1 = (ave_all.(marker).meanL_z1+sdL_z1)'; sdLMin_z1=(ave_all.(marker).meanL_z1-sdL_z1)';
+        sdLPlus_z2 = (ave_all.(marker).meanL_z2+sdL_z2)'; sdLMin_z2=(ave_all.(marker).meanL_z2-sdL_z2)';
+        %for both decisions
+        sdLPlus_y  = (ave_all.(marker).meanL_y+sdL_y)'; sdLMin_y=(ave_all.(marker).meanL_y-sdL_y)';
+        sdLPlus_z  = (ave_all.(marker).meanL_z+sdL_z)'; sdLMin_z=(ave_all.(marker).meanL_z-sdL_z)';
+        
+        if plot_indiv
+            % x_axis = 1:length(ave_all.(marker).meanH_y1);
+            fxy=figure(); set(fxy, 'WindowStyle', 'Docked');
+            plot(ave_all.(marker).meanH_x1,ave_all.(marker).meanH_y1,'LineWidth',wd,'color',hConf_col); %mean, decision 1
+            hold on;
+            plot(ave_all.(marker).meanH_x2,ave_all.(marker).meanH_y2,'LineWidth',wd,'color',hConf_col,'HandleVisibility','off'); %mean, decision 2
+            % inBetweenH = [sdHMin_x1, fliplr(sdHPlus)];
+            % fill(x_axis, inBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+            plot(ave_all.(marker).meanL_x1,ave_all.(marker).meanL_y1,'LineWidth',wd,'color',lConf_col); %mean, decision 1
+            plot(ave_all.(marker).meanL_x2,ave_all.(marker).meanL_y2,'LineWidth',wd,'color',lConf_col,'HandleVisibility','off'); %mean, decision 2
+            % inBetweenH = [sdHMin_x1, fliplr(sdHPlus)];
+            % fill(x_axis, inBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+
+            % add title, legend and confidence count, and save figure
+            title(title_plotX);
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+            saveas(gcf,fullfile(save_path,'meanPlots',title_figX));
+            legend({'high confidence', 'low confidence'}, 'Location','northwest');
+            xL=xlim; yL=ylim;
+            text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
+            hold off;
+            
+        end
+
+        %% Z-Y plots
+        if plot_indiv
+            % x_axis = 1:length(ave_all.(marker).meanH_y1);
+            fyz=figure(); set(fyz, 'WindowStyle', 'Docked');
+            plot(ave_all.(marker).meanH_y,ave_all.(marker).meanH_z,'LineWidth',wd,'color',hConf_col); %mean
+            hold on;
+            % inBetweenH = [sdHMin_x1, fliplr(sdHPlus)];
+            % fill(x_axis, inBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+            plot(ave_all.(marker).meanL_y,ave_all.(marker).meanL_z,'LineWidth',wd,'color',lConf_col); %mean
+            % inBetweenH = [sdHMin_x1, fliplr(sdHPlus)];
+            % fill(x_axis, inBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+
+            % add title, legend and confidence count, and save figure
+            title(title_plotZ);
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+            saveas(gcf,fullfile(save_path,'meanPlots',title_figZ));
+            legend({'high confidence', 'low confidence'}, 'Location','northwest');
+            xL=xlim; yL=ylim;
+            text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
+            hold off;
+        end
+
+
+    elseif which_Dec == 2 % only second decision
+
+        % high confidence - target 1 (left) and target 2 (right)
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+            'LineWidth',wd,'color',hConf_col);
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+            'LineWidth',wd,'color',hConf_col);
+        % low confidence - target 1 (left) and target 2 (right)
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.at2ndDec==agents),3,'omitnan'), ...
+            'LineWidth',wd,'color',lConf_col);
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.at2ndDec==agents),3,'omitnan'), ...
+            'LineWidth',wd,'color',lConf_col);
+
+    elseif which_Dec == 3 % only collective decision
+
+        % high confidence - target 1 (left) and target 2 (right)
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+            'LineWidth',wd,'color',hConf_col);
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+            'LineWidth',wd,'color',hConf_col);
+        % low confidence - target 1 (left) and target 2 (right)
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1 & pairS.atCollDec==agents),3,'omitnan'), ...
+            'LineWidth',wd,'color',lConf_col);
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2 & pairS.atCollDec==agents),3,'omitnan'), ...
+            'LineWidth',wd,'color',lConf_col);
+
+    elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
+
+        % high confidence - target 1 (left) and target 2 (right)
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==1),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==1),3,'omitnan'), ...
+            'LineWidth',wd,'color',hConf_col);
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==2 & pairS.curr_dec==2),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==2 & pairS.curr_dec==2),3,'omitnan'), ...
+            'LineWidth',wd,'color',hConf_col);
+        % low confidence - target 1 (left) and target 2 (right)
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==1),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==1),3,'omitnan'), ...
+            'LineWidth',wd,'color',lConf_col);
+        plot(mean(matrix_3d(:,1,pairS.curr_conf==1 & pairS.curr_dec==2),3,'omitnan'), ...
+            mean(matrix_3d(:,2,pairS.curr_conf==1 & pairS.curr_dec==2),3,'omitnan'), ...
+            'LineWidth',wd,'color',lConf_col);
+
+    end
+
+
+end
