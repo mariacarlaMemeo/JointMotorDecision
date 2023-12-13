@@ -18,7 +18,7 @@ clear; close all; clc;
 % Check the computer running the script
 [~, name] = system('hostname');
 
-if strcmp(name(1:end-1),'DESKTOP-1C66RT')
+if strcmp(name(1:end-1),'DESKTOP-1C66RTI')
     data_dir  = 'D:\DATA\Processed';
 elseif strcmp(name(1:end-1),'IITCMONLAP008')
     data_dir  = 'D:\joint-motor-decision\kin_data\Processed';
@@ -33,6 +33,8 @@ ave_all.V.time   = []; ave_all.A.time   = []; ave_all.J.time   = [];
 ave_all.X.space  = []; ave_all.Y.space  = []; ave_all.Z.space  = [];
 meanHall_V.index = []; meanLall_V.index = []; meanHall_V.ulna  = []; meanLall_V.ulna  = [];
 meanHall_A.index = []; meanLall_A.index = []; meanHall_A.ulna  = []; meanLall_A.ulna  = [];
+meanHall_Z.index = []; meanLall_Z.index = []; meanHall_Z.ulna  = []; meanLall_Z.ulna  = [];
+meanHall_Y.index = []; meanLall_Y.index = []; meanHall_Y.ulna  = []; meanLall_Y.ulna  = [];
 
 if ischar(file)%only 1 input
     n_pr = 1;%number of pairs
@@ -53,7 +55,7 @@ for sel_p=1:n_pr
 
     % Set flags ---------------------------------------------------------------
     % Which decision do you want to plot? (1=1st, 2=2nd, 3=collective)
-    which_Dec      = 1;
+    which_Dec      = 2;
     % Do you want to plot means +- variability (SD or SEM)
     plot_sd        = 1;
     % Do you want to apply a median split (yes=1, no=0)
@@ -146,7 +148,7 @@ for sel_p=1:n_pr
                 end
 
                 % spatial parameter loop: x-dimension (left-right), z-dimension (height)
-                for sparam = 1:2:length(spa_param)
+                for sparam = 1:length(spa_param)
                     if sparam == 1
                         lab_space = 'X';
                     elseif sparam == 2
@@ -180,7 +182,7 @@ for sel_p=1:n_pr
 
         %build a pragmatic matrix
         if n_var ==1
-            %ave_all1 represents the velocity
+            %ave_all.V represents the velocity
             meanHall_V.index = [meanHall_V.index, ave_all.V.time.index.meanH];
             meanLall_V.index = [meanLall_V.index,ave_all.V.time.index.meanL];
             meanHall_V.ulna  = [meanHall_V.ulna,ave_all.V.time.ulna.meanH];
@@ -189,7 +191,7 @@ for sel_p=1:n_pr
             name_struct = [(ave_all.pairID) 'mean_V' agents{g}];
             eval([(name_struct) '= ave_all.V;'])
 
-            %ave_all1 represents the acceleration
+            %ave_all.A represents the acceleration
             meanHall_A.index = [meanHall_A.index, ave_all.A.time.index.meanH];
             meanLall_A.index = [meanLall_A.index,ave_all.A.time.index.meanL];
             meanHall_A.ulna  = [meanHall_A.ulna,ave_all.A.time.ulna.meanH];
@@ -197,6 +199,24 @@ for sel_p=1:n_pr
             %store ave_all struct in a new variable updated per pair and agent
             name_struct = [(ave_all.pairID) 'mean_A' agents{g}];
             eval([(name_struct) '= ave_all.A;'])
+
+            %ave_all.Z.space represents the z coordinate
+            meanHall_Z.index = [meanHall_Z.index, ave_all.Z.space.index.meanH];
+            meanLall_Z.index = [meanLall_Z.index,ave_all.Z.space.index.meanL];
+            meanHall_Z.ulna  = [meanHall_Z.ulna,ave_all.Z.space.ulna.meanH];
+            meanLall_Z.ulna  = [meanLall_Z.ulna,ave_all.Z.space.ulna.meanL];
+            %store ave_all struct in a new variable updated per pair and agent
+            name_struct = [(ave_all.pairID) 'mean_Z' agents{g}];
+            eval([(name_struct) '= ave_all.Z;'])
+
+            %ave_all.Y.space represents the z coordinate
+            meanHall_Y.index = [meanHall_Y.index, ave_all.Y.space.index.meanH];
+            meanLall_Y.index = [meanLall_Y.index,ave_all.Y.space.index.meanL];
+            meanHall_Y.ulna  = [meanHall_Y.ulna,ave_all.Y.space.ulna.meanH];
+            meanLall_Y.ulna  = [meanLall_Y.ulna,ave_all.Y.space.ulna.meanL];
+            %store ave_all struct in a new variable updated per pair and agent
+            name_struct = [(ave_all.pairID) 'mean_Y' agents{g}];
+            eval([(name_struct) '= ave_all.Y;'])
 
         elseif n_var ==2
 %             %ave_all_2d represents the velocity
@@ -221,8 +241,8 @@ for sel_p=1:n_pr
             end
         end
     end % end of agent loop ---------------------------------------------------
-    clearvars -except ave_all name data_dir sel_p n_pr file path flag_multiple mrks plot_indiv...
-                        meanHall_V meanLall_V meanHall_A meanLall_A 
+    clearvars -except ave_all name data_dir sel_p n_pr file path flag_multiple mrks plot_indiv which_Dec data_dir...
+                        meanHall_V meanLall_V meanHall_A meanLall_A meanHall_Z meanLall_Z meanHall_Y meanLall_Y
 
 end % end of pair loop ---------------------------------------------------
 
@@ -237,34 +257,59 @@ y_width       = 12;
 x = [1:100, fliplr(1:100)]; % sample length of x-axis
 
 % Calculate the average across multiple pairs
+var_list = {'V' 'A' 'Z' 'Y'};
 if flag_multiple
-    for m = 1:length(mrks)
-        grandAveH = mean(meanHall_V.(mrks{m}),2);
-        grandAveL = mean(meanLall_V.(mrks{m}),2);
-        grandSdH  = std(meanHall_V.(mrks{m}),0,2);
-        grandSdL  = std(meanLall_V.(mrks{m}),0,2);
+    for v = 1:length(var_list)
+        switch var_list{v}
+            case 'V'
+                meanHall = meanHall_V;
+                meanLall = meanLall_V;
+            case 'A'
+                meanHall = meanHall_A;
+                meanLall = meanLall_A;
+            case 'Z'
+                meanHall = meanHall_Z;
+                meanLall = meanLall_Z;
+            case 'Y'
+                meanHall = meanHall_Y;
+                meanLall = meanLall_Y;                
+        end
 
-        grandSemH = grandSdH/sqrt(length(grandAveH));
-        grandSemL = grandSdL/sqrt(length(grandAveH));
+        for m = 1:length(mrks)
+            grandAveH = mean(meanHall.(mrks{m}),2);
+            grandAveL = mean(meanLall.(mrks{m}),2);
+            grandSdH  = std(meanHall.(mrks{m}),0,2);
+            grandSdL  = std(meanLall.(mrks{m}),0,2);
 
-        grandSemHPlus= (grandAveH+grandSemH)';
-        grandSemLPlus= (grandAveL+grandSemL)';
-        grandSemHMin= (grandAveH-grandSemH)';
-        grandSemLMin= (grandAveL-grandSemL)';
+            grandSemH = grandSdH/sqrt(length(grandAveH));
+            grandSemL = grandSdL/sqrt(length(grandAveH));
 
-        grandinBetweenH = [grandSemHMin, fliplr(grandSemHPlus)];
-        grandinBetweenL = [grandSemLMin, fliplr(grandSemLPlus)];
+            grandSemHPlus= (grandAveH+grandSemH)';
+            grandSemLPlus= (grandAveL+grandSemL)';
+            grandSemHMin= (grandAveH-grandSemH)';
+            grandSemLMin= (grandAveL-grandSemL)';
 
-        % Plot across pairs
-        ap = figure(); % create figure
-        set(ap, 'WindowStyle', 'Docked');
+            grandinBetweenH = [grandSemHMin, fliplr(grandSemHPlus)];
+            grandinBetweenL = [grandSemLMin, fliplr(grandSemLPlus)];
 
-        plot(grandAveH, 'Color',hConf_col);
-        hold on;
-        fill(x, grandinBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off');
-        plot(grandAveL,'Color',lConf_col);
-        fill(x, grandinBetweenL, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off');
+            % Plot across pairs
+            ap = figure(); % create figure
+            set(ap, 'WindowStyle', 'Docked');
 
+            plot(grandAveH, 'Color',hConf_col);
+            hold on;
+            fill(x, grandinBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off');
+            plot(grandAveL,'Color',lConf_col);
+            fill(x, grandinBetweenL, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off');
+            % Add title and save plot
+            title_plot = ['grandAverage ' upper(mrks{m}) ' - ' var_list{v} ', dec' num2str(which_Dec)];
+            title(title_plot);
+            title_fig = ['grandAve_' upper(mrks{m}) '_' var_list{v} '_dec' num2str(which_Dec) '.png'];
+            set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+            saveas(gcf,fullfile(data_dir,'meanPlots',title_fig));
+            hold off;
+
+        end
     end
 end
 

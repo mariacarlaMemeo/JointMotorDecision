@@ -24,6 +24,7 @@ end
 
 %% Plotting trajectories (colored according to confidence - high/low)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plotting one variable (across time/frames)
 if n_var==1
 
@@ -226,8 +227,8 @@ if n_var==1
         hold off;
     end
 
-
-    % Plotting two variables (i.e., spatial x-y plots, not across time/frames)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plotting two variables (spatial x-y and y-z plots, not across time)
 elseif n_var==2
 
     % titles
@@ -255,31 +256,38 @@ elseif n_var==2
     matrix_3d(:,1,c_out)  = nan; matrix_3d(:,2,c_out)  = nan; matrix_3d(:,3,c_out)  = nan;
     matrix_sqz_X(:,c_out) = nan; matrix_sqz_Y(:,c_out) = nan; matrix_sqz_Z(:,c_out) = nan;
 
-    if which_Dec == 1
+    % plot 1st or 2nd decision
+    if which_Dec == 1 || which_Dec == 2
+
+        if which_Dec == 1
+            atDec = pairS.at1stDec;
+        elseif whic_Dec ==2
+            atDec = pairS.at2ndDec;
+        end
         
         %% X-Y plots
         % high confidence - target 1 (left) and target 2 (right)
-        % high confidence (mean +- variability)
-        ave_all.(marker).meanH_x1   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanH_x2   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanH_y1   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanH_y2   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanH_z1   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanH_z2   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        %for both decisions
-        ave_all.(marker).meanH_y    = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanH_z    = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-
-        sdH_x1   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdH_x2   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdH_y1   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdH_y2   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdH_z1   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdH_z2   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        %for both decisions
-        sdH_y    = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdH_z    = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        
+        % mean
+        ave_all.(marker).meanH_x1   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_x2   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_y1   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_y2   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_z1   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_z2   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        % mean for both decisions
+        ave_all.(marker).meanH_y    = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanH_z    = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        % SD
+        sdH_x1   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_x2   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_y1   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_y2   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_z1   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_z2   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        % SD for both decisions
+        sdH_y    = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdH_z    = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        % +/- SD
         sdHPlus_x1 = (ave_all.(marker).meanH_x1+sdH_x1)'; sdHMin_x1=(ave_all.(marker).meanH_x1-sdH_x1)';
         sdHPlus_x2 = (ave_all.(marker).meanH_x2+sdH_x2)'; sdHMin_x2=(ave_all.(marker).meanH_x2-sdH_x2)';
         sdHPlus_y1 = (ave_all.(marker).meanH_y1+sdH_y1)'; sdHMin_y1=(ave_all.(marker).meanH_y1-sdH_y1)';
@@ -292,25 +300,25 @@ elseif n_var==2
         
 
         % low confidence (mean +- variability)
-        ave_all.(marker).meanL_x1   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanL_x2   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanL_y1   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanL_y2   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanL_z1   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanL_z2   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_x1   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_x2   = mean(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_y1   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_y2   = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_z1   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_z2   = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
         %for both decisions
-        ave_all.(marker).meanL_y    = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        ave_all.(marker).meanL_z    = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_y    = mean(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
+        ave_all.(marker).meanL_z    = mean(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),3,'omitnan');
 
-        sdL_x1   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdL_x2   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdL_y1   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdL_y2   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdL_z1   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdL_z2   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_x1   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_x2   = std(matrix_3d(:,1,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_y1   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_y2   = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_z1   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_z2   = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.curr_dec(1:size(matrix_3d,3))==2 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
         %for both decisions
-        sdL_y    = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
-        sdL_z    = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_y    = std(matrix_3d(:,2,pairS.curr_conf(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        sdL_z    = std(matrix_3d(:,3,pairS.curr_conf(1:size(matrix_3d,3))==1 & atDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
         
         sdLPlus_x1 = (ave_all.(marker).meanL_x1+sdL_x1)'; sdLMin_x1=(ave_all.(marker).meanL_x1-sdL_x1)';
         sdLPlus_x2 = (ave_all.(marker).meanL_x2+sdL_x2)'; sdLMin_x2=(ave_all.(marker).meanL_x2-sdL_x2)';
