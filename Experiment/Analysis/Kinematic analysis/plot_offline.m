@@ -57,7 +57,7 @@ spa_param   = {'x' 'y' 'z'};
 
 
 %% START DECISION LOOP: run through all three decisions
-for dec = 1:length(list_Dec)
+for dec = 1%:length(list_Dec)
 
     % pair loop: run through this for all selected pairs (n_pr = number of pairs)
     for sel_p = 1:n_pr
@@ -72,8 +72,8 @@ for dec = 1:length(list_Dec)
 
         % set flags -------------------------------------------------------
         which_Dec      = dec; % which_Dec is equivalent to dec (loop var)
-        plot_indiv     = 0; % Plots for individual agents? (1=yes, 0=no)
-        n_var          = 2; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
+        plot_indiv     = 1; % Plots for individual agents? (1=yes, 0=no)
+        n_var          = 1; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
         plot_sd        = 1; % Plot variability? (1=yes, 0=no)
         dev            = 1; % Which variability? (1=SD, 2=SEM)
         show_med_split = 1; % Apply a median split? (1=yes, 0=no)      
@@ -146,8 +146,8 @@ for dec = 1:length(list_Dec)
                         elseif param == 3
                             lab_time = 'J';
                         end
-                        title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' ...
-                                      agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+                        title_plot = ['pair ' SUBJECTS{p}(2:end) ' - agent ' agents{g} ' - '...
+                                       time_param{param} ' - decision ' num2str(which_Dec) ' - ' upper(mrks{m})];
                         title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) ...
                                       'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
                         % CALL PLOTTING FUNCTION plot_offline_fun(_sd)
@@ -172,8 +172,8 @@ for dec = 1:length(list_Dec)
                         elseif sparam == 3
                             lab_space = 'Z';
                         end
-                        title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' ...
-                                      agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+                        title_plot = ['pair ' SUBJECTS{p}(2:end) ' - agent ' agents{g} ' - '...
+                                       spa_param{sparam} '-coordinate - decision ' num2str(which_Dec) ' - ' upper(mrks{m})];
                         title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ...
                                       ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
                         % CALL PLOTTING FUNCTION plot_offline_fun(_sd)
@@ -318,18 +318,17 @@ for dec = 1:length(list_Dec)
     LoFill        = [0.8235 0.4392 0.9020];
     x_width       = 18; y_width = 12; % size of saved figure
     var_list      = {'V' 'A' 'Z'};
+    varlabx       = 'Normalized movement duration (%)';
     fs            = 12; % fontsize for axis labels
-    x = [1:100, fliplr(1:100)]; % normalized sample length of x-axis   
-   
+    x = [1:100, fliplr(1:100)]; % normalized sample length of x-axis 
+       
     % start plotting (if multiple pairs have been selected)
     % note: plots are created either for n_var=1 OR n_var=2
     if flag_multiple
         
         for m = 1:length(mrks)
 
-            if n_var == 1 % velocity, acceleration, z-coordinate
-
-                varlabx = 'Normalized movement duration (%)';
+            if n_var == 1 % velocity, acceleration, z-coordinate           
 
                 for v = 1:length(var_list)
 

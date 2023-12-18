@@ -85,8 +85,8 @@ if which_Dec == 1 || which_Dec == 2
         inBetweenH_x2 = [sdHMin_x2, fliplr(sdHPlus_x2)];
         inBetweenH_y1 = [sdHMin_y1, fliplr(sdHPlus_y1)];
         inBetweenH_y2 = [sdHMin_y2, fliplr(sdHPlus_y2)];
-        fill(inBetweenH_x1, inBetweenH_y1, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
-        fill(inBetweenH_x2, inBetweenH_y2, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+        fill(inBetweenH_x1, inBetweenH_y1, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
+        fill(inBetweenH_x2, inBetweenH_y2, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
 
         plot(ave_all.(marker).meanL_x1,ave_all.(marker).meanL_y1,'LineWidth',wd,'color',lConf_col);
         plot(ave_all.(marker).meanL_x2,ave_all.(marker).meanL_y2,'LineWidth',wd,'color',lConf_col,'HandleVisibility','off'); %mean, decision 2
@@ -94,8 +94,8 @@ if which_Dec == 1 || which_Dec == 2
         inBetweenL_x2 = [sdLMin_x2, fliplr(sdLPlus_x2)];
         inBetweenL_y1 = [sdLMin_y1, fliplr(sdLPlus_y1)];
         inBetweenL_y2 = [sdLMin_y2, fliplr(sdLPlus_y2)];
-        fill(inBetweenL_x1, inBetweenL_y1, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
-        fill(inBetweenL_x2, inBetweenL_y2, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+        fill(inBetweenL_x1, inBetweenL_y1, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
+        fill(inBetweenL_x2, inBetweenL_y2, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
 
         %         % add title, legend and confidence count, and save figure
         %         title(title_plotX);
@@ -112,12 +112,12 @@ if which_Dec == 1 || which_Dec == 2
         hold on;
         inBetweenH_y = [sdHMin_y, fliplr(sdHPlus_y)];
         inBetweenH_z = [sdHMin_z, fliplr(sdHPlus_z)];
-        fill(inBetweenH_y, inBetweenH_z, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+        fill(inBetweenH_y, inBetweenH_z, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
 
         plot(ave_all.(marker).meanL_y,ave_all.(marker).meanL_z,'LineWidth',wd,'color',lConf_col);
         inBetweenL_y = [sdLMin_y, fliplr(sdLPlus_y)];
         inBetweenL_z = [sdLMin_z, fliplr(sdLPlus_z)];
-        fill(inBetweenL_y, inBetweenL_z, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+        fill(inBetweenL_y, inBetweenL_z, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
 
         %         % add title, legend and confidence count, and save figure
         %         title(title_plotZ);
@@ -129,7 +129,7 @@ if which_Dec == 1 || which_Dec == 2
         hold off;
     end
 
-    %% Collective decision
+%% Collective decision
 elseif which_Dec == 3
 
     agentsColl = {'B' 'Y'};
@@ -212,8 +212,8 @@ elseif which_Dec == 3
             inBetweenH_x2 = [sdHMin_x2, fliplr(sdHPlus_x2)];
             inBetweenH_y1 = [sdHMin_y1, fliplr(sdHPlus_y1)];
             inBetweenH_y2 = [sdHMin_y2, fliplr(sdHPlus_y2)];
-            fill(inBetweenH_x1, inBetweenH_y1, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
-            fill(inBetweenH_x2, inBetweenH_y2, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+            fill(inBetweenH_x1, inBetweenH_y1, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
+            fill(inBetweenH_x2, inBetweenH_y2, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
 
             plot(ave_all.(marker).(agentsColl{ag}).meanL_x1,ave_all.(marker).(agentsColl{ag}).meanL_y1,'LineWidth',wd,'color',lConf_col);
             plot(ave_all.(marker).(agentsColl{ag}).meanL_x2,ave_all.(marker).(agentsColl{ag}).meanL_y2,'LineWidth',wd,'color',lConf_col,'HandleVisibility','off'); %mean, decision 2
@@ -221,8 +221,8 @@ elseif which_Dec == 3
             inBetweenL_x2 = [sdLMin_x2, fliplr(sdLPlus_x2)];
             inBetweenL_y1 = [sdLMin_y1, fliplr(sdLPlus_y1)];
             inBetweenL_y2 = [sdLMin_y2, fliplr(sdLPlus_y2)];
-            fill(inBetweenL_x1, inBetweenL_y1, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
-            fill(inBetweenL_x2, inBetweenL_y2, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+            fill(inBetweenL_x1, inBetweenL_y1, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
+            fill(inBetweenL_x2, inBetweenL_y2, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
 
             %         % add title, legend and confidence count, and save figure
             %         title(title_plotX);
@@ -239,12 +239,12 @@ elseif which_Dec == 3
             hold on;
             inBetweenH_y = [sdHMin_y, fliplr(sdHPlus_y)];
             inBetweenH_z = [sdHMin_z, fliplr(sdHPlus_z)];
-            fill(inBetweenH_y, inBetweenH_z, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+            fill(inBetweenH_y, inBetweenH_z, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
 
             plot(ave_all.(marker).(agentsColl{ag}).meanL_y,ave_all.(marker).(agentsColl{ag}).meanL_z,'LineWidth',wd,'color',lConf_col);
             inBetweenL_y = [sdLMin_y, fliplr(sdLPlus_y)];
             inBetweenL_z = [sdLMin_z, fliplr(sdLPlus_z)];
-            fill(inBetweenL_y, inBetweenL_z, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off'); % shading between +- variability
+            fill(inBetweenL_y, inBetweenL_z, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
 
             %         % add title, legend and confidence count, and save figure
             %         title(title_plotZ);

@@ -46,7 +46,9 @@ for g = 1:length(agents) % -------------------------------------------
         
         % time parameter loop: velocity, acceleration, jerk
         for param = 1:length(time_param)
-            title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+            %title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+            title_plot = ['pair ' SUBJECTS{p}(2:end) ' - agent ' agents{g} ' - '...
+                          time_param{param} ' - decision ' num2str(which_Dec) ' - ' upper(mrks{m})];            
             title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) 'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
             % go into plotting function
             ave_all = ave_subj_plotting_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),param,pairS,...
@@ -55,7 +57,9 @@ for g = 1:length(agents) % -------------------------------------------
         
         % spatial parameter loop: x-dimension (left-right), z-dimension (height)
         for sparam = 1:2:length(spa_param)
-            title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+            %title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+            title_plot = ['pair ' SUBJECTS{p}(2:end) ' - agent ' agents{g} ' - '...
+                          spa_param{sparam} '-coordinate - decision ' num2str(which_Dec) ' - ' upper(mrks{m})];                      
             title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
             % go into plotting function
             ave_all = ave_subj_plotting_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),sparam,pairS,...
