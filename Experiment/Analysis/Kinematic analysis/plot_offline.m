@@ -57,7 +57,7 @@ spa_param   = {'x' 'y' 'z'};
 
 
 %% START DECISION LOOP: run through all three decisions
-for dec = 1%1:length(list_Dec)
+for dec = 1:length(list_Dec)
 
     % pair loop: run through this for all selected pairs (n_pr = number of pairs)
     for sel_p = 1:n_pr
@@ -302,7 +302,8 @@ for dec = 1%1:length(list_Dec)
         clearvars -except ave_all name data_dir sel_p n_pr file path flag_multiple...
             mrks plot_indiv dec which_Dec list_Dec data_dir n_var list_ignore...
             meanHall_V meanLall_V meanHall_A meanLall_A ...
-            meanHall_Z meanLall_Z meanHall_Y meanLall_Y
+            meanHall_Z meanLall_Z meanHall_Y meanLall_Y ...
+            time_param spa_param
 
     end % end of pair loop ------------------------------------------------
 
@@ -310,7 +311,7 @@ for dec = 1%1:length(list_Dec)
     %% Plot the grand averages across pairs plus SEM (for current dec)
     
     % set plotting parameters
-    wd            = 4; % line width
+    wd            = 2; % line width
     hConf_col     = [0.4667 0.6745 0.1882]; % GREEN
     lConf_col     = [0.4941 0.1843 0.5569]; % PURPLE
     HiFill        = [0.7529 0.9412 0.5059];
@@ -328,17 +329,22 @@ for dec = 1%1:length(list_Dec)
 
             if n_var == 1 % velocity, acceleration, z-coordinate
 
+                varlabx = 'Normalized movement duration (%)';
+
                 for v = 1:length(var_list)
 
                     if strcmp(var_list{v},'V')
                         meanHall = meanHall_V;
-                        meanLall = meanLall_V;
+                        meanLall = meanLall_V;                        
+                        varlaby = 'Velocity (mm/s)';
                     elseif strcmp(var_list{v},'A')
                         meanHall = meanHall_A;
                         meanLall = meanLall_A;
+                        varlaby = 'Acceleration (mm/s^2)';
                     elseif strcmp(var_list{v},'Z')
                         meanHall = meanHall_Z;
                         meanLall = meanLall_Z;
+                        varlaby = 'Height (mm)';
                     end
 
                     % mean and std
@@ -361,14 +367,20 @@ for dec = 1%1:length(list_Dec)
                     % create figure and plot means +/- sem
                     ap = figure();
                     set(ap, 'WindowStyle', 'Docked');
-                    plot(grandAveH, 'Color',hConf_col);
+                    plot(grandAveH, 'Color',hConf_col, 'LineWidth',wd);
                     hold on;
-                    plot(grandAveL,'Color',lConf_col);
-                    fill(x, grandinBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off');
-                    fill(x, grandinBetweenL, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off');
-                    title_plot = ['grandAverage ' upper(mrks{m}) ' - ' var_list{v} ', dec' num2str(which_Dec)];
+                    plot(grandAveL,'Color',lConf_col, 'LineWidth',wd);
+                    fill(x, grandinBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
+                    fill(x, grandinBetweenL, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
+                    title_plot = ['Grand average ('  num2str(n_pr) ' pairs) - ' var_list{v} ' - decision ' num2str(which_Dec) ' - ' upper(mrks{m})];
                     title(title_plot);
                     title_fig = ['grandAve_' upper(mrks{m}) '_' var_list{v} '_dec' num2str(which_Dec) '.png'];
+                    
+                    % axes labels
+                    xlabel(varlabx, 'FontSize', fs, 'FontWeight','bold');
+                    ylabel(varlaby, 'FontSize', fs, 'FontWeight','bold');
+                    legend({'high confidence', 'low confidence'}, 'Location','northwest');
+                    
                     % save figure
                     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
                     saveas(gcf,fullfile(data_dir,'meanPlots',title_fig));
@@ -423,18 +435,19 @@ for dec = 1%1:length(list_Dec)
                 % create figure and plot means +/- sem
                 ap = figure(); % create figure
                 set(ap, 'WindowStyle', 'Docked');
-                plot(ygrandAveH, zgrandAveH,'Color',hConf_col, 'Marker','*');
+                plot(ygrandAveH, zgrandAveH,'Color',hConf_col, 'LineWidth',wd); %, 'Marker','o'
                 hold on;
-                plot(ygrandAveL, zgrandAveL, 'Color',lConf_col, 'Marker','*');
-                fill(ygrandinBetweenH, zgrandinBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off');
-                fill(ygrandinBetweenL, zgrandinBetweenL, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off');
+                plot(ygrandAveL, zgrandAveL, 'Color',lConf_col, 'LineWidth',wd); %, 'Marker','o'
+                fill(ygrandinBetweenH, zgrandinBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
+                fill(ygrandinBetweenL, zgrandinBetweenL, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
 
                 % axes labels
-                xlabel('Distance [mm]', 'FontSize', fs, 'FontWeight','bold');
-                ylabel('Height [mm]', 'FontSize', fs, 'FontWeight','bold');
+                xlabel('Distance (mm)', 'FontSize', fs, 'FontWeight','bold');
+                ylabel('Height (mm)', 'FontSize', fs, 'FontWeight','bold');
+                legend({'high confidence', 'low confidence'}, 'Location','northwest');
                                 
                 % save plot
-                title_plot = ['grandAverage ' upper(mrks{m}) ' - Y-Z coordinates, dec' num2str(which_Dec)];
+                title_plot = ['Grand average ('  num2str(n_pr) ' pairs) - Y-Z coordinates - decision ' num2str(which_Dec) ' - ' upper(mrks{m})];
                 title(title_plot);
                 title_fig = ['grandAve_' upper(mrks{m}) '_YZ_dec' num2str(which_Dec) '.png'];
                 set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
