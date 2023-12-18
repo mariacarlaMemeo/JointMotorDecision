@@ -2,33 +2,46 @@
 % Here we can plot our data "offline", using the _post (or _bkp) .mat file
 % -------------------------------------------------------------------------
 
-% Notes:
+% Notes on temporal and spatial variables:
 % Temporal variables in matrix 'all_time_traj_ulna/index/coll_'
 % Spatial variables in matrix 'all_spa_traj_ulna/index/coll_'
-% Temporal and spatial variables:
 % Velocity      - 1st column of matrix
 % Acceleration  - 2nd column of matrix
 % Jerk          - 3rd column of matrix
 % x-coordinate  - 1st column of matrix
-% y-coordinate  - 2nd column of matrix -> currently not plotted
+% y-coordinate  - 2nd column of matrix
 % z-coordinate  - 3rd column of matrix
 
 clear; close all; clc;
 
-% Check the computer running the script
-[~, name] = system('hostname');
+%% Load data and do preparatory steps
 
+% Check automatically which computer is running the script ----------------
+% and adjust directory path accordingly
+[~, name] = system('hostname');
 if strcmp(name(1:end-1),'DESKTOP-1C66RTI')
     data_dir  = 'D:\DATA\Processed';
 elseif strcmp(name(1:end-1),'IITCMONLAP008')
     data_dir  = 'D:\joint-motor-decision\kin_data\Processed';
 end
 
-% Which pair(s) to plot?
+% User input: select which pair(s) to plot
 [file, path] = uigetfile(data_dir,'.mat','MultiSelect','on');
-% If the user select only one file it just load .mat file. Otherwise it
-% loads one .mat file in a for loop and keeps the info about the mean
-% trajectories of each agent and each level of confidence (1-2)
+% Set number of pairs (n_pr) and flag_multiple according to user input
+if ischar(file)          % only 1 input
+    n_pr = 1;            % number of pairs
+    flag_multiple = 0;
+elseif iscell(file)      % several inputs
+    n_pr = length(file); % number of pairs
+    flag_multiple = 1;
+end
+
+% Do not load full kinematic session to save time
+list_ignore = {'session' 'c3d_config'}; % define which variable NOT to load
+list_ignore = strjoin(list_ignore','$|'); % create string, separate vars by '|'
+%--------------------------------------------------------------------------
+
+% Pre-allocate structures to store variables for multiple pairs
 ave_all.V.time   = []; ave_all.A.time   = []; ave_all.J.time   = [];
 ave_all.X.space  = []; ave_all.Y.space  = []; ave_all.Z.space  = [];
 meanHall_V.index = []; meanLall_V.index = []; meanHall_V.ulna  = []; meanLall_V.ulna  = [];
@@ -36,50 +49,37 @@ meanHall_A.index = []; meanLall_A.index = []; meanHall_A.ulna  = []; meanLall_A.
 meanHall_Z.index = []; meanLall_Z.index = []; meanHall_Z.ulna  = []; meanLall_Z.ulna  = [];
 meanHall_Y.index = []; meanLall_Y.index = []; meanHall_Y.ulna  = []; meanLall_Y.ulna  = [];
 
-if ischar(file)%only 1 input
-    n_pr = 1;%number of pairs
-     flag_multiple = 0;
-elseif iscell(file)
-    n_pr = length(file);
-    flag_multiple = 1;
-end
+% Set some more parameters
+list_Dec    = [1 2 3];
+mrks        = {'index' 'ulna'};
+time_param  = {'velocity' 'acceleration' 'jerk'};
+spa_param   = {'x' 'y' 'z'};
 
-list_ignore = {'session' 'c3d_config'}; % ignore those variable (do not load them)
-list_ignore = strjoin(list_ignore','$|'); % join into string, separating vars by '|'
 
-% for loop for the specific decision
-list_Dec = [1 2 3];
-
+%% START DECISION LOOP: run through all three decisions
 for dec = 1%1:length(list_Dec)
 
+    % pair loop: run through this for all selected pairs (n_pr = number of pairs)
+    for sel_p = 1:n_pr
 
-    for sel_p=1:n_pr
-
-        if ischar(file)%only 1 input
-            %load(fullfile(path,file));
+        % load pairs *before* setting the flags (to avoid overwriting)
+        if ischar(file) % load only 1 pair
             load([fullfile(path,file)], '-regexp', ['^(?!' list_ignore ')\w']);
-        elseif iscell(file)            
+        elseif iscell(file) % load several pairs            
             ave_all.pairID = file{sel_p}(1:4);
-            %in case of multiple inputs: load each pair at the beginning of the loop before setting the flags
             load([fullfile(path,file{sel_p})], '-regexp', ['^(?!' list_ignore ')\w']);
         end
 
-        % Set flags ---------------------------------------------------------------
-        which_Dec      = dec;%select the decision
-        % Do you want to plot means +- variability (SD or SEM)
-        plot_sd        = 1;
-        % Do you want to apply a median split (yes=1, no=0)
-        % If no median split, then assigment is the following: 1-3=lo, 4-6=high
-        show_med_split = 1;
-        % Which variability to plot?
-        dev            = 1; % 1=SD, 2=SEM
-        % Do you want to plot the individual agents or just the grand average?
-        plot_indiv     = 1;
-        %number of variables to plot
-        n_var          = 2;
-        % -------------------------------------------------------------------------
+        % set flags -------------------------------------------------------
+        which_Dec      = dec; % which_Dec is equivalent to dec (loop var)
+        plot_indiv     = 0; % Plots for individual agents? (1=yes, 0=no)
+        n_var          = 2; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
+        plot_sd        = 1; % Plot variability? (1=yes, 0=no)
+        dev            = 1; % Which variability? (1=SD, 2=SEM)
+        show_med_split = 1; % Apply a median split? (1=yes, 0=no)      
+        % -----------------------------------------------------------------
 
-        % XXX adapt this for many pairs
+        % if no median split: define confidence as low (1-3) and high (4-6)
         if show_med_split==0
             bConf = pairS.blue_Conf;
             yConf = pairS.yell_Conf;
@@ -95,23 +95,22 @@ for dec = 1%1:length(list_Dec)
             pairS.collConf = collConf;
         end
 
-        % Prepare for loop structure below
+        % prepare for loop structure below
         if which_Dec == 1 || which_Dec ==2
             agents = {'B' 'Y'};
         elseif which_Dec == 3
             agents = {'coll'};
         end
-        mrks        = {'index' 'ulna'};
-        time_param  = {'velocity' 'acceleration' 'jerk'};
-        spa_param   = {'x' 'y' 'z'};
+
 
         %% Start looping through agents / markers / parameters
-        % agent loop: blue, yellow
-        for g = 1:length(agents) % -------------------------------------------
+        % AGENT LOOP: B,Y OR coll %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        for g = 1:length(agents)
 
+            % select variables according to agent
             if agents{g}=='B'
-                pairS.curr_conf = pairS.bConf;
-                pairS.curr_dec  = pairS.blue_Dec;
+                pairS.curr_conf = pairS.bConf; % confidence (1-6)
+                pairS.curr_dec  = pairS.blue_Dec; % decision (1 or 2)
             elseif agents{g}=='Y'
                 pairS.curr_conf = pairS.yConf;
                 pairS.curr_dec  = pairS.yell_Dec;
@@ -120,6 +119,7 @@ for dec = 1%1:length(list_Dec)
                 pairS.curr_dec  = pairS.Coll_Dec;
             end
 
+            % compute percentage of high/low confidence for 1st and 2nd dec
             lo1=sum(pairS.curr_conf(pairS.curr_conf==1 & pairS.at1stDec==agents{g}));
             hi1=sum(pairS.curr_conf(pairS.curr_conf==2 & pairS.at1stDec==agents{g}))/2;
             lo2=sum(pairS.curr_conf(pairS.curr_conf==1 & pairS.at2ndDec==agents{g}));
@@ -132,11 +132,12 @@ for dec = 1%1:length(list_Dec)
                 strCount=[];
             end
 
-            % marker loop: index, ulna
+            % MARKER LOOP: index, ulna %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             for m = 1:length(mrks)
 
+                % n_var=1: plot variables across normalized time
                 if n_var == 1
-                    % time parameter loop: velocity, acceleration, jerk
+                    % time param loop: velocity, acceleration, jerk
                     for param = 1:2%length(time_param)
                         if param == 1
                             lab_time = 'V';
@@ -145,19 +146,24 @@ for dec = 1%1:length(list_Dec)
                         elseif param == 3
                             lab_time = 'J';
                         end
-                        title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
-                        title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) 'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-                        %go into plotting function
+                        title_plot = [upper(mrks{m}) ' - ' time_param{param} ' module of ' ...
+                                      agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+                        title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) ...
+                                      'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+                        % CALL PLOTTING FUNCTION plot_offline_fun(_sd)
                         if plot_sd
-                            ave_all.(lab_time).time = plot_offline_fun_sd(ave_all.(lab_time).time,eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),mrks{m},param,pairS,...
-                                agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+                            ave_all.(lab_time).time = plot_offline_fun_sd(ave_all.(lab_time).time, ...
+                                                      eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]), ...
+                                                      mrks{m},param,pairS,agents{g},title_plot,title_fig, ...
+                                                      data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
                         else
-                            ave_all = plot_offline_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]),mrks{m},param,pairS,...
-                                agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount);
+                            ave_all = plot_offline_fun(eval(['all_time_traj_' mrks{m} '_' lower(agents{g})]), ...
+                                      mrks{m},param,pairS,agents{g},title_plot,title_fig, ...
+                                      data_dir,n_var,[],which_Dec,flag_bin,strCount);
                         end
                     end
 
-                    % spatial parameter loop: x-dimension (left-right), y-dimension (forward), z-dimension (height)
+                    % spatial param loop: x-dimension (left-right), y-dimension (forward), z-dimension (height)
                     for sparam = 1:length(spa_param)
                         if sparam == 1
                             lab_space = 'X';
@@ -166,35 +172,45 @@ for dec = 1%1:length(list_Dec)
                         elseif sparam == 3
                             lab_space = 'Z';
                         end
-                        title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
-                        title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-                        % go into plotting function
+                        title_plot = [upper(mrks{m}) ' - '  spa_param{sparam} ' coordinate of ' ...
+                                      agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
+                        title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ...
+                                      ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+                        % CALL PLOTTING FUNCTION plot_offline_fun(_sd)
                         if plot_sd
-                            ave_all.(lab_space).space = plot_offline_fun_sd(ave_all.(lab_space).space,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
-                                agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+                            ave_all.(lab_space).space = plot_offline_fun_sd(ave_all.(lab_space).space, ...
+                                                        eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]), ...
+                                                        mrks{m},sparam,pairS,agents{g},title_plot,title_fig, ...
+                                                        data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
                         else
-                            ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},sparam,pairS,...
-                                agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount);
+                            ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]), ...
+                                      mrks{m},sparam,pairS,agents{g},title_plot,title_fig, ...
+                                      data_dir,n_var,[],which_Dec,flag_bin,strCount);
                         end
                     end
                 end
 
-                % x-y and y-z plots
+                % n_var=2: plot two spatial varibles x-y and y-z 
+                % Note: spatial variables are time-normalized in movement_var.m
                 if n_var == 2
                     title_plot = [upper(mrks{m}) ' - ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
                     title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-
-                    ave_all = plot_offline_fun_sd(ave_all,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]),mrks{m},[],pairS,...
-                        agents{g},title_plot,title_fig,data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+                    % CALL PLOTTING FUNCTION plot_offline_fun_sd
+                    ave_all = plot_offline_fun_sd(ave_all,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]), ...
+                              mrks{m},[],pairS,agents{g},title_plot,title_fig, ...
+                              data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
                 end
 
-            end % end of marker loop
+            end % end of marker loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-            %% Build a pragmatic matrix
-            if n_var ==1 && flag_multiple% collect temporal variables
+            
+            %% Build pragmatic matrix to collect variables for all pairs
+            % This is done to later plot the GRAND AVERAGE across pairs.
+            % Note: do this only if multiple pairs have been selected
+            if n_var ==1 && flag_multiple % one variable across norm. time
 
-                if dec == 3
-                    if g == 1
+                if dec == 3 % use a trick for collective decision
+                    if g == 1 % assign according to g which specifies agent
                         ave_all.V.time.index = ave_all.V.time.index.B;
                         ave_all.A.time.index = ave_all.A.time.index.B;
                         ave_all.Z.space.index = ave_all.Z.space.index.B;
@@ -211,16 +227,16 @@ for dec = 1%1:length(list_Dec)
                     end
                 end
 
-                %ave_all.V represents the velocity
+                % Velocity (ave_all.V.time)
                 meanHall_V.index = [meanHall_V.index, ave_all.V.time.index.meanH];
                 meanLall_V.index = [meanLall_V.index,ave_all.V.time.index.meanL];
                 meanHall_V.ulna  = [meanHall_V.ulna,ave_all.V.time.ulna.meanH];
                 meanLall_V.ulna  = [meanLall_V.ulna,ave_all.V.time.ulna.meanL];
-                %store ave_all struct in a new variable updated per pair and agent
+                % store ave_all struct in a new variable per pair and agent
                 name_struct = [(ave_all.pairID) 'mean_V' agents{g}];
                 eval([(name_struct) '= ave_all.V;'])
 
-                %ave_all.A represents the acceleration
+                % Acceleration (ave_all.A.time)
                 meanHall_A.index = [meanHall_A.index, ave_all.A.time.index.meanH];
                 meanLall_A.index = [meanLall_A.index,ave_all.A.time.index.meanL];
                 meanHall_A.ulna  = [meanHall_A.ulna,ave_all.A.time.ulna.meanH];
@@ -228,7 +244,7 @@ for dec = 1%1:length(list_Dec)
                 name_struct = [(ave_all.pairID) 'mean_A' agents{g}];
                 eval([(name_struct) '= ave_all.A;'])
 
-                %ave_all.Z.space represents the z coordinate
+                % Height/z-coordinate (ave_all.Z.space)
                 meanHall_Z.index = [meanHall_Z.index, ave_all.Z.space.index.meanH];
                 meanLall_Z.index = [meanLall_Z.index,ave_all.Z.space.index.meanL];
                 meanHall_Z.ulna  = [meanHall_Z.ulna,ave_all.Z.space.ulna.meanH];
@@ -238,10 +254,10 @@ for dec = 1%1:length(list_Dec)
 
             end
 
-            if n_var == 2 && flag_multiple % collect spatial variables
+            if n_var == 2 && flag_multiple % two spatial variables
 
-                if dec == 3
-                    if g == 1
+                if dec == 3 % use a trick for collective decision
+                    if g == 1 % assign according to g which specifies agent
                         ave_all.index = ave_all.index.B;
                         ave_all.ulna  = ave_all.ulna.B;
                     elseif g == 2
@@ -250,34 +266,37 @@ for dec = 1%1:length(list_Dec)
                     end
                 end
 
-                %ave_all.Z.space represents the z coordinate
+                % Height/z-coordinate (ave_all.Z)
                 meanHall_Z.index = [meanHall_Z.index, ave_all.index.meanH_z];
                 meanLall_Z.index = [meanLall_Z.index, ave_all.index.meanL_z];
                 meanHall_Z.ulna  = [meanHall_Z.ulna, ave_all.ulna.meanH_z];
                 meanLall_Z.ulna  = [meanLall_Z.ulna, ave_all.ulna.meanL_z];
-                %ave_all.Y.space represents the Y coordinate
+                % Distance/y-coordinate (ave_all.Y)
                 meanHall_Y.index = [meanHall_Y.index, ave_all.index.meanH_y];
                 meanLall_Y.index = [meanLall_Y.index, ave_all.index.meanL_y];
                 meanHall_Y.ulna  = [meanHall_Y.ulna, ave_all.ulna.meanH_y];
                 meanLall_Y.ulna  = [meanLall_Y.ulna, ave_all.ulna.meanL_y];
-
                 name_struct = [(ave_all.pairID) 'mean_YZ' agents{g}];
                 eval([(name_struct) '= ave_all;'])
 
             end
 
-            % Save number of plotted (i.e., clean!) trials in which either agent
-            % blue or yellow took 2nd decision (in sum, this is the total number of
-            % clean trials for this pair); trials_clean contains two values (b/y)
+            % THIS IS NOT STRICLTY NECESSARY (already done in main script)
+            % Save number of plotted (i.e., clean!) trials in which either 
+            % agent B or Y took 2nd decision (in sum, this is the total
+            % number of clean trials for the pair).
+            % trials_clean contains two values (b/y)
             if (which_Dec == 1 || which_Dec ==2)
-                %add the agent label to the 'ave_all' variable. the collective
-                %variable already has that
-                ave_all.agent   = agents{g};
+                % Add the agent label to the 'ave_all' variable.
+                % (this label is already there for the collective ave_all)
+                ave_all.agent = agents{g};
                 if plot_sd==0
-                    trials_clean(g) = length(ave_all(~isnan(ave_all(1,pairS.at2ndDec(1:size(ave_all,2))==agents{g}))));
+                    trials_clean(g) = ...
+                    length(ave_all(~isnan(ave_all(1,pairS.at2ndDec(1:size(ave_all,2))==agents{g}))));
                 end
             end
-        end % end of agent loop -----------------------------------------------
+        
+        end % end of agent loop -------------------------------------------
 
         % clear variables, except those that are still needed!
         clearvars -except ave_all name data_dir sel_p n_pr file path flag_multiple...
@@ -285,26 +304,29 @@ for dec = 1%1:length(list_Dec)
             meanHall_V meanLall_V meanHall_A meanLall_A ...
             meanHall_Z meanLall_Z meanHall_Y meanLall_Y
 
-    end % end of pair loop ---------------------------------------------------
+    end % end of pair loop ------------------------------------------------
 
-    %% Plot the grand averages across pairs plus SEM
-    % this is just temporary to do the plot
+    
+    %% Plot the grand averages across pairs plus SEM (for current dec)
+    
+    % set plotting parameters
     wd            = 4; % line width
     hConf_col     = [0.4667 0.6745 0.1882]; % GREEN
     lConf_col     = [0.4941 0.1843 0.5569]; % PURPLE
     HiFill        = [0.7529 0.9412 0.5059];
     LoFill        = [0.8235 0.4392 0.9020];
-    x_width       = 18;
-    y_width       = 12;
-    x = [1:100, fliplr(1:100)]; % sample length of x-axis
-
-    % Calculate the average across multiple pairs
-    var_list = {'V' 'A' 'Z'};
-
+    x_width       = 18; y_width = 12; % size of saved figure
+    var_list      = {'V' 'A' 'Z'};
+    fs            = 12; % fontsize for axis labels
+    x = [1:100, fliplr(1:100)]; % normalized sample length of x-axis   
+   
+    % start plotting (if multiple pairs have been selected)
+    % note: plots are created either for n_var=1 OR n_var=2
     if flag_multiple
+        
         for m = 1:length(mrks)
 
-            if n_var == 1 % velocity, acc, z-coordinate
+            if n_var == 1 % velocity, acceleration, z-coordinate
 
                 for v = 1:length(var_list)
 
@@ -319,23 +341,25 @@ for dec = 1%1:length(list_Dec)
                         meanLall = meanLall_Z;
                     end
 
+                    % mean and std
                     grandAveH = mean(meanHall.(mrks{m}),2);
                     grandAveL = mean(meanLall.(mrks{m}),2);
                     grandSdH  = std(meanHall.(mrks{m}),0,2);
                     grandSdL  = std(meanLall.(mrks{m}),0,2);
-
+                    % sem
                     grandSemH = grandSdH/sqrt(length(grandAveH));
                     grandSemL = grandSdL/sqrt(length(grandAveH));
-
+                    % mean +/- sem
                     grandSemHPlus= (grandAveH+grandSemH)';
                     grandSemLPlus= (grandAveL+grandSemL)';
                     grandSemHMin= (grandAveH-grandSemH)';
                     grandSemLMin= (grandAveL-grandSemL)';
-
+                    % prepare shaded filling
                     grandinBetweenH = [grandSemHMin, fliplr(grandSemHPlus)];
                     grandinBetweenL = [grandSemLMin, fliplr(grandSemLPlus)];
 
-                    ap = figure(); % create figure
+                    % create figure and plot means +/- sem
+                    ap = figure();
                     set(ap, 'WindowStyle', 'Docked');
                     plot(grandAveH, 'Color',hConf_col);
                     hold on;
@@ -345,7 +369,7 @@ for dec = 1%1:length(list_Dec)
                     title_plot = ['grandAverage ' upper(mrks{m}) ' - ' var_list{v} ', dec' num2str(which_Dec)];
                     title(title_plot);
                     title_fig = ['grandAve_' upper(mrks{m}) '_' var_list{v} '_dec' num2str(which_Dec) '.png'];
-
+                    % save figure
                     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
                     saveas(gcf,fullfile(data_dir,'meanPlots',title_fig));
                     hold off;
@@ -354,53 +378,61 @@ for dec = 1%1:length(list_Dec)
 
             elseif n_var == 2 % only Y-Z (can be adapted to Z-X)
 
+                % adjust names for easier spelling
                 zmeanHall = meanHall_Z;
                 zmeanLall = meanLall_Z;
                 ymeanHall = meanHall_Y;
                 ymeanLall = meanLall_Y;
 
-                % z
+                % Z-coordinate
+                % mean and std
                 zgrandAveH = mean(zmeanHall.(mrks{m}),2);
                 zgrandAveL = mean(zmeanLall.(mrks{m}),2);
                 zgrandSdH  = std(zmeanHall.(mrks{m}),0,2);
                 zgrandSdL  = std(zmeanLall.(mrks{m}),0,2);
-
+                % sem
                 zgrandSemH = zgrandSdH/sqrt(length(zgrandAveH));
                 zgrandSemL = zgrandSdL/sqrt(length(zgrandAveH));
-
+                % mean +/- sem
                 zgrandSemHPlus= (zgrandAveH+zgrandSemH)';
                 zgrandSemLPlus= (zgrandAveL+zgrandSemL)';
                 zgrandSemHMin= (zgrandAveH-zgrandSemH)';
                 zgrandSemLMin= (zgrandAveL-zgrandSemL)';
-
+                % prepare shaded filling
                 zgrandinBetweenH = [zgrandSemHMin, fliplr(zgrandSemHPlus)];
                 zgrandinBetweenL = [zgrandSemLMin, fliplr(zgrandSemLPlus)];
 
-                % y
+                % Y-coordinate
+                % mean and std
                 ygrandAveH = mean(ymeanHall.(mrks{m}),2);
                 ygrandAveL = mean(ymeanLall.(mrks{m}),2);
                 ygrandSdH  = std(ymeanHall.(mrks{m}),0,2);
                 ygrandSdL  = std(ymeanLall.(mrks{m}),0,2);
-
+                % sem
                 ygrandSemH = ygrandSdH/sqrt(length(ygrandAveH));
                 ygrandSemL = ygrandSdL/sqrt(length(ygrandAveH));
-
+                % mean +/- sem
                 ygrandSemHPlus= (ygrandAveH+ygrandSemH)';
                 ygrandSemLPlus= (ygrandAveL+ygrandSemL)';
                 ygrandSemHMin= (ygrandAveH-ygrandSemH)';
                 ygrandSemLMin= (ygrandAveL-ygrandSemL)';
-
+                % prepare shaded filling
                 ygrandinBetweenH = [ygrandSemHMin, fliplr(ygrandSemHPlus)];
                 ygrandinBetweenL = [ygrandSemLMin, fliplr(ygrandSemLPlus)];
 
+                % create figure and plot means +/- sem
                 ap = figure(); % create figure
                 set(ap, 'WindowStyle', 'Docked');
-                plot(ygrandAveH, zgrandAveH,'Color',hConf_col);
+                plot(ygrandAveH, zgrandAveH,'Color',hConf_col, 'Marker','*');
                 hold on;
-                plot(ygrandAveL, zgrandAveL, 'Color',lConf_col);
+                plot(ygrandAveL, zgrandAveL, 'Color',lConf_col, 'Marker','*');
                 fill(ygrandinBetweenH, zgrandinBetweenH, HiFill, 'FaceAlpha',0.5,'HandleVisibility','off');
                 fill(ygrandinBetweenL, zgrandinBetweenL, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off');
 
+                % axes labels
+                xlabel('Distance [mm]', 'FontSize', fs, 'FontWeight','bold');
+                ylabel('Height [mm]', 'FontSize', fs, 'FontWeight','bold');
+                                
                 % save plot
                 title_plot = ['grandAverage ' upper(mrks{m}) ' - Y-Z coordinates, dec' num2str(which_Dec)];
                 title(title_plot);
@@ -409,7 +441,8 @@ for dec = 1%1:length(list_Dec)
                 saveas(gcf,fullfile(data_dir,'meanPlots',title_fig));
                 hold off;
 
-            end
-        end
-    end
-end % decision loop
+            end         
+        end    
+    end % end of plotting grand averages (for n_var=1 OR n_var=2, for current dec)
+
+end % end of decision loop
