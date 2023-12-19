@@ -69,10 +69,11 @@ if n_var==1
 
     if which_Dec == 1 % plot only 1st decision
         % high confidence (mean +- variability)
-        ave_all.(marker).meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        sdH     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        selectH1  = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents);
+        ave_all.(marker).meanH = mean(selectH1,3,'omitnan');
+        sdH     = std(selectH1,0,3,'omitnan');
         sdHPlus = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
-        semH    = sdH/sqrt(length(ave_all.(marker).meanH));
+        semH    = sdH/sqrt(size(selectH1,3)); % take sqrt of number of trials with high conf
         semHPlus=(ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
         if plot_indiv
             plot(ave_all.(marker).meanH,'LineWidth',wd,'color',hConf_col); %mean
@@ -89,10 +90,11 @@ if n_var==1
             fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
         end
         % low confidence (mean +- variability)
-        ave_all.(marker).meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        sdL     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        selectL1 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents);
+        ave_all.(marker).meanL = mean(selectL1,3,'omitnan');
+        sdL     = std(selectL1,0,3,'omitnan');
         sdLPlus = (ave_all.(marker).meanL+sdL)'; sdLMin=(ave_all.(marker).meanL-sdL)';
-        semL    = sdL/sqrt(length(ave_all.(marker).meanL));
+        semL    = sdL/sqrt(size(selectL1,3)); % take sqrt of number of trials with low conf
         semLPlus= (ave_all.(marker).meanL+semL)'; semLMin=(ave_all.(marker).meanL-semL)';
         if plot_indiv
             plot(ave_all.(marker).meanL,'LineWidth',wd,'color',lConf_col);
@@ -117,10 +119,11 @@ if n_var==1
 
     elseif which_Dec == 2 % only second decision
         % high confidence (mean +- variability)
-        ave_all.(marker).meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        sdH     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        selectH2  = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at2ndDec(1:size(matrix_3d,3))==agents);
+        ave_all.(marker).meanH = mean(selectH2,3,'omitnan');
+        sdH     = std(selectH2,0,3,'omitnan');
         sdHPlus = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
-        semH    = sdH/sqrt(length(ave_all.(marker).meanH));
+        semH    = sdH/sqrt(size(selectH2,3));
         semHPlus=(ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
         if plot_indiv
             plot(ave_all.(marker).meanH,'LineWidth',wd,'color',hConf_col); %mean
@@ -133,10 +136,11 @@ if n_var==1
             fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
         end
         % low confidence (mean +- variability)
-        ave_all.(marker).meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),3,'omitnan');
-        sdL     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at2ndDec(1:size(matrix_3d,3))==agents),0,3,'omitnan');
+        selectL2 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at2ndDec(1:size(matrix_3d,3))==agents);
+        ave_all.(marker).meanL = mean(selectL2,3,'omitnan');
+        sdL     = std(selectL2,0,3,'omitnan');
         sdLPlus = (ave_all.(marker).meanL+sdL)'; sdLMin=(ave_all.(marker).meanL-sdL)';
-        semL    = sdL/sqrt(length(ave_all.(marker).meanL));
+        semL    = sdL/sqrt(size(selectL2,3));
         semLPlus= (ave_all.(marker).meanL+semL)'; semLMin=(ave_all.(marker).meanL-semL)';
         if plot_indiv
             plot(ave_all.(marker).meanL,'LineWidth',wd,'color',lConf_col);
@@ -169,10 +173,11 @@ if n_var==1
                 set(biv, 'WindowStyle', 'Docked');
             end
             % high confidence (mean +- variability)
-            ave_all.(marker).(agentsColl{a}).meanH   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{a}),3,'omitnan');
-            sdH     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{a}),0,3,'omitnan');
+            ave_all.(agentsColl{a}).selectH3 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{a});
+            ave_all.(marker).(agentsColl{a}).meanH = mean(ave_all.(agentsColl{a}).selectH3,3,'omitnan');
+            sdH     = std(ave_all.(agentsColl{a}).selectH3,0,3,'omitnan');
             sdHPlus = (ave_all.(marker).(agentsColl{a}).meanH+sdH)'; sdHMin=(ave_all.(marker).(agentsColl{a}).meanH-sdH)';
-            semH    = sdH/sqrt(length(ave_all.(marker).(agentsColl{a}).meanH));
+            semH    = sdH/sqrt(size(ave_all.(agentsColl{a}).selectH3,3));
             semHPlus=(ave_all.(marker).(agentsColl{a}).meanH+semH)'; semHMin=(ave_all.(marker).(agentsColl{a}).meanH-semH)';
             if plot_indiv
                 plot(ave_all.(marker).(agentsColl{a}).meanH,'LineWidth',wd,'color',colorH(a,:)); %mean
@@ -185,10 +190,11 @@ if n_var==1
                 fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
             end
             % low confidence (mean +- variability)
-            ave_all.(marker).(agentsColl{a}).meanL   = mean(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{a}),3,'omitnan');
-            sdL     = std(matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{a}),0,3,'omitnan');
+            ave_all.(agentsColl{a}).selectL3 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{a});
+            ave_all.(marker).(agentsColl{a}).meanL = mean(ave_all.(agentsColl{a}).selectL3,3,'omitnan');
+            sdL     = std(ave_all.(agentsColl{a}).selectL3,0,3,'omitnan');
             sdLPlus = (ave_all.(marker).(agentsColl{a}).meanL+sdL)'; sdLMin=(ave_all.(marker).(agentsColl{a}).meanL-sdL)';
-            semL    = sdL/sqrt(length(ave_all.(marker).(agentsColl{a}).meanL));
+            semL    = sdL/sqrt(size(ave_all.(agentsColl{a}).selectL3,3));
             semLPlus= (ave_all.(marker).(agentsColl{a}).meanL+semL)'; semLMin=(ave_all.(marker).(agentsColl{a}).meanL-semL)';
             if plot_indiv
                 plot(ave_all.(marker).(agentsColl{a}).meanL,'LineWidth',wd,'color',colorL(a,:));
@@ -205,7 +211,7 @@ if n_var==1
                     legend({'high confidence B', 'low confidence B'}, 'Location','northwest');
                     xL=xlim; yL=ylim;
                     text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
-                    title(title_plot);
+                    title(fullfile([title_plot,' - B']));
                     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
                     saveas(gcf,fullfile(save_path,'meanPlots',[title_fig '_' agentsColl{a} '.png']));
                     hold off;
@@ -213,7 +219,7 @@ if n_var==1
                     legend({'high confidence Y', 'low confidence Y'}, 'Location','northwest');
                     xL=xlim; yL=ylim;
                     text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
-                    title(title_plot);
+                    title(fullfile([title_plot,' - Y']));
                     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
                     saveas(gcf,fullfile(save_path,'meanPlots',[title_fig '_' agentsColl{a} '.png']));
                     hold off;

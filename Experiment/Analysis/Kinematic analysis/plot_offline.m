@@ -74,7 +74,7 @@ for dec = 1:length(list_Dec)
         which_Dec      = dec; % which_Dec is equivalent to dec (loop var)
         plot_indiv     = 1; % Plots for individual agents? (1=yes, 0=no)
         n_var          = 1; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
-        plot_sd        = 0; % Plot mean+variability? (1=yes, 0=no ->trial-by-trial)
+        plot_sd        = 1; % Plot mean+variability? (1=yes, 0=no ->trial-by-trial)
         dev            = 1; % Which variability? (1=SD, 2=SEM)
         show_med_split = 1; % Apply a median split? (1=yes, 0=no)
         % Note: trial-by-trial plots need to be adjusted for n_var=2
