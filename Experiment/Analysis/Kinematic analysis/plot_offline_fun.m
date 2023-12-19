@@ -86,6 +86,9 @@ if n_var==1
                 'LineWidth',wd,'color',lConf_col); % average low confidence
         end
         legend({'high confidence', 'low confidence'}, 'Location','northwest');
+        % display count of high/lo confidence decisions
+        xL=xlim; yL=ylim;
+        text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
 
     elseif which_Dec == 3 % only collective decision
         agentsColl = {'B' 'Y'};
@@ -106,27 +109,14 @@ if n_var==1
         end
         legend({'high confidence B', 'low confidence B','high confidence Y', 'low confidence Y'}, 'Location','northwest');
 
-    elseif which_Dec == 4 % XXX 1st and 2nd decision NOT FUNCTIONAL
-        % plot single trials
-        plot(ave_all(:,pairS.curr_conf==2),'color',hConf_col); % high confidence
-        hold on;
-        plot(ave_all(:,pairS.curr_conf==1),'color',lConf_col); % low confidence
-        % plot average trajectories only if data has been normalized (not feasible otherwise)
-        if flag_bin
-            plot(mean(matrix_3d(:,clm,pairS.curr_conf==2),3,'omitnan'), ...
-                'LineWidth',wd,'color',hConf_col); % average high confidence
-            plot(mean(matrix_3d(:,clm,pairS.curr_conf==1),3,'omitnan'), ...
-                'LineWidth',wd,'color',lConf_col); % average low confidence
-        end
-
     end
 
     title(title_plot);
     
-%     % save each figure with the specified dimensions
-%     set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
-%     saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig));
-%     hold off;
+    % save each figure with the specified dimensions
+    set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+    saveas(gcf,fullfile(save_path,'exploratoryPlots',title_fig));
+    hold off;
 
 end
 

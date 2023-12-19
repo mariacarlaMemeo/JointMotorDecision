@@ -52,12 +52,12 @@ meanHall_Y.index = []; meanLall_Y.index = []; meanHall_Y.ulna  = []; meanLall_Y.
 % Set some more parameters
 list_Dec    = [1 2 3];
 mrks        = {'index' 'ulna'};
-time_param  = {'velocity' 'acceleration' 'jerk'};
+time_param  = {'velocity' 'acceleration' 'jerk'}; % note: these are the modules of v,a,j
 spa_param   = {'x' 'y' 'z'};
 
 
 %% START DECISION LOOP: run through all three decisions
-for dec = 1%:length(list_Dec)
+for dec = 1:length(list_Dec)
 
     % pair loop: run through this for all selected pairs (n_pr = number of pairs)
     for sel_p = 1:n_pr
@@ -65,18 +65,19 @@ for dec = 1%:length(list_Dec)
         % load pairs *before* setting the flags (to avoid overwriting)
         if ischar(file) % load only 1 pair
             load([fullfile(path,file)], '-regexp', ['^(?!' list_ignore ')\w']);
-        elseif iscell(file) % load several pairs            
-            ave_all.pairID = file{sel_p}(1:4);
+        elseif iscell(file) % load several pairs
+            %ave_all.pairID = file{sel_p}(1:4);
             load([fullfile(path,file{sel_p})], '-regexp', ['^(?!' list_ignore ')\w']);
         end
 
-        % set flags -------------------------------------------------------
+        % SET FLAGS -------------------------------------------------------
         which_Dec      = dec; % which_Dec is equivalent to dec (loop var)
         plot_indiv     = 1; % Plots for individual agents? (1=yes, 0=no)
         n_var          = 1; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
-        plot_sd        = 1; % Plot variability? (1=yes, 0=no)
+        plot_sd        = 0; % Plot mean+variability? (1=yes, 0=no ->trial-by-trial)
         dev            = 1; % Which variability? (1=SD, 2=SEM)
-        show_med_split = 1; % Apply a median split? (1=yes, 0=no)      
+        show_med_split = 1; % Apply a median split? (1=yes, 0=no)
+        % Note: trial-by-trial plots need to be adjusted for n_var=2
         % -----------------------------------------------------------------
 
         % if no median split: define confidence as low (1-3) and high (4-6)
@@ -148,8 +149,8 @@ for dec = 1%:length(list_Dec)
                         end
                         title_plot = ['pair ' SUBJECTS{p}(2:end) ' - agent ' agents{g} ' - '...
                                        time_param{param} ' - decision ' num2str(which_Dec) ' - ' upper(mrks{m})];
-                        title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' time_param{param}(1) ...
-                                      'm_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+                        title_fig  = [SUBJECTS{p}(2:end) '_' agents{g} '_' time_param{param}(1:3) ...
+                                      '_dec' num2str(which_Dec) '_' mrks{m} '.png'];
                         % CALL PLOTTING FUNCTION plot_offline_fun(_sd)
                         if plot_sd
                             ave_all.(lab_time).time = plot_offline_fun_sd(ave_all.(lab_time).time, ...
@@ -174,8 +175,8 @@ for dec = 1%:length(list_Dec)
                         end
                         title_plot = ['pair ' SUBJECTS{p}(2:end) ' - agent ' agents{g} ' - '...
                                        spa_param{sparam} '-coordinate - decision ' num2str(which_Dec) ' - ' upper(mrks{m})];
-                        title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' spa_param{sparam} ...
-                                      ' coord_' mrks{m} '_dec' num2str(which_Dec) '.png'];
+                        title_fig  = [SUBJECTS{p}(2:end) '_' agents{g} '_' spa_param{sparam} ...
+                                      '_dec' num2str(which_Dec) '_' mrks{m} '.png'];
                         % CALL PLOTTING FUNCTION plot_offline_fun(_sd)
                         if plot_sd
                             ave_all.(lab_space).space = plot_offline_fun_sd(ave_all.(lab_space).space, ...
@@ -207,7 +208,10 @@ for dec = 1%:length(list_Dec)
             %% Build pragmatic matrix to collect variables for all pairs
             % This is done to later plot the GRAND AVERAGE across pairs.
             % Note: do this only if multiple pairs have been selected
-            if n_var ==1 && flag_multiple % one variable across norm. time
+            if n_var ==1 && flag_multiple && plot_sd % one variable across norm. time
+
+                % assign pairID
+                ave_all.pairID = file{sel_p}(1:4);
 
                 if dec == 3 % use a trick for collective decision
                     if g == 1 % assign according to g which specifies agent
@@ -254,7 +258,10 @@ for dec = 1%:length(list_Dec)
 
             end
 
-            if n_var == 2 && flag_multiple % two spatial variables
+            if n_var == 2 && flag_multiple && plot_sd % two spatial variables
+
+                % assign pairID
+                ave_all.pairID = file{sel_p}(1:4);
 
                 if dec == 3 % use a trick for collective decision
                     if g == 1 % assign according to g which specifies agent
@@ -289,7 +296,9 @@ for dec = 1%:length(list_Dec)
             if (which_Dec == 1 || which_Dec ==2)
                 % Add the agent label to the 'ave_all' variable.
                 % (this label is already there for the collective ave_all)
-                ave_all.agent = agents{g};
+                if plot_sd
+                    ave_all.agent = agents{g};
+                end
                 if plot_sd==0
                     trials_clean(g) = ...
                     length(ave_all(~isnan(ave_all(1,pairS.at2ndDec(1:size(ave_all,2))==agents{g}))));
@@ -303,7 +312,7 @@ for dec = 1%:length(list_Dec)
             mrks plot_indiv dec which_Dec list_Dec data_dir n_var list_ignore...
             meanHall_V meanLall_V meanHall_A meanLall_A ...
             meanHall_Z meanLall_Z meanHall_Y meanLall_Y ...
-            time_param spa_param
+            time_param spa_param plot_sd
 
     end % end of pair loop ------------------------------------------------
 
@@ -320,11 +329,12 @@ for dec = 1%:length(list_Dec)
     var_list      = {'V' 'A' 'Z'};
     varlabx       = 'Normalized movement duration (%)';
     fs            = 12; % fontsize for axis labels
+    subnum        = 2*n_pr;
     x = [1:100, fliplr(1:100)]; % normalized sample length of x-axis 
        
     % start plotting (if multiple pairs have been selected)
-    % note: plots are created either for n_var=1 OR n_var=2
-    if flag_multiple
+    % note: plots are created *either* for n_var=1 OR n_var=2
+    if flag_multiple && plot_sd
         
         for m = 1:length(mrks)
 
@@ -352,8 +362,8 @@ for dec = 1%:length(list_Dec)
                     grandSdH  = std(meanHall.(mrks{m}),0,2);
                     grandSdL  = std(meanLall.(mrks{m}),0,2);
                     % sem
-                    grandSemH = grandSdH/sqrt(length(grandAveH));
-                    grandSemL = grandSdL/sqrt(length(grandAveH));
+                    grandSemH = grandSdH/sqrt(subnum); % sqrt of agent num
+                    grandSemL = grandSdL/sqrt(subnum);
                     % mean +/- sem
                     grandSemHPlus= (grandAveH+grandSemH)';
                     grandSemLPlus= (grandAveL+grandSemL)';
@@ -378,6 +388,7 @@ for dec = 1%:length(list_Dec)
                     % axes labels
                     xlabel(varlabx, 'FontSize', fs, 'FontWeight','bold');
                     ylabel(varlaby, 'FontSize', fs, 'FontWeight','bold');
+                    %ylim([-4000 5000]);
                     legend({'high confidence', 'low confidence'}, 'Location','northwest');
                     
                     % save figure
@@ -402,8 +413,8 @@ for dec = 1%:length(list_Dec)
                 zgrandSdH  = std(zmeanHall.(mrks{m}),0,2);
                 zgrandSdL  = std(zmeanLall.(mrks{m}),0,2);
                 % sem
-                zgrandSemH = zgrandSdH/sqrt(length(zgrandAveH));
-                zgrandSemL = zgrandSdL/sqrt(length(zgrandAveH));
+                zgrandSemH = zgrandSdH/sqrt(subnum);
+                zgrandSemL = zgrandSdL/sqrt(subnum);
                 % mean +/- sem
                 zgrandSemHPlus= (zgrandAveH+zgrandSemH)';
                 zgrandSemLPlus= (zgrandAveL+zgrandSemL)';
@@ -420,8 +431,8 @@ for dec = 1%:length(list_Dec)
                 ygrandSdH  = std(ymeanHall.(mrks{m}),0,2);
                 ygrandSdL  = std(ymeanLall.(mrks{m}),0,2);
                 % sem
-                ygrandSemH = ygrandSdH/sqrt(length(ygrandAveH));
-                ygrandSemL = ygrandSdL/sqrt(length(ygrandAveH));
+                ygrandSemH = ygrandSdH/sqrt(subnum);
+                ygrandSemL = ygrandSdL/sqrt(subnum);
                 % mean +/- sem
                 ygrandSemHPlus= (ygrandAveH+ygrandSemH)';
                 ygrandSemLPlus= (ygrandAveL+ygrandSemL)';
