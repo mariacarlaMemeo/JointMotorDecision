@@ -57,7 +57,7 @@ spa_param   = {'x' 'y' 'z'};
 
 
 %% START DECISION LOOP: run through all three decisions
-for dec = 1:length(list_Dec)
+for dec = 2%:length(list_Dec)
 
     % pair loop: run through this for all selected pairs (n_pr = number of pairs)
     for sel_p = 1:n_pr
@@ -73,8 +73,8 @@ for dec = 1:length(list_Dec)
         % SET FLAGS -------------------------------------------------------
         which_Dec      = dec; % which_Dec is equivalent to dec (loop var)
         plot_indiv     = 1; % Plots for individual agents? (1=yes, 0=no)
-        n_var          = 1; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
-        plot_sd        = 1; % Plot mean+variability? (1=yes, 0=no ->trial-by-trial)
+        n_var          = 2; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
+        plot_sd        = 0; % Plot mean+variability? (1=yes, 0=no ->trial-by-trial)
         dev            = 1; % Which variability? (1=SD, 2=SEM)
         show_med_split = 1; % Apply a median split? (1=yes, 0=no)
         % Note: trial-by-trial plots need to be adjusted for n_var=2
@@ -194,12 +194,20 @@ for dec = 1:length(list_Dec)
                 % n_var=2: plot two spatial varibles x-y and y-z 
                 % Note: spatial variables are time-normalized in movement_var.m
                 if n_var == 2
-                    title_plot = [upper(mrks{m}) ' - ' agents{g} ' agent, pair' SUBJECTS{p}(2:end) ', dec' num2str(which_Dec)];
-                    title_fig  = [SUBJECTS{p}(2:end) agents{g} '_' mrks{m} '_dec' num2str(which_Dec) '.png'];
-                    % CALL PLOTTING FUNCTION plot_offline_fun_sd
-                    ave_all = plot_offline_fun_sd(ave_all,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]), ...
-                              mrks{m},[],pairS,agents{g},title_plot,title_fig, ...
-                              data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+                    title_plot = ['pair ' SUBJECTS{p}(2:end) ' - agent ' agents{g} ' - '...
+                                  'decision ' num2str(which_Dec) ' - ' upper(mrks{m})];
+                    title_fig  = [SUBJECTS{p}(2:end) '_' agents{g} ...
+                                  '_dec' num2str(which_Dec) '_' mrks{m} '.png'];
+                    % CALL PLOTTING FUNCTION plot_offline_fun(_sd)
+                    if plot_sd
+                        ave_all = plot_offline_fun_sd(ave_all,eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]), ...
+                            mrks{m},[],pairS,agents{g},title_plot,title_fig, ...
+                            data_dir,n_var,[],which_Dec,flag_bin,strCount,dev,plot_indiv);
+                    else
+                        ave_all = plot_offline_fun(eval(['all_spa_traj_'  mrks{m} '_' lower(agents{g})]), ...
+                                      mrks{m},[],pairS,agents{g},title_plot,title_fig, ...
+                                      data_dir,n_var,[],which_Dec,flag_bin,strCount);
+                    end
                 end
 
             end % end of marker loop %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -288,22 +296,28 @@ for dec = 1:length(list_Dec)
 
             end
 
-            % THIS IS NOT STRICLTY NECESSARY (already done in main script)
-            % Save number of plotted (i.e., clean!) trials in which either 
-            % agent B or Y took 2nd decision (in sum, this is the total
-            % number of clean trials for the pair).
-            % trials_clean contains two values (b/y)
-            if (which_Dec == 1 || which_Dec ==2)
-                % Add the agent label to the 'ave_all' variable.
-                % (this label is already there for the collective ave_all)
-                if plot_sd
-                    ave_all.agent = agents{g};
-                end
-                if plot_sd==0
-                    trials_clean(g) = ...
-                    length(ave_all(~isnan(ave_all(1,pairS.at2ndDec(1:size(ave_all,2))==agents{g}))));
-                end
-            end
+            % MAKE THIS WORK OR DELETE
+%             % THIS IS NOT STRICTLY NECESSARY (already done in main script)
+%             % Save number of plotted (i.e., clean!) trials in which either 
+%             % agent B or Y took 2nd decision (in sum, this is the total
+%             % number of clean trials for the pair).
+%             % trials_clean contains two values (b/y)
+%             if (which_Dec == 1 || which_Dec ==2)
+%                 % Add the agent label to the 'ave_all' variable.
+%                 % (this label is already there for the collective ave_all)
+%                 if plot_sd==1
+%                     ave_all.agent = agents{g};
+%                     trials_clean(g) = ...
+%                         length(ave_all(~isnan(ave_all(1,pairS.at2ndDec(1:size(ave_all,2))==agents{g}))));
+%                 elseif plot_sd==0
+%                     trials_clean(g) = ...
+%                     length(ave_all(~isnan(ave_all(1,pairS.at2ndDec==agents{g}))));
+%                     % XXX double check this
+%                     %if g==2
+%                         %fprintf(['Clean trials are: ' num2str(trials_clean(1)) 'plus ' [num2str(trials_clean(2))]], '\n');
+%                     %end
+%                 end
+%             end
         
         end % end of agent loop -------------------------------------------
 

@@ -1,12 +1,14 @@
 function ave_all = plot_offline_fun_sd(ave_all,matrix_3d,marker,clm,pairS,...
     agents,title_plot,title_fig,save_path,n_var,threshold, ...
-    which_Dec,flag_bin,str,dev,plot_indiv)
+    which_Dec,~,str,dev,plot_indiv)
 
 % -------------------------------------------------------------------------
-% -> We plot means +- variability for kin. variables, per agent.
+% -> Plot *averaged* trajectories (+/- SD) per agent and hi/lo confidence.
 % -------------------------------------------------------------------------
 % This function is called from "plot_offline.m"
 
+
+%% Preparatory steps
 % Set some parameters first
 wd            = 2; % line width
 hConf_col     = [0.4667 0.6745 0.1882]; % GREEN
@@ -35,10 +37,8 @@ end
 %     end
 % end
 
-%% Plotting trajectories (colored according to confidence - high/low)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plotting one variable (across time/frames)
+%% Plot one variable (across normalized time (100 frames))
 if n_var==1
 
     % "squeeze" first to change format
@@ -57,91 +57,108 @@ if n_var==1
     elseif isempty(threshold)
         c=[];
     end
-    % ---------------------------------------------------------------------
 
     matrix_3d(:,clm,unique(c)) = nan;
-    matrix_sqz(:,unique(c))   = nan;
+    matrix_sqz(:,unique(c))    = nan;
+    % ---------------------------------------------------------------------
 
     if plot_indiv
         biv = figure(); % create figure
         set(biv, 'WindowStyle', 'Docked');
     end
-
-    if which_Dec == 1 % plot only 1st decision
-        % high confidence (mean +- variability)
-        selectH1  = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents);
+    
+    % 1st DECISION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if which_Dec == 1
+        
+        % HIGH confidence
+        % 1. compute mean and SD/SEM
+        % The "select"-variable contains the specific data of interest for
+        % the current confidence level and acting agent (the one who performed the current decision).
+        selectH1 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at1stDec(1:size(matrix_3d,3))==agents);
         ave_all.(marker).meanH = mean(selectH1,3,'omitnan');
-        sdH     = std(selectH1,0,3,'omitnan');
-        sdHPlus = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
-        semH    = sdH/sqrt(size(selectH1,3)); % take sqrt of number of trials with high conf
-        semHPlus=(ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
+        sdH      = std(selectH1,0,3,'omitnan');
+        sdHPlus  = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
+        semH     = sdH/sqrt(size(selectH1,3)); % take sqrt of number of trials with high conf
+        semHPlus = (ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
+        % 2. plot mean +/- SD/SEM
         if plot_indiv
-            plot(ave_all.(marker).meanH,'LineWidth',wd,'color',hConf_col); %mean
+            plot(ave_all.(marker).meanH,'LineWidth',wd,'color',hConf_col);
             hold on;
             if dev==1 % SD
-                %plot(sdHPlus,'LineWidth',wd,'color',hConf_col, 'LineStyle',':'); %mean+SD
-                %plot(sdHMin,'LineWidth',wd,'color',hConf_col, 'LineStyle',':'); %mean-SD
+                % Show visible lines for mean +/- SD
+                %plot(sdHPlus,'LineWidth',wd,'color',hConf_col, 'LineStyle',':');
+                %plot(sdHMin,'LineWidth',wd,'color',hConf_col, 'LineStyle',':');
                 inBetweenH = [sdHMin, fliplr(sdHPlus)];
             else % SEM
-                %plot(semHPlus,'LineWidth',wd,'color',hConf_col, 'LineStyle',':'); %mean+SEM
-                %plot(semHMin,'LineWidth',wd,'color',hConf_col, 'LineStyle',':'); %mean-SEM
+                % Show visible lines for mean +/- SEM
+                %plot(semHPlus,'LineWidth',wd,'color',hConf_col, 'LineStyle',':');
+                %plot(semHMin,'LineWidth',wd,'color',hConf_col, 'LineStyle',':');
                 inBetweenH = [semHMin, fliplr(semHPlus)];
             end
-            fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
+            % shading inbetween +/- SD/SEM
+            fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
         end
-        % low confidence (mean +- variability)
+        % LOW confidence
+        % 1. compute mean and SD/SEM
         selectL1 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at1stDec(1:size(matrix_3d,3))==agents);
         ave_all.(marker).meanL = mean(selectL1,3,'omitnan');
-        sdL     = std(selectL1,0,3,'omitnan');
-        sdLPlus = (ave_all.(marker).meanL+sdL)'; sdLMin=(ave_all.(marker).meanL-sdL)';
-        semL    = sdL/sqrt(size(selectL1,3)); % take sqrt of number of trials with low conf
-        semLPlus= (ave_all.(marker).meanL+semL)'; semLMin=(ave_all.(marker).meanL-semL)';
+        sdL      = std(selectL1,0,3,'omitnan');
+        sdLPlus  = (ave_all.(marker).meanL+sdL)'; sdLMin=(ave_all.(marker).meanL-sdL)';
+        semL     = sdL/sqrt(size(selectL1,3)); % take sqrt of number of trials with low conf
+        semLPlus = (ave_all.(marker).meanL+semL)'; semLMin=(ave_all.(marker).meanL-semL)';
+        % 2. plot mean +/- SD/SEM
         if plot_indiv
             plot(ave_all.(marker).meanL,'LineWidth',wd,'color',lConf_col);
             hold on;
             if dev==1
-                %plot(sdLPlus,'LineWidth',wd,'color',lConf_col, 'LineStyle',':'); %mean+SD
-                %plot(sdLMin,'LineWidth',wd,'color',lConf_col, 'LineStyle',':'); %mean-SD
+                %plot(sdLPlus,'LineWidth',wd,'color',lConf_col, 'LineStyle',':');
+                %plot(sdLMin,'LineWidth',wd,'color',lConf_col, 'LineStyle',':');
                 inBetweenL = [sdLMin, fliplr(sdLPlus)];
             else
-                %plot(semLPlus,'LineWidth',wd,'color',lConf_col, 'LineStyle',':'); %mean+SD
-                %plot(semLMin,'LineWidth',wd,'color',lConf_col, 'LineStyle',':'); %mean-SD
+                %plot(semLPlus,'LineWidth',wd,'color',lConf_col, 'LineStyle',':');
+                %plot(semLMin,'LineWidth',wd,'color',lConf_col, 'LineStyle',':');
                 inBetweenL = [semLMin, fliplr(semLPlus)];
             end
             fill(x, inBetweenL, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
-            % add axes labels
+            
+            % 3. add axes labels, legend, confidence count
             xlabel(varlabx, 'FontSize', fs, 'FontWeight','bold');
-            % add legend and confidence count
             legend({'high confidence', 'low confidence'}, 'Location','northwest');
             xL=xlim; yL=ylim;
             text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
         end
 
-    elseif which_Dec == 2 % only second decision
-        % high confidence (mean +- variability)
+    % 2nd DECISION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    elseif which_Dec == 2
+        
+        % HIGH confidence
+        % 1. compute mean and SD/SEM
         selectH2  = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.at2ndDec(1:size(matrix_3d,3))==agents);
         ave_all.(marker).meanH = mean(selectH2,3,'omitnan');
-        sdH     = std(selectH2,0,3,'omitnan');
-        sdHPlus = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
-        semH    = sdH/sqrt(size(selectH2,3));
-        semHPlus=(ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
+        sdH      = std(selectH2,0,3,'omitnan');
+        sdHPlus  = (ave_all.(marker).meanH+sdH)'; sdHMin=(ave_all.(marker).meanH-sdH)';
+        semH     = sdH/sqrt(size(selectH2,3));
+        semHPlus = (ave_all.(marker).meanH+semH)'; semHMin=(ave_all.(marker).meanH-semH)';
+        % 2. plot mean +/- SD/SEM
         if plot_indiv
-            plot(ave_all.(marker).meanH,'LineWidth',wd,'color',hConf_col); %mean
+            plot(ave_all.(marker).meanH,'LineWidth',wd,'color',hConf_col);
             hold on;
             if dev==1 % SD
                 inBetweenH = [sdHMin, fliplr(sdHPlus)];
             else % SEM
                 inBetweenH = [semHMin, fliplr(semHPlus)];
             end
-            fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
+            fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
         end
-        % low confidence (mean +- variability)
+        % LOW confidence
+        % 1. compute mean and SD/SEM
         selectL2 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.at2ndDec(1:size(matrix_3d,3))==agents);
         ave_all.(marker).meanL = mean(selectL2,3,'omitnan');
         sdL     = std(selectL2,0,3,'omitnan');
         sdLPlus = (ave_all.(marker).meanL+sdL)'; sdLMin=(ave_all.(marker).meanL-sdL)';
         semL    = sdL/sqrt(size(selectL2,3));
         semLPlus= (ave_all.(marker).meanL+semL)'; semLMin=(ave_all.(marker).meanL-semL)';
+        % 2. plot mean +/- SD/SEM
         if plot_indiv
             plot(ave_all.(marker).meanL,'LineWidth',wd,'color',lConf_col);
             hold on;
@@ -151,51 +168,60 @@ if n_var==1
                 inBetweenL = [semLMin, fliplr(semLPlus)];
             end
             fill(x, inBetweenL, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
-            % add axes labels
+            
+            % 3. add axes labels, legend, confidence count
             xlabel(varlabx, 'FontSize', fs, 'FontWeight','bold');
-            % add legend and confidence count
             legend({'high confidence', 'low confidence'}, 'Location','northwest');
             xL=xlim; yL=ylim;
             text(0.99*xL(2),0.99*yL(2),str,'HorizontalAlignment','right','VerticalAlignment','top');
         end
 
-    elseif which_Dec == 3 % only collective decision
-        agentsColl = {'B' 'Y'};
-        %styleColl  = {'-', '-'};
+    % COLLECTIVE DECISION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    elseif which_Dec == 3
+        
+        agentsColl = {'B' 'Y'}; %styleColl  = {'-', '-'};
         colorH     = [hConf_col; hConf_col_2]; colorL = [lConf_col; lConf_col_2];
+        
+        % loop separately through agents (B,Y) and create 1 plot for each
         for a = 1:length(agentsColl)
-            % confidence count
+            % confidence count for current agent
             lo3=sum(pairS.curr_conf(pairS.curr_conf==1 & pairS.atCollDec==agentsColl{a}));
             hi3=sum(pairS.curr_conf(pairS.curr_conf==2 & pairS.atCollDec==agentsColl{a}))/2;
             str=['Hi: ' num2str(hi3) ', Lo: ' num2str(lo3)];
+             % create new figure for 2nd agent
             if a==2 && plot_indiv
-                biv = figure(); % create figure
+                biv = figure();
                 set(biv, 'WindowStyle', 'Docked');
             end
-            % high confidence (mean +- variability)
+            
+            % HIGH confidence
+            % 1. compute mean and SD/SEM
             ave_all.(agentsColl{a}).selectH3 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==2 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{a});
             ave_all.(marker).(agentsColl{a}).meanH = mean(ave_all.(agentsColl{a}).selectH3,3,'omitnan');
             sdH     = std(ave_all.(agentsColl{a}).selectH3,0,3,'omitnan');
             sdHPlus = (ave_all.(marker).(agentsColl{a}).meanH+sdH)'; sdHMin=(ave_all.(marker).(agentsColl{a}).meanH-sdH)';
             semH    = sdH/sqrt(size(ave_all.(agentsColl{a}).selectH3,3));
             semHPlus=(ave_all.(marker).(agentsColl{a}).meanH+semH)'; semHMin=(ave_all.(marker).(agentsColl{a}).meanH-semH)';
+            % 2. plot mean +/- SD/SEM
             if plot_indiv
-                plot(ave_all.(marker).(agentsColl{a}).meanH,'LineWidth',wd,'color',colorH(a,:)); %mean
+                plot(ave_all.(marker).(agentsColl{a}).meanH,'LineWidth',wd,'color',colorH(a,:));
                 hold on;
                 if dev==1 % SD
                     inBetweenH = [sdHMin, fliplr(sdHPlus)];
                 else % SEM
                     inBetweenH = [semHMin, fliplr(semHPlus)];
                 end
-                fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off'); % shading between +- variability
+                fill(x, inBetweenH, HiFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
             end
-            % low confidence (mean +- variability)
+            % LOW confidence
+            % 1. compute mean and SD/SEM
             ave_all.(agentsColl{a}).selectL3 = matrix_3d(:,clm,pairS.curr_conf(1:size(matrix_3d,3))==1 & pairS.atCollDec(1:size(matrix_3d,3))==agentsColl{a});
             ave_all.(marker).(agentsColl{a}).meanL = mean(ave_all.(agentsColl{a}).selectL3,3,'omitnan');
             sdL     = std(ave_all.(agentsColl{a}).selectL3,0,3,'omitnan');
             sdLPlus = (ave_all.(marker).(agentsColl{a}).meanL+sdL)'; sdLMin=(ave_all.(marker).(agentsColl{a}).meanL-sdL)';
             semL    = sdL/sqrt(size(ave_all.(agentsColl{a}).selectL3,3));
             semLPlus= (ave_all.(marker).(agentsColl{a}).meanL+semL)'; semLMin=(ave_all.(marker).(agentsColl{a}).meanL-semL)';
+            % 2. plot mean +/- SD/SEM
             if plot_indiv
                 plot(ave_all.(marker).(agentsColl{a}).meanL,'LineWidth',wd,'color',colorL(a,:));
                 hold on;
@@ -204,8 +230,9 @@ if n_var==1
                 else
                     inBetweenL = [semLMin, fliplr(semLPlus)];
                 end
-                fill(x, inBetweenL, LoFill, 'FaceAlpha',0.5,'HandleVisibility','off');
-                % add axes labels
+                fill(x, inBetweenL, LoFill, 'FaceAlpha',0.5,'LineStyle','none','HandleVisibility','off');
+                
+                % 3. add axes labels and agent-specific legend and title
                 xlabel(varlabx, 'FontSize', fs, 'FontWeight','bold');
                 if a==1
                     legend({'high confidence B', 'low confidence B'}, 'Location','northwest');
@@ -225,25 +252,22 @@ if n_var==1
                     hold off;
                 end
             end
-        end
-    end
+        end % end of agent loop within which_Dec==3
 
+    end % end of decision loop (either which_Dec=1 or 2 or collective)
+
+    % add title and save figure (for 1st and 2nd decisions)
     if (which_Dec==1 || which_Dec==2) && plot_indiv
         title(title_plot);
-        % save each figure with the specified dimensions
         set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
         saveas(gcf,fullfile(save_path,'meanPlots',title_fig));
         hold off;
     end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Plotting two variables (spatial x-y and y-z plots, not across time)
-elseif n_var==2
 
-    % titles
-    title_plotX = [title_plot ', XYaxis'];
-    title_figX  = [title_fig(1:end-4) '_XYaxis.png'];
-    title_plotZ = [title_plot ', YZaxis'];
-    title_figZ  = [title_fig(1:end-4) '_YZaxis.png'];
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% Plot two variables (spatial x-y and y-z plots, not across time)
+elseif n_var==2
 
     % "squeeze" to adjust data format
     matrix_sqz_X = squeeze(matrix_3d(:,1,:)); % 1st column is x
@@ -259,12 +283,13 @@ elseif n_var==2
     elseif isempty(threshold)
         c_out=[];
     end
-    % ---------------------------------------------------------------------
 
     matrix_3d(:,1,c_out)  = nan; matrix_3d(:,2,c_out)  = nan; matrix_3d(:,3,c_out)  = nan;
     matrix_sqz_X(:,c_out) = nan; matrix_sqz_Y(:,c_out) = nan; matrix_sqz_Z(:,c_out) = nan;
+    % ---------------------------------------------------------------------
 
-    % plot 1st, 2nd decision or collective decision
-    plot_offline_nvar2;
+    % actual plotting is done in separate script (plot_offline_nvar2.m)
+    % Note: here we *always plot SD* (currently no option to plot SEM)
+    plot_offline_nvar2; 
 
 end
