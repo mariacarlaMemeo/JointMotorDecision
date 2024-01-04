@@ -15,8 +15,7 @@ else
     % find minimum that is closest "to the left" (i.e., earlier in time) of the maximum
     diff_loc_min_start = min_loc - startFrame; % subtract startFrame from minima indices
     tstartTh = min_loc(max(find(diff_loc_min_start<0)));
+%     tstartTh = min_loc(find(diff_loc_min_start<0, 1, 'last'));
 end
 
 end
-
-% script version: Nov 2023

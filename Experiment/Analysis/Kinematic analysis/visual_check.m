@@ -28,12 +28,11 @@ switch start_criterion
 end
 
 % for tmove and tstop (true start and stop), always use index
-endmarker = [model_name '_index'];
+endmarker  = [model_name '_index'];
 movemarker = endmarker;
 
 
-% display trial number in command window
-%fprintf(['Trial n. ' num2str(sMarkers{t}.info.trial_id) '\n']);
+% display start criterion in command window
 fprintf(1, '\n');
 fprintf(['START criterion: ' label_criterion '\n']);
 fprintf(1, '\n');

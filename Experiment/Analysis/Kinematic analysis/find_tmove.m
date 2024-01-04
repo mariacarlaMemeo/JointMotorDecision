@@ -13,11 +13,11 @@ min_loc           = min_loc(min_loc>20); % only AFTER preAcqu
 diff_loc_min_peak = min_loc - peak_loc(max_peak_loc); % subtract max peak index from minima indices
 % find minimum that is closest "to the left" (i.e., earlier in time) of the maximum
 tmove             = min_loc(max(find(diff_loc_min_peak<0)));
+% faster code:
+% tmove             = min_loc(find(diff_loc_min_peak<0, 1, 'last'));
 
 if isempty(tmove)
     tmove = NaN;
 end
 
 end
-
-% script version: Nov 2023

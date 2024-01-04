@@ -78,7 +78,7 @@ ulnaTh     = findTh_cons(ulnaV,vel_th,succSample);
 % velocity threshold first), but only if this happens *before* button release .
 % If button release occurs before passing of threshold, then the button
 % release is taken as movement start.
-% 24-11.23: first we looked for velocity threshold also within preAcqu),
+% 24-11-23: first we looked for velocity threshold also within preAcqu),
 % but then this trial was automatically excluded if startFrame>preAcqu, so
 % we decided to change that (see below) so that we can also inspect those
 % trials
@@ -100,8 +100,8 @@ end
 % 3. define respective startFrames for index and ulna
 startIndex = indexTh(indCount);
 startUlna  = ulnaTh(ulnCount);
-% 4. finally, set startFrame as the one (index or ulna) that occured earlier
-[startFrame,ind_start] = min([startIndex,startUlna]);
+% 4. finally, set startFrame as the one (index or ulna) that occurred earlier
+[startFrame,ind_start] = min([startIndex,startUlna]); % [value, index]
 
 if ind_start == 1
     start_criterion = 1; % index
@@ -133,15 +133,14 @@ end
 % NOTE: if startFrame based on velocity threshold, then use find_minstart
 % to find the velocity minimum right before the threshold was passed
 if start_criterion == 1 || start_criterion == 2
-    startFrame = find_minstart(move_marker,startFrame);
+    startFrame = find_minstart(move_marker,startFrame); % find_minstart function
 end
 
 % define endFrame
 lastFrame = (samp(end)-10); % time of target button press
 % If the minimum of index velocity occurs before or after the button press,
-% then use this minimum as endFrame
-% FUNCTION HERE
-endFrame = find_tstop(indexV);
+% then use this minimum as endFrame (always use INDEX!)
+endFrame = find_tstop(indexV); % call find_tstop function
 if isnan(endFrame)
     endFrame = lastFrame;
 end
@@ -151,7 +150,7 @@ end
 % The output gives you the index of the minimum; this is tmove.
 % NOTE: the function is applied to the marker which has been previously
 % used to define the startFrame.
-% EDIT (05.12.23): ALWAYS use index velocity to define tmove
+% EDIT (05.12.23): ALWAYS use INDEX velocity to define tmove
 tmove = find_tmove(indexV); % call find_tmove function
 if tmove < startFrame || isnan(tmove)
     tmove = startFrame;
@@ -166,9 +165,9 @@ if startFrame > preAcq
         v=figure('Name',['P' SUBJECTS{p}(2:end)]); % create figure v
         set(v, 'WindowStyle', 'Docked'); % dock figure
 
-        % 1. plot velocity and height for ULNA; use *left* y-axis of plot
+        % 1. plot velocity and Y-axis for ULNA; use *left* y-axis of plot
         yyaxis left;
-        uv=plot(samp,ulnaV, 'Color',blueCol);  % ulna velocity ("ulna")
+        uv=plot(samp,ulnaV, 'Color',blueCol);  % ulna velocity ("ulnaV")
         hold on;
         uz=plot(samp,ulnaY, 'Color',blueCol, 'LineStyle','--'); % ulna forward ("ulnaY")
         uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -184,9 +183,9 @@ if startFrame > preAcq
         end
         hold off;
 
-        % 2. plot velocity and height for INDEX; use *right* y-axis of plot
+        % 2. plot velocity and Y-axis for INDEX; use *right* y-axis of plot
         yyaxis right;
-        iv=plot(samp,indexV, 'Color',orangeCol);  % index velocity ("index")
+        iv=plot(samp,indexV, 'Color',orangeCol);  % index velocity ("indexV")
         hold on;
         iz=plot(samp,indexY, 'Color',orangeCol, 'LineStyle','--'); % index forward ("indexY")
         iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -203,17 +202,17 @@ if startFrame > preAcq
         legend([uv,iv], {'ulna', 'index'}, 'Location','northwest');
         
 
-        % 3. plot bold green vertical line on startFrame (ulnaTh, indexTh, or button release)
+        % 3. bold green vertical line on startFrame (ulnaTh, indexTh, or button release)
         xl_start = xline(startFrame, 'LineWidth',4, 'Color',startCol);
         xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_start.Alpha = 0.5; % transparency of line (0.7 is default)
 
-        % red line for endFrame
+        % bold red vertical line for endFrame
         xl_tstop = xline(endFrame, 'LineWidth',4, 'Color',stopCol);
         xl_tstop.Annotation.LegendInformation.IconDisplayStyle = 'off';
         xl_tstop.Alpha = 0.4; % transparency of line (0.7 is default)
 
-        % 4. plot three more vertical lines for t0, t1, t2
+        % 4. plot four more vertical lines for t0, t1, t2, t3
         xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
         xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
         xl_t2 = xline(lastFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)
@@ -251,7 +250,7 @@ if startFrame > preAcq
     rt_final = (startFrame-preAcq)/frameRate;
 
     % mt_final = time between movement start and target press
-    % both startFrame and endFrame include preAcq, so it is fine so simply
+    % both startFrame and endFrame include preAcq, so it is fine to simply
     % subtract startFrame from endFrame to get MT
     mt_final = (endFrame-startFrame)/frameRate;
 
@@ -275,9 +274,9 @@ if startFrame > preAcq
             v=figure('Name',['P' SUBJECTS{p}(2:end)]); % create figure v
             set(v, 'WindowStyle', 'Docked'); % dock figure
 
-            % 1. plot velocity and height for ULNA; use *left* y-axis of plot
+            % 1. plot velocity and Y-axis for ULNA; use *left* y-axis of plot
             yyaxis left;
-            uv=plot(samp,ulnaV, 'Color',blueCol);  % ulna velocity ("ulna")
+            uv=plot(samp,ulnaV, 'Color',blueCol);  % ulna velocity ("ulnaV")
             hold on;
             uz=plot(samp,ulnaY, 'Color',blueCol, 'LineStyle','--'); % ulna forward ("ulnaY")
             uz.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -291,9 +290,9 @@ if startFrame > preAcq
             end
             hold off;
 
-            % 2. plot velocity and height for INDEX; use *right* y-axis of plot
+            % 2. plot velocity and Y-axis for INDEX; use *right* y-axis of plot
             yyaxis right;
-            iv=plot(samp,indexV, 'Color',orangeCol);  % index velocity ("index")
+            iv=plot(samp,indexV, 'Color',orangeCol);  % index velocity ("indexV")
             hold on;
             iz=plot(samp,indexY, 'Color',orangeCol, 'LineStyle','--'); % index forward ("indexY")
             iz.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -309,7 +308,7 @@ if startFrame > preAcq
             % create legend with only ulna and index labeled
             legend([uv,iv], {'ulna', 'index'}, 'Location','northwest');
 
-            % 3. plot bold green vertical line on FINAL startFrame
+            % 3. bold green vertical line on FINAL startFrame
             if ~isnan(startFrame)
                 xl_start = xline(startFrame, 'LineWidth',4, 'Color',startCol_2);
                 xl_start.Annotation.LegendInformation.IconDisplayStyle = 'off';
@@ -318,12 +317,12 @@ if startFrame > preAcq
                 %xl_start.LabelHorizontalAlignment = "center"; xl_start.LabelVerticalAlignment = "bottom";              
             end
 
-            % red line for tstop (final endFrame)
+            % bold red vertical line on FINAL endFrame (tstop)
             xl_tstop = xline(endFrame, 'LineWidth',4, 'Color',stopCol_2);  % tstop (potentially manually adjusted)
             xl_tstop.Annotation.LegendInformation.IconDisplayStyle = 'off';
             xl_tstop.Alpha = 0.4; % transparency of line (0.7 is default)
             
-            % 4. plot three more vertical lines for t0, t1, t2
+            % 4. plot three more vertical lines for t0, t1, t2, t3
             xl_t0 = xline(preAcq,'-'); % "t0": decision prompt (= start of recording + 20 frames of preAcq)
             xl_t1 = xline(rt_mat+preAcq,'-'); % "t1": moment of button release
             xl_t2 = xline(lastFrame,'-');  % "t2": moment of button press (i.e., 10 frames before end of recording)

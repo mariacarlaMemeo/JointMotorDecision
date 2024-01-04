@@ -46,7 +46,7 @@ SUBJECTS     = SUBJECTS(SUBJECT_LIST);
 % Remove pair 119 because of too many early starts (43, i.e. 43/160=~27%)
 SUBJECTS(11) = []; 
 % *Change here if you want to check specific pairs only*
-SUBJECTS = [SUBJECTS(3)]; % !ALWAYS RESET TO 3 to avoid Github confusion!
+SUBJECTS = [SUBJECTS(6)]; % !ALWAYS RESET TO 3 to avoid Github confusion!
 % -------------------------------------------------------------------------
 
 
