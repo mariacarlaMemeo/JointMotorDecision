@@ -56,15 +56,32 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % Load mat file
     load(path_kin_each);
     
-    % Create folder to save trial-by-trial plots for this pair
+    % Delete/Create folder to save trial-by-trial plots for this pair
     % -> delete folder only if you are plotting trials, if folder already
     % exists,if you dont start from backup and if you are not debugging
-    if trial_plot && isfolder(fullfile(figurepath,SUBJECTS{p})) && ...
-                     str2double(crash)==0 && debug==0
-        rmdir(fullfile(figurepath,SUBJECTS{p}),'s'); % delete folder incl. plots
-    end
+%     if trial_plot && isfolder(fullfile(figurepath,SUBJECTS{p})) && ...
+%                      str2double(crash)==0 && debug==0
+%         rmdir(fullfile(figurepath,SUBJECTS{p}),'s'); % delete folder incl. plots
+%     end
+%     if trial_plot
+%         mkdir(fullfile(figurepath,SUBJECTS{p})); % create folder
+%     end
+    % DO THIS INSTEAD (SAFER, AVOIDS DELETING BY MISTAKE)
     if trial_plot
-        mkdir(fullfile(figurepath,SUBJECTS{p}));
+        if isfolder(fullfile(figurepath,SUBJECTS{p}))
+            promptMessage = sprintf('The trial plot folder already exists. Do you want to delete it?');
+            titleBarCaption = 'Delete?';
+            buttonText = questdlg(promptMessage, titleBarCaption, 'Yes', 'No', 'Yes');
+            if strcmpi(buttonText, 'No')
+                deletePlots = false;
+            elseif strcmpi(buttonText, 'Yes')
+                deletePlots = true;
+            end
+            if deletePlots
+                rmdir(fullfile(figurepath,SUBJECTS{p}),'s'); % delete folder incl. plots
+                mkdir(fullfile(figurepath,SUBJECTS{p})); % create empty folder
+            end
+        end
     end
     
     % Remove trials in 'session' cell to avoid inserting the (last?) trials
