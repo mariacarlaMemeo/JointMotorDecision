@@ -1,7 +1,7 @@
 # ==============================================================================
 # Analysis of JMD study (JMD=joint motor decision)
-# Data: collected in June 2022 @IIT Genova
-# Participants: N=32 (16 pairs)
+# Data: collected in June 2023 @IIT Genova
+# Participants: N=32 (16 pairs) - 1 pair (S119) excluded, so 15 pairs
 # Script: written by Mariacarla Memeo & Laura Schmitz
 # ==============================================================================
 
@@ -15,8 +15,10 @@ graphics.off()
 
 # Import libraries and load packages
 library(doBy)
-pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez","MuMIn","BayesFactor","permuco","RVAideMemoire","this.path",
-          "ggiraphExtra","RColorBrewer","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr", "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl")
+pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
+          "MuMIn","BayesFactor","permuco","RVAideMemoire","this.path","ggiraphExtra",
+          "RColorBrewer","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr",
+          "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl","cellranger")
 # further potentially useful packages for plotting:
 # install.packages("remotes")
 # remotes::install_github("coolbutuseless/ggpattern")
@@ -24,21 +26,19 @@ pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
 # Check how many packages failed the loading
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
-# Flags
-local_user = 1;    # set current user (1=MC, 2=LA)
-patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (see Patel et al., 2012)
+# Set flags
+local_user = 2;    # set current user (1=MC, 2=LA)
+patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (Patel et al., 2012)
 pair_plots = FALSE # if TRUE: shows the confidence for each pair and each decision
-rt_mt      = TRUE # if TRUE: includes the plots of RT and MT after cutting the kin trials
+rt_mt      = TRUE  # if TRUE: includes RT and MT plots
 
 # Set paths (*** ADJUST TO LOCAL COMPUTER with flag local_user ***)
 if (local_user == 1) {
-  # set directories manually
   DataDir    = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Data/Kinematic/" 
   AnaDir     = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Analysis/Behavioral analysis/"
-  PlotDir    = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Analysis/Behavioral analysis/Behavioral plots/" # save plots here
+  PlotDir    = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 } else {
-  # Set directories manually
-  DataDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Kinematic/"
+  DataDir    = "D:/DATA/Processed/"#"C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Kinematic/"
   AnaDir     = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
   PlotDir    = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 }
@@ -60,31 +60,32 @@ acc2      = c()
 
 
 #################################################################################################################################
-### EXECUTION DATA (collective decision-making)
+### RETRIEVE DATA
 
-#XXX EDIT THE DESCRIPTION BELOW
-# Goal: Create data frame with execution data.
+# Goal: Create data frame with data from all pairs.
 # Steps to achieve goal:
-# Retrieve data from an Excel file that was automatically created by merging the single pair files. 
-# Single pair files were created with Matlab script movement_onset.m, which takes as input
-# the original .mat files created during the experiment.
-# -------------------------------------------------------------------------------------------
+# 1. Retrieve Excel files (1 per pair) that we created after cutting the trials (jmdData_S1xx.xlsx).
+#    These Excel files are based on the preprocessed .mat files (S1xx.mat) created with the toolbox.
+#    Both Excel and .mat files are located in the Processed folder.
+# 2. Merge all Excel files into one big data frame (curdat) using the function bind_all_excel.
+# --------------------------------------------------------------------------------------------------
 
-# XXXhere we should use the new kin_model Excel files
+# merge Excel files from all pairs into one data frame named "curdat"
 curdat=as.data.frame(bind_all_excel(DataDir))
+curdat=curdat[,1:1061] # delete the last variables (velocity peaks - values and counts)
 
 
 # Add additional info to the data frame
 # -------------------------------------
 
-# Add a column (at the end) that expresses whether agents Y and B agree in their decisions [1=agreement, -1=disagreement]
+# Add a column (at the end) expressing whether agents Y and B agree in their decisions [1=agreement, -1=disagreement]
 curdat$agree                  = as.integer(curdat$B_decision == curdat$Y_decision)
-curdat$agree[curdat$agree==0] =-1
+curdat$agree[curdat$agree==0] = -1
 
 # Add columns where decision, confidence, and accuracy are reported per 1st/2nd decision (rather than tied to agent Y and B)
 for (row in 1:dim(curdat)[1])
 {
-  f_dec = curdat[row,"AgentTakingFirstDecision"]#agent taking first decision
+  f_dec = curdat[row,"AgentTakingFirstDecision"] #agent taking first decision
   if (f_dec=="B") {
     decision1[row] = curdat[row,"B_decision"]
     conf1[row]     = curdat[row,"B_conf"]
@@ -94,7 +95,7 @@ for (row in 1:dim(curdat)[1])
     acc1[row]      = curdat[row,"Y_acc"]
   }
   
-  s_dec = curdat[row,"AgentTakingSecondDecision"]#agent taking second decision
+  s_dec = curdat[row,"AgentTakingSecondDecision"] #agent taking second decision
   if (s_dec=="B") {
     decision2[row] = curdat[row,"B_decision"]
     conf2[row]     = curdat[row,"B_conf"]
@@ -104,14 +105,14 @@ for (row in 1:dim(curdat)[1])
     acc2[row]      = curdat[row,"Y_acc"]
   }
 }
-# Add the computed values (decision, confidence, accuracy) for 1st/2nd decision to curdat
+# Add computed values (decision, confidence, accuracy) for 1st/2nd decision at end of curdat
 curdat$decision1   = decision1
 curdat$decision2   = decision2
 curdat$confidence1 = conf1
 curdat$confidence2 = conf2
 curdat$accuracy1   = acc1
 curdat$accuracy2   = acc2
-# add columns for the confidence difference values (deltas):
+# Add columns for the confidence difference values (deltas):
 # confidence2 - confidence1:
 # deltaC2C1 < 0 = conf2 < conf1; deltaC2C1 > 0 = conf2 > conf1
 curdat$deltaC2C1   = curdat$confidence2-curdat$confidence1
@@ -125,7 +126,8 @@ all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$deci
 # Add a column that indicates whether 1st and collective decision differ,
 # i.e., whether A1 switched her decision (changed her mind) [1=switch, -1=no switch]
 switchR                         = as.integer(curdat$decision1 != curdat$Coll_decision)
-all(curdat$switch == switchR)
+# Sanity check: we already added a "switch" column in Matlab - now we check if columns are identical
+all(curdat$switch == switchR) # must be true
 # GO ON ONLY IF THE PREVIOUS IS TRUE
 curdat$switch[curdat$switch==0] = -1
 
@@ -144,22 +146,24 @@ time_scale    = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
 mov_scale     = list("lim"=c(0.5,1.75),"breaks"=seq(0.5,1.75, by=0.25))
 switch_colors = c("lightcoral", "lightgreen")
 bar_colors    = c("gray88", "gray44", "lightcoral", "lightgreen")
+con_colors    = c("#D1E5F0", "#92C5DE", "#4393C3", "#2166AC")
+con_scale     = list("lim"=c(0,125),"breaks"=seq(0,125, by=25))
 
 
 
-# XXX more sanity checks:
+# More sanity checks (in progress xxx):
 # 1. confidence distribution: all levels (1-6) used equally? (on average and per participant)
-# 2. plot accuracy as a function of confidence level -> positive correlation expected
+# 2. xxx plot accuracy as a function of confidence level -> positive correlation expected
 # 3. target1/target2 distribution: left/right bias (on average and per participant)
 
 #1. Confidence distribution
 all_conf = curdat[,c("Pair","confidence1","confidence2","Coll_conf","targetContrast")]
 names(all_conf)[names(all_conf)=='confidence1']    <- 'Confidence 1st decision'
 names(all_conf)[names(all_conf)=='confidence2']    <- 'Confidence 2nd decision'
-names(all_conf)[names(all_conf)=='Coll_conf']    <- 'Confidence collective decision'
+names(all_conf)[names(all_conf)=='Coll_conf']      <- 'Confidence collective decision'
 all_conf$targetContrast = as.factor(all_conf$targetContrast)
 #levels(all_conf$targetContrast) <- c(0.115, 0.135, 0.17, 0.25)
-count_scale_conftar    = list("lim"=c(0,175),"breaks"=seq(0,175, by=25))
+count_scale_conftar    = list("lim"=c(0,125),"breaks"=seq(0,125, by=25))
 count_scale_conf       = list("lim"=c(0,600),"breaks"=seq(0,600, by=50))
 #levels(conf_all_sum_acc$agree)    = c("disagree", "agree")
 
@@ -167,13 +171,14 @@ for(confy in (seq(2,ncol(all_conf)-1))){
   var_conf = all_conf[,confy] # confy=confidence1,confidence2,coll_Conf
   # plot confidence count split by target contrast
   print(ggplot(all_conf, aes(x=var_conf, fill=targetContrast)) +
+          scale_fill_manual(values=con_colors)+ 
           stat_count(geom = "bar", position="dodge2") +
           scale_y_continuous(limits = count_scale_conftar$lim, breaks = count_scale_conftar$breaks) +
           scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
           ggtitle(colnames(all_conf)[confy]) +
           ylab("Count") + xlab("Confidence level") + theme_custom())
   # save the plot
-  ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),"_target.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  #ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),"_target.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
   
   # plot confidence count
   print(ggplot(all_conf, aes(x=var_conf)) +
@@ -186,7 +191,7 @@ for(confy in (seq(2,ncol(all_conf)-1))){
   print(sprintf("Average %s%s %.2f", colnames(all_conf)[confy], ":", round(mean(all_conf[,confy]),2)))
   print(sprintf("SD %s%s %.2f", colnames(all_conf)[confy], ":", round(sd(all_conf[,confy]),2)))
   # save the plot
-  ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  #ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 }
 
 # 3. check for left-right response bias
@@ -200,7 +205,10 @@ levels(curdat$decision2)= c("left","right")
 curdat$Coll_decision=as.factor(curdat$Coll_decision)
 levels(curdat$Coll_decision)= c("left","right")
 
-ggplot(curdat, aes(x=decision2,fill=targetContrast)) +
+# xxx make a for loop for all 3 decisions!
+# tendency: overall left bias
+ggplot(curdat, aes(x=Coll_decision,fill=targetContrast)) +
+  scale_fill_manual(values=con_colors) + 
   stat_count(geom = "bar", position="dodge2") +
   # scale_y_continuous(limits = count_scale_conf$lim, breaks = count_scale_conf$breaks) +
   # scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
@@ -213,11 +221,11 @@ ggplot(curdat, aes(x=decision2,fill=targetContrast)) +
 # Check PROPORTIONS: high/low confidence, agreement/disagreement, switch/no switch
 # --------------------------------------------------------------------------------
 # High/low confidence: Select high/low confidence trials for each agent and average the values
-# XXX
-# perc_conf_lo = round(100*(dim(curdat[(curdat$B_conf>=1 & curdat$B_conf<=3)|(curdat$Y_conf>=1 & curdat$Y_conf<=3),])[1])/(2*dim(curdat)[1]))
-# perc_conf_hi = round(100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1]))
-# sprintf("Low confidence trials (1-3): %d %s", perc_conf_lo, "%")
-# sprintf("High confidence trials (4-6): %d %s", perc_conf_hi, "%")
+# XXX not working
+#perc_conf_lo = round(100*(dim(curdat[(curdat$B_conf>=1 & curdat$B_conf<=3)|(curdat$Y_conf>=1 & curdat$Y_conf<=3),])[1])/(2*dim(curdat)[1]))
+#perc_conf_hi = round(100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1]))
+#sprintf("Low confidence trials (1-3): %d %s", perc_conf_lo, "%")
+#sprintf("High confidence trials (4-6): %d %s", perc_conf_hi, "%")
 
 # Sub-select agreement/disagreement trials
 at      = curdat[curdat$agree==1,]
@@ -328,11 +336,14 @@ conf_all_sum$agree = as.factor(conf_all_sum$agree)
 levels(conf_all_sum$agree) <- c("disagree", "agree")
 
 # plot - Confidence level by target contrast and agreement 
+# xxx plot not working properly
 print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
              colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("steelblue1", "darkgreen"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
+             manual_col=c("steelblue1", "darkgreen"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=TRUE)+
              scale_shape_manual(values=c(16,16))+
+             #scale_y_continuous(limits = conf_scale$lim, breaks=conf_scale$breaks)+
+             #scale_x_continuous(breaks=target_scale$breaks, labels = target_scale$labels)+
              xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree",".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
@@ -352,10 +363,11 @@ conf_all_sum_acc$Accuracy         = as.factor(conf_all_sum_acc$Accuracy)
 levels(conf_all_sum_acc$Accuracy) = c("incorrect", "correct")
 
 # plot - Confidence level by target contrasts and agreement and accuracy (only collective decision)
+# xxx plot not working properly
 print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_all_sum_acc$Confidence,
              colorvar=conf_all_sum_acc$Accuracy,shapevar=conf_all_sum_acc$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("red", "green"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
+             manual_col=c("red", "green"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=TRUE)+
              scale_shape_manual(values=c(16,16))+
              xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",".png"), dpi = 300, units=c("cm"), height =20, width = 20)
@@ -374,6 +386,7 @@ conf_all_sum_acc_sw$agree          = as.factor(conf_all_sum_acc_sw$agree)
 levels(conf_all_sum_acc_sw$agree)  = c("disagree","agree")
 
 # plot - Accuracy as a function of agreement and switch
+# xxx plot not working properly
 ggplot(conf_all_sum_acc_sw, aes(x=targetContrast, y=value, color=variable, shape=switch)) +
   geom_errorbar(aes(ymin=value-se, ymax=value+se), size=0.7, width=.01, position=pd) +
   geom_point(aes(shape=switch, color=variable), size = 5,position=pd) +
