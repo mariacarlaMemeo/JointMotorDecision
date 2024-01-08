@@ -138,7 +138,7 @@ curdat$switch[curdat$switch==0] = -1
 pd            = position_dodge(0.001)
 acc_scale     = list("lim"=c(0,1),"breaks"=seq(0,1, by=0.2))
 acc_scale2    = list("lim"=c(0,0.85),"breaks"=seq(0,0.85, by=0.1)) # for mean values up to ~0.8
-target_scale  = list("breaks"=unique(curdat$targetContrast),"labels"=unique(curdat$targetContrast))
+target_scale  = list("breaks"=sort(unique(curdat$targetContrast)),"labels"=sort(unique(curdat$targetContrast)))
 conf_scale    = list("lim"=c(1,6),"breaks"=seq(1,6, by=1))
 #conf_scale_la = list("lim"=c(1,6),"breaks"=seq(1,6, by=1), "labels"=c(1,2,3,4,5,6))
 conf_scale2   = list("lim"=c(1,4.5),"breaks"=seq(1,4.5, by=1)) # for mean values up to ~4
@@ -156,19 +156,17 @@ con_scale     = list("lim"=c(0,125),"breaks"=seq(0,125, by=25))
 # 2. xxx plot accuracy as a function of confidence level -> positive correlation expected
 # 3. target1/target2 distribution: left/right bias (on average and per participant)
 
-#1. Confidence distribution
+# 1. Confidence distribution
 all_conf = curdat[,c("Pair","confidence1","confidence2","Coll_conf","targetContrast")]
-names(all_conf)[names(all_conf)=='confidence1']    <- 'Confidence 1st decision'
-names(all_conf)[names(all_conf)=='confidence2']    <- 'Confidence 2nd decision'
-names(all_conf)[names(all_conf)=='Coll_conf']      <- 'Confidence collective decision'
+names(all_conf)[names(all_conf)=='confidence1'] <- 'Confidence 1st decision'
+names(all_conf)[names(all_conf)=='confidence2'] <- 'Confidence 2nd decision'
+names(all_conf)[names(all_conf)=='Coll_conf']   <- 'Confidence collective decision'
 all_conf$targetContrast = as.factor(all_conf$targetContrast)
-#levels(all_conf$targetContrast) <- c(0.115, 0.135, 0.17, 0.25)
-count_scale_conftar    = list("lim"=c(0,125),"breaks"=seq(0,125, by=25))
-count_scale_conf       = list("lim"=c(0,600),"breaks"=seq(0,600, by=50))
-#levels(conf_all_sum_acc$agree)    = c("disagree", "agree")
+count_scale_conftar     = list("lim"=c(0,125),"breaks"=seq(0,125, by=25))
+count_scale_conf        = list("lim"=c(0,600),"breaks"=seq(0,600, by=50))
 
 for(confy in (seq(2,ncol(all_conf)-1))){
-  var_conf = all_conf[,confy] # confy=confidence1,confidence2,coll_Conf
+  var_conf = all_conf[,confy] # confy=confidence1,confidence2,Coll_Conf
   # plot confidence count split by target contrast
   print(ggplot(all_conf, aes(x=var_conf, fill=targetContrast)) +
           scale_fill_manual(values=con_colors)+ 
@@ -178,12 +176,13 @@ for(confy in (seq(2,ncol(all_conf)-1))){
           ggtitle(colnames(all_conf)[confy]) +
           ylab("Count") + xlab("Confidence level") + theme_custom())
   # save the plot
-  #ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),"_target.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),"_target.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
   
   # plot confidence count
   print(ggplot(all_conf, aes(x=var_conf)) +
           stat_count(geom = "bar", position="dodge2") +
-          scale_y_continuous(limits = count_scale_conf$lim, breaks = count_scale_conf$breaks) +
+          scale_y_continuous(limits = c(0,400), breaks = seq(0,400, by=50)) +
+          #scale_y_continuous(limits = count_scale_conf$lim, breaks = count_scale_conf$breaks) +
           scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
           ggtitle(colnames(all_conf)[confy]) +
           ylab("Count") + xlab("Confidence level") + theme_custom())
@@ -191,31 +190,101 @@ for(confy in (seq(2,ncol(all_conf)-1))){
   print(sprintf("Average %s%s %.2f", colnames(all_conf)[confy], ":", round(mean(all_conf[,confy]),2)))
   print(sprintf("SD %s%s %.2f", colnames(all_conf)[confy], ":", round(sd(all_conf[,confy]),2)))
   # save the plot
-  #ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 }
 
-# 3. check for left-right response bias
-curdat$targetContrast = as.factor(curdat$targetContrast)
+# 2. Accuracy by confidence/target contrast
+dec_names = c("1st decision","2nd decision","Collective decision")
+# Accuracy as function of confidence
+for(confVar in 1:3) {
+  
+  if (confVar==1)      {conf="confidence1"; acc="accuracy1"}
+  else if (confVar==2) {conf="confidence2"; acc="accuracy2"}
+  else if (confVar==3) {conf="Coll_conf";  acc="Coll_acc"}
+  
+  data     = curdat[,c(acc,conf)]
+  data_sum = summarySE(data,measurevar=acc,groupvars=c(conf))
+  
+  print(ggplot(data_sum) +
+          geom_bar( aes(x=get(conf), y=get(acc)), stat="identity", fill="grey", alpha=0.7) +
+          geom_errorbar( aes(x=get(conf), ymin=get(acc)-se, ymax=get(acc)+se), width=0.2, colour="black", alpha=0.9, size=1)+
+          geom_hline(yintercept=0.5, linetype='dashed', col = 'limegreen', size=1.4, alpha=0.6) +
+          scale_y_continuous(limits = acc_scale$lim, breaks = acc_scale$breaks) +
+          scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+          ggtitle(dec_names[confVar]) +
+          ylab("Accuracy") + xlab("Confidence") + theme_custom())
+  # save the plot
+  ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+}
+
+# Accuracy as function of difficulty (target contrast)
+for(confVar in 1:3) {
+  
+  if (confVar==1)      {acc="accuracy1"} 
+  else if (confVar==2) {acc="accuracy2"}
+  else if (confVar==3) {acc="Coll_acc"}
+  
+  tar      ="targetContrast" 
+  data     = curdat[,c(acc,tar)]
+  data_sum = summarySE(data,measurevar=acc,groupvars=c(tar))
+  
+  print(ggplot(data_sum) +
+          geom_bar( aes(x=as.factor(get(tar)), y=get(acc)), stat="identity", fill="grey", alpha=0.7) +
+          geom_errorbar( aes(x=as.factor(get(tar)), ymin=get(acc)-se, ymax=get(acc)+se), width=0.2, colour="black", alpha=0.9, size=1) +
+          geom_hline(yintercept=0.5, linetype='dashed', col = 'limegreen', size=1.4, alpha=0.6) +
+          scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
+          scale_y_continuous(limits = acc_scale$lim, breaks = acc_scale$breaks) +
+          ggtitle(dec_names[confVar]) +
+          ylab("Accuracy") + xlab("Target contrast") + theme_custom())
+  # save the plot
+  ggsave(file=sprintf(paste0("%sConfidenceDiff_",as.character(confVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+}
+
+# Average accuracy for each decision
+data_all_acc      = curdat[,c("accuracy1","accuracy2","Coll_acc")]
+data_all_acc_long = melt(data_all_acc)
+data_all_acc_sum  = summarySE(data_all_acc_long,measurevar="value",groupvars="variable")
+ggplot(data_all_acc_sum) +
+  geom_point( aes(x=variable, y=value), size=3, stat="identity", fill="grey", alpha=0.7) +
+  geom_errorbar( aes(x=variable, ymin=value-se, ymax=value+se), width=0.2, colour="black", alpha=0.9, size=1) +
+  geom_hline(yintercept=0.5, linetype='dashed', col = 'limegreen', size=1.4, alpha=0.6) +
+  scale_x_discrete(labels = c("1st","2nd","Collective")) +
+  scale_y_continuous(limits = c(0.5,1), breaks = seq(0.5,1, by=0.1)) +
+  ggtitle("Accuracy by decision") +
+  ylab("Accuracy") + xlab("Decision") + theme_custom()
+# save the plot
+ggsave(file=sprintf("%sAccPerDec.png",PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+
+
+# 3. Left-right response bias (should we also plot this as function of confidence?)
+# factorize and name levels
 curdat$decision1=as.factor(curdat$decision1)
 levels(curdat$decision1)= c("left","right")
-
 curdat$decision2=as.factor(curdat$decision2)
 levels(curdat$decision2)= c("left","right")
-
 curdat$Coll_decision=as.factor(curdat$Coll_decision)
 levels(curdat$Coll_decision)= c("left","right")
+# create all_dec selection
+all_dec = curdat[,c("Pair","decision1","decision2","Coll_decision","targetContrast")]
+names(all_dec)[names(all_dec)=='decision1']     <- 'Target choice 1st decision'
+names(all_dec)[names(all_dec)=='decision2']     <- 'Target choice 2nd decision'
+names(all_dec)[names(all_dec)=='Coll_decision'] <- 'Target choice collective decision'
+all_dec$targetContrast = as.factor(all_dec$targetContrast)
 
-# xxx make a for loop for all 3 decisions!
-# tendency: overall left bias
-ggplot(curdat, aes(x=Coll_decision,fill=targetContrast)) +
-  scale_fill_manual(values=con_colors) + 
-  stat_count(geom = "bar", position="dodge2") +
-  # scale_y_continuous(limits = count_scale_conf$lim, breaks = count_scale_conf$breaks) +
-  # scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
-  # ggtitle(colnames(all_conf)[confy]) +
-  ylab("Count") + xlab("1st decision") + theme_custom()
+# plot target choice (left/right) split by target contrast
+for(dec in (seq(2,ncol(all_dec)-1))) {
+  var_dec = all_dec[,dec] # dec=decision1,decision2,Coll_decision
 
-
+  print(ggplot(all_dec, aes(x=var_dec, fill=targetContrast)) +
+          scale_fill_manual(values=con_colors)+ 
+          stat_count(geom = "bar", position="dodge2") +
+          #scale_y_continuous(limits = count_scale_conftar$lim, breaks = count_scale_conftar$breaks) +
+          #scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+          ggtitle(colnames(all_dec)[dec]) +
+          ylab("Count") + xlab("Decision") + theme_custom())
+  # save the plot
+  ggsave(file=sprintf(paste0("%sTargetChoice_",as.character(dec-1),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+}
 
 
 # Check PROPORTIONS: high/low confidence, agreement/disagreement, switch/no switch
@@ -244,8 +313,8 @@ if (indi==1) {
   count_scale_dt = list("lim"=c(0,20),"breaks"=seq(0,20, by=5))
 } else {
   contrastD = contrastData_all
-  count_scale = list("lim"=c(0,500),"breaks"=seq(0,500, by=50))
-  count_scale_dt = list("lim"=c(0,200),"breaks"=seq(0,200, by=20))
+  count_scale = list("lim"=c(0,300),"breaks"=seq(0,300, by=25))
+  count_scale_dt = list("lim"=c(0,100),"breaks"=seq(0,100, by=20))
 }
 contrastD$agree          = as.factor(contrastD$agree)
 levels(contrastD$agree)  = c("disagree", "agree")
@@ -340,10 +409,8 @@ levels(conf_all_sum$agree) <- c("disagree", "agree")
 print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$Confidence,
              colorvar=conf_all_sum$DecisionType,shapevar=conf_all_sum$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("steelblue1", "darkgreen"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=TRUE)+
+             manual_col=c("steelblue1", "darkgreen"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
              scale_shape_manual(values=c(16,16))+
-             #scale_y_continuous(limits = conf_scale$lim, breaks=conf_scale$breaks)+
-             #scale_x_continuous(breaks=target_scale$breaks, labels = target_scale$labels)+
              xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree",".png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
@@ -367,7 +434,7 @@ levels(conf_all_sum_acc$Accuracy) = c("incorrect", "correct")
 print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_all_sum_acc$Confidence,
              colorvar=conf_all_sum_acc$Accuracy,shapevar=conf_all_sum_acc$agree,
              xscale=target_scale,yscale=conf_scale,titlestr="Confidence level by agreement",
-             manual_col=c("red", "green"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=TRUE)+
+             manual_col=c("red", "green"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
              scale_shape_manual(values=c(16,16))+
              xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
 ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",".png"), dpi = 300, units=c("cm"), height =20, width = 20)
@@ -628,7 +695,7 @@ if (rt_mt){
     
     # prep data
     all$Pair=as.factor(all$Pair)
-
+    all_pairs=levels(all$Pair)
     for (g in all_pairs) {
       
       sub_all=all[all$Pair==g,]
