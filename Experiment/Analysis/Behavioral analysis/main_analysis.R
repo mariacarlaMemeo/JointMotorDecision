@@ -33,12 +33,13 @@ pair_plots = FALSE # if TRUE: shows the confidence for each pair and each decisi
 rt_mt      = TRUE  # if TRUE: includes RT and MT plots
 
 # Set paths (*** ADJUST TO LOCAL COMPUTER with flag local_user ***)
+# ! for DataDir, always use the folder with the pre-processed Excel files (see Drive) !
 if (local_user == 1) {
-  DataDir = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Data/Kinematic/" 
-  AnaDir  = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Analysis/Behavioral analysis/"
-  PlotDir = "C:/Users/MMemeo/OneDrive - Fondazione Istituto Italiano Tecnologia/Documents/GitHub/joint-motor-decision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
+  DataDir = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Data/Behavioral/preprocessed/" 
+  AnaDir  = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
+  PlotDir = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 } else {
-  DataDir = "D:/DATA/Processed/"#"C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Kinematic/"
+  DataDir = "D:/DATA/Processed/"#"C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Behavioral/preprocessed/"
   AnaDir  = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
   PlotDir = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 }
