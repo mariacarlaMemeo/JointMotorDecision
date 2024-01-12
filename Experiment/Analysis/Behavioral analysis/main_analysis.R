@@ -82,8 +82,8 @@ curdat$agree                  = as.integer(curdat$B_decision == curdat$Y_decisio
 curdat$agree[curdat$agree==0] = -1
 
 # Add columns where decision, confidence, and accuracy are reported per 1st/2nd decision (rather than tied to agent Y and B)
-for (row in 1:dim(curdat)[1])
-{
+for (row in 1:dim(curdat)[1]) {
+  
   f_dec = curdat[row,"AgentTakingFirstDecision"] #agent taking first decision
   if (f_dec=="B") {
     decision1[row] = curdat[row,"B_decision"]
@@ -193,15 +193,19 @@ for(confy in (seq(2,ncol(all_conf)-1))){
 
 # 2. Accuracy by confidence/target contrast
 dec_names = c("1st decision","2nd decision","Collective decision")
-# Accuracy as function of confidence
+# 2a. Accuracy as function of confidence
+# --------------------------------------
+# Note: this is a big for-loop going through all 3 decisions and ag/disag(switch/noswitch)
 for(confVar in 1:3) {
   
   if (confVar==1)      {conf="confidence1"; acc="accuracy1"}
   else if (confVar==2) {conf="confidence2"; acc="accuracy2"}
   else if (confVar==3) {conf="Coll_conf";  acc="Coll_acc"}
   
-  data     = curdat[,c(acc,conf)]
-  data_sum = summarySE(data,measurevar=acc,groupvars=c(conf))
+  data        = curdat[,c(acc,conf)]
+  data_sum    = summarySE(data,measurevar=acc,groupvars=c(conf))
+  # add weighted mean (just a try...)
+  # data_sum$wacc = (data_sum$N*data_sum[,c(acc)])/sum(data_sum$N)
   
   print(ggplot(data_sum) +
           geom_bar( aes(x=get(conf), y=get(acc)), stat="identity", fill="grey", alpha=0.7) +
@@ -213,9 +217,96 @@ for(confVar in 1:3) {
           ylab("Accuracy") + xlab("Confidence") + theme_custom())
   # save the plot
   ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  
+  p = "Pair"; ag = "agree"; sw = "switch"
+  
+  # add agreement factor to the original bar plots
+  data_ag     = curdat[,c(acc,conf,ag,sw)]
+  data_sum_ag = summarySE(data_ag,measurevar=acc,groupvars=c(conf,ag,sw))
+  # factorize and rename
+  data_sum_ag$ag = as.factor(data_sum_ag$ag)
+  levels(data_sum_ag$ag)= c("disagree","agree")
+  names(data_sum_ag)[names(data_sum_ag)=="agree"] ="Agreement"
+  
+  print(ggplot(data_sum_ag, aes(x = get(conf), y = get(acc), fill = ag, colour = ag)) +
+          geom_bar(stat = "identity", position = "dodge")+
+          geom_hline(yintercept=0.5, linetype='dashed', col = 'limegreen', size=1.4, alpha=0.6) +
+          scale_y_continuous(limits = acc_scale$lim, breaks = acc_scale$breaks) +
+          scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+          ggtitle(dec_names[confVar]) +
+          ylab("Accuracy") + xlab("Confidence") + theme_custom())
+  ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),"_agdag.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+ 
+  # now create scatter plots, with pair as additional factor
+  # add pair as a factor
+  data_p     = curdat[,c(p,acc,conf)]
+  data_sum_p = summarySE(data_p,measurevar=acc,groupvars=c(conf,p))
+  print(ggplot(data_sum_p, aes(x=get(acc), y=get(conf), color=as.factor(get(p)))) + 
+          geom_point(shape=1) + scale_colour_discrete() + 
+          scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
+          scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+          ggtitle(dec_names[confVar]) +
+          xlab("Accuracy") + ylab("Confidence") + theme_custom() +
+          geom_smooth(method=lm,se=FALSE, size=0.5))
+  ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_pairs.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  
+  # add pair and agreement as a factor
+  data_p_ag     = curdat[,c(p,acc,conf,ag,sw)]
+  # create separate plots for agreement and disagreement (+switch) trials
+  for(agVar in 1:2) {
+    
+    # agreement
+    if (agVar==1)    {  
+      data_sum_p_ag = summarySE(data_p_ag,measurevar=acc,groupvars=c(conf,p,ag,sw));
+      data_sum_p_ag = data_sum_p_ag[data_sum_p_ag$ag==1,]; alab="agree"
+      print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=as.factor(get(p)))) + 
+              geom_point(shape=1) + scale_colour_discrete() + 
+              scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
+              scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+              ggtitle(paste(dec_names[confVar],alab,sep=" ")) +
+              xlab("Accuracy") + ylab("Confidence") + theme_custom() +
+              geom_smooth(method=lm,se=FALSE, size=0.5))
+      ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_pairs_agree.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+    }
+    # disagreement
+    else if (agVar==2) {
+      # decisions 1 and 2
+      if (confVar==1 || confVar==2) {
+        data_sum_p_ag = summarySE(data_p_ag,measurevar=acc,groupvars=c(conf,p,ag,sw));
+        data_sum_p_ag = data_sum_p_ag[data_sum_p_ag$ag==-1,]; alab="disagree"
+        print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=as.factor(get(p)))) +
+                geom_point(shape=1) + scale_colour_discrete() +
+                scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
+                scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+                ggtitle(paste(dec_names[confVar],alab,sep=" ")) +
+                xlab("Accuracy") + ylab("Confidence") + theme_custom() +
+                geom_smooth(method=lm,se=FALSE, size=0.5))
+        ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_pairs_disagree.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+      }
+      # collective decision: split into switch and no switch
+      else if (confVar==3) {
+        for(swVar in 1:2) {
+          data_sum_p_ag = summarySE(data_p_ag,measurevar=acc,groupvars=c(conf,p,ag,sw));
+          if (swVar==1)      {data_sum_p_ag=data_sum_p_ag[data_sum_p_ag$ag==-1 & data_sum_p_ag$sw==1,]; alab="disagree&change"}
+          else if (swVar==2) {data_sum_p_ag=data_sum_p_ag[data_sum_p_ag$ag==-1 & data_sum_p_ag$sw==-1,]; alab="disagree&nochange"}
+          
+          print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=as.factor(get(p)))) + 
+                  geom_point(shape=1) + scale_colour_discrete() + 
+                  scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
+                  scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+                  ggtitle(paste(dec_names[confVar],alab,sep=" ")) +
+                  xlab("Accuracy") + ylab("Confidence") + theme_custom() +
+                  geom_smooth(method=lm,se=FALSE, size=0.5))
+          ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_pairs_disagree_",as.character(swVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+        }
+      }
+    }
+  }
 }
 
-# Accuracy as function of difficulty (target contrast)
+
+# 2b. Accuracy as function of difficulty (target contrast)
+# -------------------------------------------------------
 for(confVar in 1:3) {
   
   if (confVar==1)      {acc="accuracy1"} 
