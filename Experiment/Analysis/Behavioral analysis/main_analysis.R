@@ -389,6 +389,20 @@ for(dec in (seq(2,ncol(all_dec)-1))) {
 at      = curdat[curdat$agree==1,]
 dt      = curdat[curdat$agree==-1,]
 
+# check correlation between confidence of A1 and A2, for all/agree,disagree
+# this should be done on pair level!!?
+plot(jitter(curdat$confidence2,2) ~ jitter(curdat$confidence1,2),main = "Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
+abline(lm(confidence2 ~ confidence1, data = curdat), col = "blue")
+plot(jitter(dt$confidence2,2) ~ jitter(dt$confidence1,2),main = "Disagree: Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
+abline(lm(confidence2 ~ confidence1, data = dt), col = "blue")
+plot(jitter(at$confidence2,2) ~ jitter(at$confidence1,2),main = "Agree: Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
+abline(lm(confidence2 ~ confidence1, data = at), col = "blue")
+plot(jitter(curdat$Coll_conf,2) ~ jitter(curdat$confidence1,2),main = "Relation of Conf1 and collConf",xlab="Confidence1",ylab="collConfidence")
+abline(lm(Coll_conf ~ confidence1, data = curdat), col = "blue")
+plot(jitter(curdat$Coll_conf,2) ~ jitter(curdat$confidence1-curdat$confidence2,2),main = "Relation of Conf2-Conf1 and collConf",xlab="Confidence2-Confidence1",ylab="collConfidence")
+abline(lm(Coll_conf ~ (confidence2-confidence1), data = curdat), col = "blue")
+
+
 # Plot disagreement according to target contrast
 # agreement: 1=agreement, -1=disagreement; contrasts = c(0.115, 0.135, 0.170, 0.250)
 # quick version: hist(at$targetContrast)
@@ -807,6 +821,9 @@ for (m in 1:2){
 # without collective
 dt_long_delta = melt(dt[,c("Pair","deltaC2C1","switch")], id=c("Pair","switch"))
 switch_sum  = summarySE(dt_long_delta,measurevar="value",groupvars=c("switch","variable"))
+# check only for A1 confidence
+dt_long_C1 = melt(dt[,c("Pair","confidence1","switch")], id=c("Pair","switch"))
+switchC1_sum  = summarySE(dt_long_C1,measurevar="value",groupvars=c("switch","variable"))
 
 # change factor level names
 switch_sum$switch = as.factor(switch_sum$switch)
@@ -814,13 +831,20 @@ levels(switch_sum$switch) = c("No switch","Switch")
 switch_sum$switch <- factor(switch_sum$switch, levels = c("Switch","No switch")) # change order
 switch_sum$variable = as.factor(switch_sum$variable)
 levels(switch_sum$variable) = c("Conf. 2 - Conf. 1")
+# same for A1 confidence
+switchC1_sum$switch = as.factor(switchC1_sum$switch)
+levels(switchC1_sum$switch) = c("No switch","Switch")
+switchC1_sum$switch <- factor(switchC1_sum$switch, levels = c("Switch","No switch")) # change order
+switchC1_sum$variable = as.factor(switchC1_sum$variable)
+levels(switchC1_sum$variable) = c("Confidence 1")
 
 # scale for confidence delta
 delta_scale = list("lim"=c(-2,1),"breaks"=seq(-2,1, by=0.5))
+C1_scale = list("lim"=c(0,6),"breaks"=seq(0,6, by=0.5))
 # colors
 delta_color = c("gray")
 
-# variable = subjective vs. inferred, value = confidence delta 
+# variable = confidence delta 
 print(ggplot(data=switch_sum, aes(x=switch, y=value, fill=variable, color = variable)) +
         ggtitle("Switching as a function of confidence delta (only disagreement)") +
         geom_bar(stat="identity", position="dodge", alpha = 0.5, color = "black") +
@@ -831,6 +855,16 @@ print(ggplot(data=switch_sum, aes(x=switch, y=value, fill=variable, color = vari
         theme(legend.position = "none") + theme_custom()
 )
 ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_Switching.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+# variable = confidence 1
+print(ggplot(data=switchC1_sum, aes(x=switch, y=value, fill=variable, color = variable)) +
+        ggtitle("Switching as a function of confidence delta (only disagreement)") +
+        geom_bar(stat="identity", position="dodge", alpha = 0.5, color = "black") +
+        scale_fill_manual(values=delta_color) +
+        geom_errorbar(aes(ymin=value-se, ymax=value+se), size=0.5, width=0.1, color="black", position=position_dodge(.9)) + 
+        scale_y_continuous(limits = C1_scale$lim, breaks=C1_scale$breaks) +
+        xlab("Switching") + ylab("Confidence 1") + 
+        theme(legend.position = "none") + theme_custom()
+)
 
 
 # COLLECTIVE ADJUSTMENT PLOTS (confidence A1 compared to collective confidence)
@@ -902,7 +936,13 @@ ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_NoSwitch.png"), dpi = 300,
 coll_conf=lmer(Coll_conf ~ confidence1 * switch + confidence2 + (1|interaction(curdat$Pair)), data=curdat)
 summary(coll_conf)
 # emmeans(coll_conf,pairwise~confidence1|switch)
-
+switch_model1 = lmer(switch ~ confidence1 + (1|interaction(curdat$Pair)), data=curdat)
+summary(switch_model1)
+switch_model12 = lmer(switch ~ (confidence2-confidence1) + (1|interaction(curdat$Pair)), data=curdat)
+summary(switch_model12)
+switch_model3 = lmer(switch ~ confidence1 + confidence2 + (1|interaction(curdat$Pair)), data=curdat)
+summary(switch_model3)
+anova(switch_model1,switch_model3)
 
 # COLLECTIVE AND INDIVIDUAL(COLLECTIVE) BENEFIT
 # ------------------------------------------------------------------------------
