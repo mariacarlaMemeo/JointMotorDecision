@@ -81,6 +81,8 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
                 rmdir(fullfile(figurepath,SUBJECTS{p}),'s'); % delete folder incl. plots
                 mkdir(fullfile(figurepath,SUBJECTS{p})); % create empty folder
             end
+        else
+            mkdir(fullfile(figurepath,SUBJECTS{p})); % create empty folder
         end
     end
     
