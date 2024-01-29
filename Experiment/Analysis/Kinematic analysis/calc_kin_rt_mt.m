@@ -90,6 +90,7 @@ for p = 1:length(SUBJECTS) % run through all pairs (1 SUBJECT = 1 pair)
     % in which the 'marker' field is missing
     mark     = cell2mat(cellfun(@(s) isfield(s,'markers'),session,'uni',0));
     sMarkers = session(mark);
+%     checkPairName = cell2mat(cellfun(@(s) all(contains(fieldnames(s.markers),SUBJECTS{p})),sMarkers,'uni',0))
 
     % *EXCEL FILE*: Locate file for current pair
     path_data_each = fullfile(path_data,SUBJECTS{p},['S' SUBJECTS{p}(2:end) '.xlsx']);
