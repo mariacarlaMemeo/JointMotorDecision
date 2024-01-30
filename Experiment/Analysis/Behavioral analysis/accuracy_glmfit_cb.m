@@ -13,6 +13,10 @@
 % takes the final, collective decision. The two participants are labelled
 % Blue agent (formerly A1) and Yellow agent (formerly A2).
 
+% XXX to do
+% check goodness of fit; average plot for individual benefit; adjust
+% figure-label so that the two benefitType figures can be saved separately
+
 close all; clear variables; clc;
 %--------------------------------------------------------------------------
 % Flags
@@ -333,8 +337,6 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         title(['Ind. benefit - ','S' ptc{p}]);
     end
 
-    
-
     % Save figure
     if save_plot
         saveas(gcf,[path_to_save,'S',ptc{p},'_cb_',coll_calc,lab,block_lab,CB_lab],'png');
@@ -363,6 +365,14 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     decDyad_all  = [decDyad_all; y(:,3)'];
     decMax_all   = [decMax_all; y(:,agent_max)'];
     decMin_all   = [decMin_all; y(:,agent_min)'];
+    % Also collect values for individual benefit plots
+    decInd_all        = [decInd_all; y(:,6:7)']; % all ind. dec1 trials
+    decIndBenefit_all = [decIndBenefit_all; y(:,4:5)']; % all ind. benefit trials
+    % XXX work on computing the individual averages and plot two curves:
+    % average individual sensitivity (only for 1st dec) and average
+    % individual collective sensitivity (for corresponding trials) 
+    % % - this would show whether participants, on average, improved 
+    % their individual performance
 
 
     % ---------------- WINDOW ANALYSIS -----------------------------------%
@@ -415,6 +425,7 @@ set(cb_ave, 'WindowStyle', 'Docked');
 
 % -------------------------------------------------------------------------
 % -> GO INTO FUNCTION PLOT_PSY to fit and plot psych. curves
+benefitType=2; % this should always be B,Y,Coll
 sAverage = plot_psy(conSteps,y,plotSymAve,colorAve,default,full,coll_calc,benefitType,mrkColor);
 % -------------------------------------------------------------------------
 
