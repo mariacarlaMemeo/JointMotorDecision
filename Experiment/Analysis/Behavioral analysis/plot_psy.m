@@ -1,18 +1,22 @@
-function slope_pair=plot_psy(conSteps,y,plotSym,color,default,full,coll_calc,bType,mrkColor)
+function slope_pair=plot_psy(conSteps,y,plotSym,color,default,full,coll_calc,bType,mrkColor,ave)
 
-if full
-    %collect the slopes: [blue, yellow, coll, coll blue, coll yellow,blue indiv. 1st dec, yellow indiv. 1st dec]
+if full % all trials (not windows)
+    
+    % slopes: [B, Y, coll, collB, collY, B1dec, Y1dec]
     slope_pair = zeros(1,width(y));
-    for plt=1:width(y)
+    
+    for plt = 1:width(y)
+        
         bhat = glmfit(conSteps,[y(:,plt) ones(size(y(:,plt)))],'binomial','link','probit');
         % XXX modify this to get values on goodness of fit
-        %[bhat, dev, stats] = glmfit(conSteps,[y(:,plt) ones(size(y(:,plt)))],'binomial','link','probit')
+        % [bhat, dev, stats] = glmfit(conSteps,[y(:,plt) ones(size(y(:,plt)))],'binomial','link','probit')
         d_mean = -bhat(1)/bhat(2);
         d_sd   = 1/bhat(2);
         
-        if bType == 2
+        % plot either B,Y,Coll (ave=0, per pair) or min,max,Coll (ave=1, averages)
+        if bType == 2 && (ave == 0 || ave == 1)
             % plot the markers
-            if plt<=3 % if also indiv. coll. benefit should be plotted: plt<=5
+            if plt<=3 
                 plot(conSteps, y(:,plt), plotSym{:,plt},'MarkerSize',6,'LineWidth',1.5,'Color',color(plt,:));
                 hold on;
             end
@@ -22,23 +26,43 @@ if full
             if plt<=3
                 plot(C,ps,'-','LineWidth',1.5,'Color',color(plt,:));
             end
-        elseif bType == 1
+        
+        elseif bType == 1 && ave == 0 % plot BColl, YColl, B1dec, Y1dec (per pair)
             % plot the markers
-            if plt>3 && plt<=5
-                plot(conSteps, y(:,plt), plotSym{:,plt},'MarkerSize',6,'LineWidth',1.5,'Color',color(plt,:),'MarkerFaceColor',mrkColor(plt-3,:));
+            if plt>3 && plt<=5 %coll.: colors: blue, yellow; markers: empty
+                plot(conSteps, y(:,plt), plotSym{:,plt},'MarkerSize',8,'LineWidth',1.5,'Color',color(plt,:),'MarkerFaceColor',mrkColor(plt-3,:));
                 hold on;
-            elseif plt>5 && plt<=7
-                plot(conSteps, y(:,plt), plotSym{:,plt},'MarkerSize',6,'LineWidth',1.5,'Color',color(plt-2,:),'MarkerFaceColor',mrkColor(plt-3,:));
+            elseif plt>5 && plt<=7 %ind.: colors: blue, yellow; markers: filled
+                plot(conSteps, y(:,plt), plotSym{:,plt},'MarkerSize',8,'LineWidth',1.5,'Color',color(plt-2,:),'MarkerFaceColor',mrkColor(plt-3,:));
                 hold on;
             end
             C = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
             ps = cdf('norm',C,d_mean,d_sd);
             % plot the lines
-            if plt>3 && plt<=5
-                plot(C,ps,'--','LineWidth',2,'Color',color(plt,:)); %coll.
-            elseif plt>5 && plt<=7
-                plot(C,ps,'-','LineWidth',2,'Color',color(plt-2,:)); %ind.
+            if plt>3 && plt<=5 %coll.: dashed lines
+                plot(C,ps,'--','LineWidth',2,'Color',color(plt,:));
+            elseif plt>5 && plt<=7 %ind.: continuous lines
+                plot(C,ps,'-','LineWidth',2,'Color',color(plt-2,:));
             end
+        
+        elseif bType == 1 && ave == 1 % plot minColl, maxColl, min 1dec, max 1dec (averages)
+            % plot the markers
+            if plt>=1 && plt<=2
+                plot(conSteps, y(:,plt), plotSym{:,plt},'MarkerSize',8,'LineWidth',1.5,'Color',color(plt,:),'MarkerFaceColor',mrkColor(plt,:));
+                hold on;
+            elseif plt>2 && plt<=4
+                plot(conSteps, y(:,plt), plotSym{:,plt},'MarkerSize',8,'LineWidth',1.5,'Color',color(plt,:),'MarkerFaceColor',mrkColor(plt,:));
+                hold on;
+            end
+            C = 1.3 .* (min(conSteps) : 0.001 : max(conSteps));
+            ps = cdf('norm',C,d_mean,d_sd);
+            % plot the lines
+            if plt>=1 && plt<=2 %coll.: dashed lines
+                plot(C,ps,'--','LineWidth',2,'Color',color(plt,:)); %coll.
+            elseif plt>2 && plt<=4 %ind.: continuous lines
+                plot(C,ps,'-','LineWidth',2,'Color',color(plt,:)); %ind.
+            end
+        
         end
         
         
