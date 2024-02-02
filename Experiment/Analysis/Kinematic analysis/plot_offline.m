@@ -2,6 +2,9 @@
 % Here we can plot our data "offline", using the _post (or _bkp) .mat file
 % -------------------------------------------------------------------------
 
+% XXX TO DO: for nvar=1, var_list=X (left-right): adjust fun_sd 
+% to compute separate means for left and right
+
 % Notes on temporal and spatial variables:
 % Temporal variables in matrix 'all_time_traj_ulna/index/coll_'
 % Spatial variables in matrix 'all_spa_traj_ulna/index/coll_'
@@ -48,6 +51,7 @@ meanHall_V.index = []; meanLall_V.index = []; meanHall_V.ulna  = []; meanLall_V.
 meanHall_A.index = []; meanLall_A.index = []; meanHall_A.ulna  = []; meanLall_A.ulna  = [];
 meanHall_Z.index = []; meanLall_Z.index = []; meanHall_Z.ulna  = []; meanLall_Z.ulna  = [];
 meanHall_Y.index = []; meanLall_Y.index = []; meanHall_Y.ulna  = []; meanLall_Y.ulna  = [];
+meanHall_X.index = []; meanLall_X.index = []; meanHall_X.ulna  = []; meanLall_X.ulna  = [];
 
 % Set some more parameters
 list_Dec    = [1 2 3];
@@ -57,7 +61,7 @@ spa_param   = {'x' 'y' 'z'};
 
 
 %% START DECISION LOOP: run through all three decisions
-for dec = 2%:length(list_Dec)
+for dec = 1:length(list_Dec)
 
     % pair loop: run through this for all selected pairs (n_pr = number of pairs)
     for sel_p = 1:n_pr
@@ -72,9 +76,9 @@ for dec = 2%:length(list_Dec)
 
         % SET FLAGS -------------------------------------------------------
         which_Dec      = dec; % which_Dec is equivalent to dec (loop var)
-        plot_indiv     = 1; % Plots for individual agents? (1=yes, 0=no)
+        plot_indiv     = 0; % Plots for individual agents? (1=yes, 0=no)
         n_var          = 1; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
-        plot_sd        = 0; % Plot mean+variability? (1=yes, 0=no ->trial-by-trial)
+        plot_sd        = 1; % Plot mean+variability? (1=yes, 0=no ->trial-by-trial)
         dev            = 1; % Which variability? (1=SD, 2=SEM), for indiv. plots
         show_med_split = 1; % Apply a median split? (1=yes, 0=no)
         % Note: trial-by-trial plots need to be adjusted for n_var=2
@@ -264,6 +268,14 @@ for dec = 2%:length(list_Dec)
                 name_struct = [(ave_all.pairID) 'mean_Z' agents{g}];
                 eval([(name_struct) '= ave_all.Z;'])
 
+                % foward/y-coordinate (ave_all.X.space) XXX
+                meanHall_Y.index = [meanHall_Y.index, ave_all.Y.space.index.meanH];
+                meanLall_Y.index = [meanLall_Y.index,ave_all.Y.space.index.meanL];
+                meanHall_Y.ulna  = [meanHall_Y.ulna,ave_all.Y.space.ulna.meanH];
+                meanLall_Y.ulna  = [meanLall_Y.ulna,ave_all.Y.space.ulna.meanL];
+                name_struct = [(ave_all.pairID) 'mean_Y' agents{g}];
+                eval([(name_struct) '= ave_all.Y;'])
+
             end
 
             if n_var == 2 && flag_multiple && plot_sd % two spatial variables
@@ -325,7 +337,7 @@ for dec = 2%:length(list_Dec)
         clearvars -except ave_all name data_dir sel_p n_pr file path flag_multiple...
             mrks plot_indiv dec which_Dec list_Dec data_dir n_var list_ignore...
             meanHall_V meanLall_V meanHall_A meanLall_A ...
-            meanHall_Z meanLall_Z meanHall_Y meanLall_Y ...
+            meanHall_Z meanLall_Z meanHall_Y meanLall_Y meanHall_X meanLall_X...
             time_param spa_param plot_sd
 
     end % end of pair loop ------------------------------------------------
@@ -340,7 +352,7 @@ for dec = 2%:length(list_Dec)
     HiFill        = [0.7529 0.9412 0.5059];
     LoFill        = [0.8235 0.4392 0.9020];
     x_width       = 18; y_width = 12; % size of saved figure
-    var_list      = {'V' 'A' 'Z'};
+    var_list      = {'V' 'A' 'Z' 'Y'};%{'V' 'A' 'Z'};
     varlabx       = 'Normalized movement duration (%)';
     fs            = 12; % fontsize for axis labels
     subnum        = 2*n_pr;
@@ -368,6 +380,10 @@ for dec = 2%:length(list_Dec)
                         meanHall = meanHall_Z;
                         meanLall = meanLall_Z;
                         varlaby = 'Height (mm)';
+                    elseif strcmp(var_list{v},'Y')
+                        meanHall = meanHall_Y;
+                        meanLall = meanLall_Y;
+                        varlaby = 'forward (mm)';
                     end
 
                     % mean and std

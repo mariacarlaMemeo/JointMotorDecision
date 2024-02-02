@@ -39,7 +39,7 @@ if (local_user == 1) {
   AnaDir  = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
   PlotDir = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 } else {
-  DataDir = "D:/DATA/Processed/"#"C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Behavioral/preprocessed/"
+  DataDir = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Data/Behavioral/preprocessed/" #"D:/DATA/Processed/"
   AnaDir  = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
   PlotDir = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 }
@@ -160,8 +160,8 @@ names(all_conf)[names(all_conf)=='confidence1'] <- 'Confidence 1st decision'
 names(all_conf)[names(all_conf)=='confidence2'] <- 'Confidence 2nd decision'
 names(all_conf)[names(all_conf)=='Coll_conf']   <- 'Confidence collective decision'
 all_conf$targetContrast = as.factor(all_conf$targetContrast)
-count_scale_conftar     = list("lim"=c(0,125),"breaks"=seq(0,125, by=25))
-count_scale_conf        = list("lim"=c(0,600),"breaks"=seq(0,600, by=50))
+count_scale_conftar     = list("lim"=c(0,200),"breaks"=seq(0,200, by=25))
+count_scale_conf        = list("lim"=c(0,700),"breaks"=seq(0,700, by=50))
 
 for(confy in (seq(2,ncol(all_conf)-1))){
   var_conf = all_conf[,confy] # confy=confidence1,confidence2,Coll_Conf
@@ -179,7 +179,7 @@ for(confy in (seq(2,ncol(all_conf)-1))){
   # plot confidence count
   print(ggplot(all_conf, aes(x=var_conf)) +
           stat_count(geom = "bar", position="dodge2") +
-          scale_y_continuous(limits = c(0,400), breaks = seq(0,400, by=50)) +
+          scale_y_continuous(limits = c(0,600), breaks = seq(0,600, by=50)) +
           #scale_y_continuous(limits = count_scale_conf$lim, breaks = count_scale_conf$breaks) +
           scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
           ggtitle(colnames(all_conf)[confy]) +
@@ -326,7 +326,7 @@ for(confVar in 1:3) {
           ggtitle(dec_names[confVar]) +
           ylab("Accuracy") + xlab("Target contrast") + theme_custom())
   # save the plot
-  ggsave(file=sprintf(paste0("%sConfidenceDiff_",as.character(confVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  ggsave(file=sprintf(paste0("%sAccByContrast_",as.character(confVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 }
 
 # Average accuracy for each decision
@@ -353,17 +353,24 @@ curdat$decision2=as.factor(curdat$decision2)
 levels(curdat$decision2)= c("left","right")
 curdat$Coll_decision=as.factor(curdat$Coll_decision)
 levels(curdat$Coll_decision)= c("left","right")
+curdat$B_decision=as.factor(curdat$B_decision)
+levels(curdat$B_decision)= c("left","right")
+curdat$Y_decision=as.factor(curdat$Y_decision)
+levels(curdat$Y_decision)= c("left","right")
 # create all_dec selection
-all_dec = curdat[,c("Pair","decision1","decision2","Coll_decision","targetContrast")]
+all_dec = curdat[,c("Pair","AgentTakingFirstDecision","B_decision","Y_decision",
+                    "decision1","decision2","Coll_decision","targetContrast")]
 names(all_dec)[names(all_dec)=='decision1']     <- 'Target choice 1st decision'
 names(all_dec)[names(all_dec)=='decision2']     <- 'Target choice 2nd decision'
 names(all_dec)[names(all_dec)=='Coll_decision'] <- 'Target choice collective decision'
 all_dec$targetContrast = as.factor(all_dec$targetContrast)
 
-# plot target choice (left/right) split by target contrast
-for(dec in (seq(2,ncol(all_dec)-1))) {
-  var_dec = all_dec[,dec] # dec=decision1,decision2,Coll_decision
+PlotDirLR = paste0(PlotDir,"TargetChoice/")
 
+# plot target choice (left/right) split by target contrast
+for(dec in (seq(5,ncol(all_dec)-1))) {
+  var_dec = all_dec[,dec] # dec=decision1,decision2,Coll_decision
+  
   print(ggplot(all_dec, aes(x=var_dec, fill=targetContrast)) +
           scale_fill_manual(values=con_colors)+ 
           stat_count(geom = "bar", position="dodge2") +
@@ -372,7 +379,47 @@ for(dec in (seq(2,ncol(all_dec)-1))) {
           ggtitle(colnames(all_dec)[dec]) +
           ylab("Count") + xlab("Decision") + theme_custom())
   # save the plot
-  ggsave(file=sprintf(paste0("%sTargetChoice_",as.character(dec-1),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  ggsave(file=sprintf(paste0("%sLRChoice_",as.character(dec-4),".png"),PlotDirLR), dpi = 300, units=c("cm"), height =20, width = 20)
+}
+
+# plot target choice (left/right) split by target contrast BY PAIR
+for (p in unique(all_dec$Pair)) { # p = pair
+    for (dec in (seq(5,ncol(all_dec)-1))) { # dec=decision1,decision2,Coll_decision
+    var_dec = all_dec[all_dec$Pair==p,dec] 
+   
+    print(ggplot(all_dec[all_dec$Pair==p,], aes(x=var_dec, fill=targetContrast)) +
+            scale_fill_manual(values=con_colors)+ 
+            stat_count(geom = "bar", position="dodge2") +
+            #scale_y_continuous(limits = count_scale_conftar$lim, breaks = count_scale_conftar$breaks) +
+            #scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+            ggtitle(paste(colnames(all_dec)[dec], "Pair", as.character(p))) +
+            ylab("Count") + xlab("Decision") + theme_custom())
+    # save the plot
+    ggsave(file=sprintf(paste0("%sLRChoice_",as.character(p),"_",as.character(dec-4),".png"),
+                        PlotDirLR), dpi = 300, units=c("cm"), height =20, width = 20)
+  }
+}
+
+# plot target choice (left/right) split by target contrast BY AGENT
+for (p in unique(all_dec$Pair)) { # p = pair
+  for (agent in unique(all_dec$AgentTakingFirstDecision)) { # agent=B,Y
+    
+    if (agent=="B") {dec="B_decision"
+    } else {dec="Y_decision"}
+    
+    var_dec = all_dec[all_dec$Pair==p,dec] 
+    
+    print(ggplot(all_dec[all_dec$Pair==p,], aes(x=var_dec, fill=targetContrast)) +
+            scale_fill_manual(values=con_colors)+ 
+            stat_count(geom = "bar", position="dodge2") +
+            #scale_y_continuous(limits = count_scale_conftar$lim, breaks = count_scale_conftar$breaks) +
+            #scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
+            ggtitle(paste("Pair", as.character(p), "Agent", agent)) +
+            ylab("Count") + xlab("Decision") + theme_custom())
+    # save the plot
+    ggsave(file=sprintf(paste0("%sLRChoice_",as.character(p),"_",agent,".png"),
+                        PlotDirLR), dpi = 300, units=c("cm"), height =20, width = 20)
+  }
 }
 
 
@@ -417,8 +464,8 @@ if (indi==1) {
   count_scale_dt = list("lim"=c(0,20),"breaks"=seq(0,20, by=5))
 } else {
   contrastD = contrastData_all
-  count_scale = list("lim"=c(0,300),"breaks"=seq(0,300, by=25))
-  count_scale_dt = list("lim"=c(0,100),"breaks"=seq(0,100, by=20))
+  count_scale = list("lim"=c(0,425),"breaks"=seq(0,425, by=25))
+  count_scale_dt = list("lim"=c(0,150),"breaks"=seq(0,150, by=20))
 }
 contrastD$agree          = as.factor(contrastD$agree)
 levels(contrastD$agree)  = c("disagree", "agree")
@@ -711,18 +758,31 @@ if(pair_plots){
 # The new calculation is based on a velocity threshold: from now, we will use this final rt/mt. 
 # NOTE: The variables are related to the rt of the 1st and 2nd decision respectively (not to the agent).
 
+#XXX work on this for collective RT
+
 # rt 2nd decision - calc the average, se, ci
 rt_conf_2d                = curdat[,c("confidence2","rt_final2")]
 rt_conf_2d_sum            = summarySE(rt_conf_2d,measurevar="rt_final2",groupvars=c("confidence2"))
+rt_conf_coll              = curdat[,c("Coll_conf","rt_finalColl")]
+rt_conf_coll_sum          = summarySE(rt_conf_coll,measurevar="rt_finalColl",groupvars=c("Coll_conf"))
 # mt 2nd decision - calc the average, se, ci
 mt_conf_2d                = curdat[,c("confidence2","mt_final2")]
 mt_conf_2d_sum            = summarySE(mt_conf_2d,measurevar="mt_final2",groupvars=c("confidence2"))
+mt_conf_coll              = curdat[,c("Coll_conf","mt_finalColl")]
+mt_conf_coll_sum          = summarySE(mt_conf_coll,measurevar="mt_finalColl",groupvars=c("Coll_conf"))
 # rename variables
 names(rt_conf_2d_sum)     = c("conf2","N","var","sd","se","ci")
 names(mt_conf_2d_sum)     = c("conf2","N","var","sd","se","ci")
 mt_rt_conf_2d_sum         = rbind(rt_conf_2d_sum,mt_conf_2d_sum); 
 mt_rt_conf_2d_sum$var_lab = c(replicate(length(rt_conf_2d_sum), "rt"),replicate(length(mt_conf_2d_sum), "mt"))
 d                         = mt_rt_conf_2d_sum # shorter name for convenience
+# for collective
+names(rt_conf_coll_sum)   = c("confColl","N","var","sd","se","ci")
+names(mt_conf_coll_sum)   = c("confColl","N","var","sd","se","ci")
+mt_rt_conf_coll_sum       = rbind(rt_conf_coll_sum,mt_conf_coll_sum); 
+mt_rt_conf_coll_sum$var_lab = c(replicate(length(rt_conf_coll_sum), "rt"),replicate(length(mt_conf_coll_sum), "mt"))
+dColl                      = mt_rt_conf_coll_sum # shorter name for convenience
+
 
 # plot - RT and MT as a function of confidence level (across participants)
 print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
@@ -731,6 +791,13 @@ print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
              manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
         xlab("agent confidence") + ylab("time [s]") + theme_custom())
 ggsave(file=sprintf(paste0("%stime_conf_2d",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+
+print(plotSE(df=dColl,xvar=dColl$confColl,yvar=dColl$var,
+             colorvar=dColl$var_lab,shapevar=dColl$var_lab,
+             xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (coll decision) "),
+             manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
+        xlab("agent confidence") + ylab("time [s]") + theme_custom())
+ggsave(file=sprintf(paste0("%stime_conf_coll",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
 # 6. RT and MT as a function of TARGET CONTRAST
@@ -865,6 +932,7 @@ print(ggplot(data=switchC1_sum, aes(x=switch, y=value, fill=variable, color = va
         xlab("Switching") + ylab("Confidence 1") + 
         theme(legend.position = "none") + theme_custom()
 )
+ggsave(file=paste0(PlotDir,"Conf1_Switching.png"), dpi = 300, units=c("cm"), height =20, width = 20)
 
 
 # COLLECTIVE ADJUSTMENT PLOTS (confidence A1 compared to collective confidence)

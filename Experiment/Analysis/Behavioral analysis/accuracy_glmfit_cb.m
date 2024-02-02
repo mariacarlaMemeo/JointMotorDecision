@@ -13,23 +13,24 @@
 % takes the final, collective decision. The two participants are labelled
 % Blue agent (formerly A1) and Yellow agent (formerly A2).
 
-% XXX to do
-% check goodness of fit;
-% adjust cb_figure-label so that the two benefitType fig can be saved separately
-
 close all; clear variables; clc;
 %--------------------------------------------------------------------------
 % Flags
-save_plot   = 0;
+save_plot   = 1;
 benefitType = 1; % 1=individual benefit, 2=collective (original Bahrami)
+if benefitType == 1
+    ben_lab = '_collBen';
+elseif benefitType == 2
+    ben_lab = '_indiBen';
+end
 %--------------------------------------------------------------------------
 
 %--------------------------------------------------------------------------
 % Prepare path and variables
 %--------------------------------------------------------------------------
-path_data    = fullfile(pwd,'..\..\Data\Behavioral\original_files\'); % Matlab data
-path_to_save = fullfile(pwd,'Behavioral plots\Accuracy_PsychCurves\'); % save figures here
-each         = dir([path_data,'*.mat']); % list of Matlab files
+path_data    = fullfile(pwd,'..\..\Data\Behavioral\original_files\'); % mat files
+path_to_save = fullfile(pwd,'Behavioral plots\Accuracy_PsychCurves\'); % save here
+each         = dir([path_data,'*.mat']); % list of mat files
 % Retrieve participant number (take first 3 digits)
 ptc          = cellfun(@(s) cell2mat(regexp(s,'\d{3}','Match')),{each.name},'uni',0);
 
@@ -40,13 +41,14 @@ slope        = zeros(length(ptc),7);
 % 1 = benefit for Blue; 2 = benefit for Yellow; 3 = collective benefit (cb)
 coll_ben     = zeros(length(ptc),3);
 
-% Figure labels
-lab        = ''; block_lab = ''; CB_lab = '';
+% Figure labels (if not used below, then they should be empty)
+lab  = ''; block_lab = ''; ind_lab = '';
+
 % Preallocate variables to save specific values for all participants
 sdyad_all   = []; smax_all   = []; smin_all   = [];
 decDyad_all = []; decMax_all = []; decMin_all = [];
 accDyad_all = []; accB_all   = []; accY_all   = [];
-ratio_all   = []; cb_all     = [];
+ratio_all   = []; cb_all     = []; ib_all_max = []; ib_all_min = [];
 smax_coll   = []; smin_coll  = [];
 smax_1dec   = []; smin_1dec  = [];
 dmax_coll   = []; dmin_coll  = [];
@@ -59,22 +61,22 @@ default.w           = zeros(default.w_lgt/default.step,default.w_lgt);
 default.slope_wnd   = [];
 default.slope_wcoll = [];
 
-% Specify markers
-plotSym    = {'s' 'o' '*' 's' 'o' 's' 'o'}; %{'s' 'o' '*' '+' '+'};
-mrkColor   = [[255 255 255]; [255 255 255]; [30 60 190]; [240 200 40]]./255;
-% Specify colors
-color     = [[30 60 190]; [240 200 40]; [17 105 40];... % blue, yellow, dark green
-    [30 60 190]; [240 200 40]; ... % blue, yellow
-    % gray, emerald green, persian green, pine green
-    [51 51 51]; [80 200 120]; [0 165 114]; [1 121 111]]./255;
-% Specify colors for average plots: blue (min), red (max), black (coll)
-if benefitType == 2
+% Specify colors and markers for plots
+plotSym    = {'o' 's' '*' 'o' 's' 'o' 's'}; %{'s' 'o' '*' '+' '+'};
+mrkColor   = [[255 255 255]; [255 255 255]; ... % white, white
+              [30 60 190]; [240 200 40]]./255;  % blue, yellow
+color      = [[30 60 190]; [240 200 40]; [17 105 40];... % blue, yellow, dark green
+              [30 60 190]; [240 200 40]; ... % blue, yellow
+              % gray, emerald green, persian green, pine green
+              [51 51 51]; [80 200 120]; [0 165 114]; [1 121 111]]./255;
+% colors for average plots
+if benefitType == 2 % blue (min), red (max), black (coll)
     colorAve = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; [0 0 0]];
-    plotSymAve = {'o' 's' 'diamond'}; % colors for average plots
+    plotSymAve = {'o' 's' 'diamond'};
 elseif benefitType == 1
     colorAve = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; ...
                 [0 0.4470 0.7410]; [0.6350 0.0780 0.1840]];
-     plotSymAve = {'o' 's' 'o' 's'}; % colors for average plots
+     plotSymAve = {'o' 's' 'o' 's'};
 end
 
 %--------------------------------------------------------------------------
@@ -93,26 +95,26 @@ end
 sub_con = input('Choose to subselect trials:\n 1 = yes\n 2 = no\n');
 if sub_con==1
     subcon_calc = 1;
-    lab = '_balanced';
+    lab = '_balanced_';
 elseif sub_con==2
     subcon_calc = 0;
 end
 % Select how to compute the individual collective benefit
-% Use all individual trials or only those in which the individual acted
-% first (and thus also took the respective joint decision)
+% Use all individual trials or only those in which the agent acted first
+% (and thus also took the respective joint decision)
 ind_CB = input('Choose to select individual CB:\n 1 = all ind. trials\n 2 = only 1dec ind. trials\n');
 if ind_CB==1
-    CB_lab = '_indCBAll';
+    ind_lab = '_indBenAll';
 elseif ind_CB==2
-    CB_lab = '_indCB1dec';
+    ind_lab = '_indBen1dec';
 end
 % Select only first or second block?
 sub_block = input('Choose to select block:\n 0 = allBlocks\n 1 = 1stBlock\n 2 = 2ndBlock\n');
-if sub_block==0
+if sub_block==0 % all trials
 elseif sub_block==1
-    block_lab = '_block1';
+    block_lab = '_block1_';
 elseif sub_block==2
-    block_lab = '_block2';
+    block_lab = '_block2_';
 end
 fprintf('\n');
 disp('*END OF USER INPUT*'); fprintf('\n');
@@ -234,9 +236,9 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     ylabel('Accuracy','FontSize',18);
     ylim([0.3 1]);
     title(['Accuracy - ','S' ptc{p}],'FontSize',22);
-    if save_plot
-        saveas(gcf,[path_to_save,'S',ptc{p},'_accuracy_',coll_calc,lab,block_lab,CB_lab],'png');
-    end
+    %if save_plot
+        %saveas(gcf,[path_to_save,'S',ptc{p},'_Acc_',lab,block_lab,ind_lab,ben_lab],'png');
+    %end
    
     % Collect DECISIONS per contrast level (for B,Y,Coll,B1dec,Y1dec,BColl,YColl)
     for cI = 1 : size(conSteps,1)
@@ -265,7 +267,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     %----------------------------------------------------------------------
     % PLOTTING decision
     %----------------------------------------------------------------------
-    % Plot P(Report 2nd) across contrast differences (non-logarithmic!)
+    % Plot P(Report 2nd) across contrast differences (non-logarithmic)
     % Note: This plot is like the psych. curve but without curve fitting!
     % -> Here we use the decision data (1 or 2)
     % -----------------------------------------
@@ -278,9 +280,9 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     ylabel('P(Report 2nd)','FontSize',18);
     ylim([0 1]);
     title(['Sensitivity - ','S' ptc{p}],'FontSize',22);
-    %     if save_plot
-    %         saveas(gcf,[path_to_save,'S',ptc{p},'_psy_',coll_calc,lab,block_lab,CB_lab],'png');
-    %     end
+    %if save_plot
+        %saveas(gcf,[path_to_save,'S',ptc{p},'_PerSens_',lab,block_lab,ind_lab],'png');
+    %end
 
     
     %----------------------------------------------------------------------
@@ -338,30 +340,44 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     % coll. decisions taken by respective agent (B or Y) / 
     % all ind. decisions of same agent
     if ind_CB==1
-        coll_ben(p,1) = round(slope(p,4)/slope(p,1),2); %sdyadA1/slope_a1;
-        coll_ben(p,2) = round(slope(p,5)/slope(p,2),2); %sdyadA2/slope_a2;
+        coll_ben(p,1) = round(slope(p,4)/slope(p,1),2); %scollB/sindB
+        coll_ben(p,2) = round(slope(p,5)/slope(p,2),2); %scollY/sindY
     % ind_CB==2:
     % coll. decisions taken by respective agent (B or Y) / 
     % *only* ind. decisions of those same trials (i.e., only trials in which
     % the same agent took 1st and collective decision; for better comparison
     elseif ind_CB==2
-        coll_ben(p,1) = round(slope(p,4)/slope(p,6),2); %sdyadA1/slope_a1 1st dec;
-        coll_ben(p,2) = round(slope(p,5)/slope(p,7),2); %sdyadA2/slope_a2 1st dec;
+        coll_ben(p,1) = round(slope(p,4)/slope(p,6),2); %scollB/sindB_1dec
+        coll_ben(p,2) = round(slope(p,5)/slope(p,7),2); %scollY/sindY_1dec
+    end
+
+    % based on ind. benefits for B/Y (above), assign ind. benefits min/max
+    if agent_max == 1
+        coll_ben_max = coll_ben(p,1);
+        coll_ben_min = coll_ben(p,2);
+    elseif agent_max == 2
+        coll_ben_max = coll_ben(p,2);
+        coll_ben_min = coll_ben(p,1);
     end
 
     % Display the computed values as text in plot
     if benefitType == 2
         text(-0.18,0.95,['coll. benefit = ' num2str(coll_ben(p,3),'%.2f')],'FontSize',18);
-        title(['Coll. benefit - ','S' ptc{p}]);
+        title(['Coll. benefit - ','S' ptc{p}],'FontSize',22);
     elseif benefitType == 1
-        text(-0.18,0.95,['blue benefit = ' num2str(coll_ben(p,1),'%.2f')],'FontSize',18);
-        text(-0.18,0.9,['yell benefit = ' num2str(coll_ben(p,2),'%.2f')],'FontSize',18);
-        title(['Ind. benefit - ','S' ptc{p}]);
+        if agent_max == 1
+            text(-0.18,0.95,['ind. benefit B (max) = ' num2str(coll_ben(p,1),'%.2f')],'FontSize',18, 'Color', color(1,:));
+            text(-0.18,0.9, ['ind. benefit Y (min) = ' num2str(coll_ben(p,2),'%.2f')],'FontSize',18, 'Color', color(2,:));
+        elseif agent_max == 2
+            text(-0.18,0.95,['ind. benefit B (min) = ' num2str(coll_ben(p,1),'%.2f')],'FontSize',18, 'Color', color(1,:));
+            text(-0.18,0.9, ['ind. benefit Y (max) = ' num2str(coll_ben(p,2),'%.2f')],'FontSize',18, 'Color', color(2,:));
+        end
+        title(['Ind. benefit - ','S' ptc{p}],'FontSize',22);
     end
 
     % Save psychometric curve figure
     if save_plot
-        saveas(gcf,[path_to_save,'S',ptc{p},'_cb_',coll_calc,lab,block_lab,CB_lab],'png');
+        saveas(gcf,[path_to_save,'S',ptc{p},'_PsyC',lab,block_lab,ind_lab],'png');
     end
     hold off;
     % ---------------------------------------------------------------------
@@ -399,11 +415,14 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         smax_1dec = [smax_1dec; slope(p,7)]; dmax_1dec = [dmax_1dec; y(:,7)'];
         smin_1dec = [smin_1dec; slope(p,6)]; dmin_1dec = [dmin_1dec; y(:,6)'];
     end
-    cb_all       = [cb_all; coll_ben(p,3)];
-    ratio_all    = [ratio_all; ratio];
     decDyad_all  = [decDyad_all; y(:,3)'];
     decMax_all   = [decMax_all; y(:,agent_max)'];
     decMin_all   = [decMin_all; y(:,agent_min)'];
+    % benefits
+    cb_all       = [cb_all; coll_ben(p,3)];
+    ib_all_max   = [ib_all_max; coll_ben_max];
+    ib_all_min   = [ib_all_min; coll_ben_min];
+    ratio_all    = [ratio_all; ratio];
 
 
     % ---------------- WINDOW ANALYSIS -----------------------------------%
@@ -425,7 +444,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         % -----------------------------------------------------------------
         slope_wcoll(p,:) = slope_wcoll(p,:)/smax;
         plot(slope_wcoll(p,:),['-' plotSym{3}],'Color',color(3,:));
-        title(['Coll benefit - ','S' ptc{p},'- wnd']);
+        title(['Coll benefit - ','S' ptc{p},'- wnd'],'FontSize',22);
     end
 end
 % end of pair loop -------------------------------------------------------%
@@ -471,10 +490,20 @@ sAverage = plot_psy(conSteps,y_ave,plotSymAve,colorAve,default,full,coll_calc,be
 ylim([0 1]);
 xlabel('Contrast difference','FontSize',18);
 ylabel('Proportion 2nd interval','FontSize',18);
-title('Grand averages','FontSize',22);
+
+% Display the computed values as text in plot
+if benefitType == 2
+    text(-0.18,0.95,['mean coll. benefit = ' num2str(mean(cb_all),'%.2f')],'FontSize',18);
+    title('Grand averages: collective benefit','FontSize',22);
+elseif benefitType == 1
+    text(-0.18,0.95,['mean ind. benefit MAX = ' num2str(mean(ib_all_max),'%.2f')],'FontSize',18, 'Color', colorAve(2,:));
+    text(-0.18,0.9,['mean ind. benefit MIN = ' num2str(mean(ib_all_min),'%.2f')],'FontSize',18, 'Color', colorAve(1,:));
+    title('Grand averages: individual benefit','FontSize',22);
+end
+
 % Save figure
 if save_plot
-    saveas(gcf,[path_to_save,'Average_cb_',coll_calc,lab,block_lab],'png');
+    saveas(gcf,[path_to_save,'Average_PsyC',lab,block_lab],'png');
 end
 % -------------------------------------------------------------------------
 
@@ -499,7 +528,7 @@ if not(subcon_calc) && sub_block==0 && length(ptc)>1
     title('Average values across pairs - coll. benefit','FontSize',22);
     % Save figure
     if save_plot
-        saveas(gcf,[path_to_save,'Average_WindowCB_',coll_calc,lab,block_lab],'png');
+        saveas(gcf,[path_to_save,'Average_WindowCB_',lab,block_lab],'png');
     end
 
     % All pairs within one figure
@@ -513,10 +542,10 @@ if not(subcon_calc) && sub_block==0 && length(ptc)>1
     axis([0 (default.w_lgt/default.step)+1 0.5 2.2])
     legend({'S108','S110','S111','S112','S113','S114','S115','S116',...
         'S117','S118','S120','S121','S122','S123','S124','1'},'location','bestoutside');
-    title('Coll. benefit - each pair');
+    title('Coll. benefit - each pair','FontSize',22);
     % Save figure
     if save_plot
-        saveas(gcf,[path_to_save,'AllPairs_WindowCB_',coll_calc,lab,block_lab],'png');
+        saveas(gcf,[path_to_save,'AllPairs_WindowCB_',lab,block_lab],'png');
     end
 
 end
@@ -543,7 +572,7 @@ ylim([0.3 1]);
 title('Accuracy average across pairs','FontSize',22);
 % save figure
 if save_plot
-    saveas(gcf,[path_to_save,'Average_acc_',coll_calc,lab,block_lab],'png');
+    saveas(gcf,[path_to_save,'Average_Acc_',lab,block_lab],'png');
 end
 % -------------------------------------------------------------------------
 
@@ -573,7 +602,6 @@ fprintf('\n');
 mrksz=50; mrkedge=[0 0 0]; mrkfill=[1 1 1]; mrkw=1.5;
 cbcol=[0.7529  0.9412  0.5059];
 % Plot ratio on x-axis and collective benefit on y-axis
-
 xdata=cb_ratio_combo_sorted(:,2); ydata=cb_ratio_combo_sorted(:,1);
 ratio_fig=figure(); set(ratio_fig, 'WindowStyle', 'Docked');
 scatter(xdata,ydata,mrksz,"MarkerEdgeColor",mrkedge,...
@@ -592,7 +620,7 @@ ylabel('sdyad/smax','FontSize',18);
 title('Coll. benefit as a function of similarity','FontSize',22);
 % Save figure
 if save_plot
-    saveas(gcf,[path_to_save,'Similarity_',coll_calc,lab,block_lab],'png');
+    saveas(gcf,[path_to_save,'SimilarityCorr',lab,block_lab],'png');
 end
 % -------------------------------------------------------------------------
 
