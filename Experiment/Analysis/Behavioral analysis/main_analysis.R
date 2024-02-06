@@ -13,6 +13,9 @@
 rm(list = ls())
 graphics.off()
 
+# Set flags
+save_plots = 0;
+
 # Import libraries and load packages
 library(doBy)
 pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
@@ -171,7 +174,8 @@ for(confy in (seq(2,ncol(all_conf)-1))) { # take columns 2-4 in all_conf
           ggtitle(colnames(all_conf)[confy]) +
           ylab("Count") + xlab("Confidence level") + theme_custom())
   # save the plot
-  ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),"_target.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),"_target.png"),PlotDir), 
+                          dpi = 300, units=c("cm"), height =20, width = 20)}
   
   # plot confidence count
   print(ggplot(all_conf, aes(x=var_conf)) +
@@ -185,7 +189,8 @@ for(confy in (seq(2,ncol(all_conf)-1))) { # take columns 2-4 in all_conf
   print(sprintf("Average %s%s %.2f", colnames(all_conf)[confy], ":", round(mean(all_conf[,confy]),2)))
   print(sprintf("SD %s%s %.2f", colnames(all_conf)[confy], ":", round(sd(all_conf[,confy]),2)))
   # save the plot
-  ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),".png"),PlotDir), 
+                          dpi = 300, units=c("cm"), height =20, width = 20)}
 }
 
 # 2. Accuracy by confidence/target contrast
@@ -216,7 +221,8 @@ for(confVar in 1:3) {
           ggtitle(dec_names[confVar]) +
           ylab("Accuracy") + xlab("Confidence") + theme_custom())
   # save the plot
-  ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),".png"),PlotDir), 
+                          dpi = 300, units=c("cm"), height =20, width = 20)}
   
   
   # add agreement factor to the original bar plots
@@ -234,7 +240,8 @@ for(confVar in 1:3) {
           scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
           ggtitle(dec_names[confVar]) +
           ylab("Accuracy") + xlab("Confidence") + theme_custom())
-  ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),"_agdag.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),"_agdag.png"),PlotDir), 
+                          dpi = 300, units=c("cm"), height =20, width = 20)}
  
   # now create scatter plots, with pair as additional factor
   # add pair as a factor
@@ -247,7 +254,7 @@ for(confVar in 1:3) {
           ggtitle(dec_names[confVar]) +
           xlab("Accuracy") + ylab("Confidence") + theme_custom() +
           geom_smooth(method=lm,se=FALSE, size=0.5))
-  ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_pairs.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_pairs.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)}
   
   # do the same split by participant (instead of pair)
   data_agent     = curdat[,c(p,agent1,acc,conf)]
@@ -259,7 +266,8 @@ for(confVar in 1:3) {
           ggtitle(dec_names[confVar]) +
           xlab("Accuracy") + ylab("Confidence") + theme_custom() +
           geom_smooth(method=lm,se=FALSE, size=0.5))
-  ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents.png"),PlotDir), 
+                          dpi = 300, units=c("cm"), height =20, width = 20)}
   
   
   # split by participant and agreement
@@ -278,7 +286,8 @@ for(confVar in 1:3) {
               ggtitle(paste(dec_names[confVar],alab,sep=" ")) +
               xlab("Accuracy") + ylab("Confidence") + theme_custom() +
               geom_smooth(method=lm,se=FALSE, size=0.5))
-      ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents_agree.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+      if (save_plots) {ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents_agree.png"),PlotDir), 
+                              dpi = 300, units=c("cm"), height =20, width = 20)}
     }
     # disagreement
     else if (agVar==2) {
@@ -293,7 +302,8 @@ for(confVar in 1:3) {
                 ggtitle(paste(dec_names[confVar],alab,sep=" ")) +
                 xlab("Accuracy") + ylab("Confidence") + theme_custom() +
                 geom_smooth(method=lm,se=FALSE, size=0.5))
-        ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents_disagree.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+        if (save_plots) {ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents_disagree.png"),PlotDir), 
+                                dpi = 300, units=c("cm"), height =20, width = 20)}
       }
       # collective decision: split into switch and no switch
       else if (confVar==3) {
@@ -309,7 +319,8 @@ for(confVar in 1:3) {
                   ggtitle(paste(dec_names[confVar],alab,sep=" ")) +
                   xlab("Accuracy") + ylab("Confidence") + theme_custom() +
                   geom_smooth(method=lm,se=FALSE, size=0.5))
-          ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents_disagree_",as.character(swVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+          if (save_plots) {ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents_disagree_",as.character(swVar),".png"),PlotDir), 
+                                  dpi = 300, units=c("cm"), height =20, width = 20)}
         }
       }
     }
@@ -319,13 +330,95 @@ for(confVar in 1:3) {
 
 # 2b. Accuracy as function of difficulty (target contrast)
 # -------------------------------------------------------
+# first plot all three decisions into the same plot
+threeCol  = RColorBrewer::brewer.pal(5, "Paired")[3:5] # light green, dark green, light red
+# prepare dataset and optionally subselect agree/disagree
+subselect = 1; sub_agreement = 0; #  subselect/sub_agreement: yes/agree(1) or no/disagree(0) 
+if (subselect) {
+  if (sub_agreement) {
+    at      = curdat[curdat$agree==1,]
+    data_coac = at[,c("Pair","confidence1","confidence2","Coll_conf",
+                      "accuracy1", "accuracy2", "Coll_acc", "targetContrast")]
+    agree_lab = '_agree'; agree_title = '- agreement';
+  } else {
+    dt      = curdat[curdat$agree==-1,]
+    data_coac = dt[,c("Pair","confidence1","confidence2","Coll_conf",
+                      "accuracy1", "accuracy2", "Coll_acc", "targetContrast")]
+    agree_lab = '_disagree'; agree_title = '- disagreement';
+  }
+} else {
+  data_coac = curdat[,c("Pair","confidence1","confidence2","Coll_conf",
+                        "accuracy1", "accuracy2", "Coll_acc", "targetContrast")]
+  agree_lab = ''; agree_title = '';
+}
+data_coac_long = melt(data_coac, id=c("Pair", "targetContrast"))
+data_coac_sum  = summarySE(data_coac_long,measurevar="value",groupvars=c("targetContrast","variable"))
+data_co_sum = data_coac_sum %>% filter(value > 1)
+data_ac_sum = data_coac_sum %>% filter(value < 1)
+# reshape and rename - confidence subset
+data_co_sum = reshape_wider(
+  data_co_sum, id_cols = "targetContrast", names_from = "variable",
+  values_from = c("value", "sd","se","ci"))
+names(data_co_sum)[names(data_co_sum)=="value_confidence1"] = "confidenceD1";
+names(data_co_sum)[names(data_co_sum)=="value_confidence2"] = "confidenceD2";
+names(data_co_sum)[names(data_co_sum)=="value_Coll_conf"] = "confidenceDColl";
+# reshape and rename - accuracy subset
+data_ac_sum = reshape_wider(
+  data_ac_sum, id_cols = "targetContrast", names_from = "variable",
+  values_from = c("value", "sd","se","ci"))
+names(data_ac_sum)[names(data_ac_sum)=="value_accuracy1"] = "accuracyD1";
+names(data_ac_sum)[names(data_ac_sum)=="value_accuracy2"] = "accuracyD2";
+names(data_ac_sum)[names(data_ac_sum)=="value_Coll_acc"] = "accuracyDColl";
+
+# plot confidence by target contrast for d1,d2,dColl (within one plot)
+ggplot(data_co_sum, aes(x = targetContrast)) +
+  geom_line(aes(y = confidenceD1), color = threeCol[1], lwd = .7) + 
+  geom_point(aes(y = confidenceD1), color = threeCol[1]) +
+  geom_ribbon(aes(ymin = confidenceD1-se_confidence1, ymax = confidenceD1+se_confidence1),
+              alpha = .3, fill = threeCol[1], color = "transparent") +
+  geom_line(aes(y = confidenceD2), color = threeCol[2], lwd = .7) +
+  geom_point(aes(y = confidenceD2),color = threeCol[2]) +
+  geom_ribbon(aes(ymin = confidenceD2-se_confidence2, ymax = confidenceD2+se_confidence2),
+              alpha = .3, fill = threeCol[2], color = "transparent") +
+  geom_line(aes(y = confidenceDColl), color = threeCol[3], lwd = .7) +
+  geom_point(aes(y = confidenceDColl),color = threeCol[3]) +
+  geom_ribbon(aes(ymin = confidenceDColl-se_Coll_conf, ymax = confidenceDColl+se_Coll_conf),
+              alpha = .3, fill = threeCol[3], color = "transparent") +
+  xlim(0.115, 0.250) + ylim(2.0,4.75) +
+  labs(x = "Target contrast", y = "Confidence") + ggtitle(paste("Individual and collective confidence",agree_title)) +
+  theme(legend.position="none")
+if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_ConfByContrast",agree_lab,".png"),PlotDir), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
+
+# plot accuracy by target contrast for d1,d2,dColl (within one plot)
+ggplot(data_ac_sum, aes(x = targetContrast)) +
+  geom_line(aes(y = accuracyD1), color = threeCol[1], lwd = .7) + 
+  geom_point(aes(y = accuracyD1), color = threeCol[1]) +
+  geom_ribbon(aes(ymin = accuracyD1-se_accuracy1, ymax = accuracyD1+se_accuracy1),
+              alpha = .3, fill = threeCol[1], color = "transparent") +
+  geom_line(aes(y = accuracyD2), color = threeCol[2], lwd = .7) +
+  geom_point(aes(y = accuracyD2),color = threeCol[2]) +
+  geom_ribbon(aes(ymin = accuracyD2-se_accuracy2, ymax = accuracyD2+se_accuracy2),
+              alpha = .3, fill = threeCol[2], color = "transparent") +
+  geom_line(aes(y = accuracyDColl), color = threeCol[3], lwd = .7) +
+  geom_point(aes(y = accuracyDColl),color = threeCol[3]) +
+  geom_ribbon(aes(ymin = accuracyDColl-se_Coll_acc, ymax = accuracyDColl+se_Coll_acc),
+              alpha = .3, fill = threeCol[3], color = "transparent") +
+  xlim(0.115, 0.250) + ylim(0.4,1) +
+  labs(x = "Target contrast", y = "Accuracy") + ggtitle(paste("Individual and collective accuracy",agree_title)) +
+  theme(legend.position="none")
+if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_AccByContrast",agree_lab,".png"),PlotDir), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
+
+
+# now separate plots (one per decision)
+tar = "targetContrast" 
 for(confVar in 1:3) {
   
   if (confVar==1)      {conf="confidence1"; acc="accuracy1"}
   else if (confVar==2) {conf="confidence2"; acc="accuracy2"}
   else if (confVar==3) {conf="Coll_conf";   acc="Coll_acc"}
   
-  tar               = "targetContrast" 
   data_tar          = curdat[,c(conf,acc,tar)]
   data_acc_tar_sum  = summarySE(data_tar,measurevar=acc,groupvars=c(tar))
   data_conf_tar_sum = summarySE(data_tar,measurevar=conf,groupvars=c(tar))
@@ -354,13 +447,14 @@ for(confVar in 1:3) {
           ggtitle(dec_names[confVar]) +
           ylab("Accuracy") + xlab("Target contrast") + theme_custom())
   # save the plot
-  ggsave(file=sprintf(paste0("%sAccByContrast_",as.character(confVar),".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sAccByContrast_",as.character(confVar),".png"),PlotDir), 
+                          dpi = 300, units=c("cm"), height =20, width = 20)}
 
   ###
   ggplot(data_acc_tar_sum, aes(x = get(tar), y = get(acc))) +
     geom_ribbon(aes(ymin = get(acc)-se, ymax = get(acc)+se), alpha = .5,
                 fill = "darkseagreen3", color = "transparent") +
-    geom_line(color = "aquamarine4", lwd = .7) +
+    geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
     labs(x = "Target contrast", y = "Accuracy")
   ###
   
@@ -376,7 +470,7 @@ for(confVar in 1:3) {
   ggplot(data_conf_tar_sum, aes(x = get(tar), y = get(conf))) +
     geom_ribbon(aes(ymin = get(conf)-se, ymax = get(conf)+se), alpha = .5,
                 fill = "darkseagreen3", color = "transparent") +
-    geom_line(color = "aquamarine4", lwd = .7) +
+    geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
     labs(x = "Target contrast", y = "Accuracy")
   ###
   
@@ -392,7 +486,7 @@ for(confVar in 1:3) {
   ggplot(data_confacc_sum, aes(x = get(tar), y = confaccR)) +
     geom_ribbon(aes(ymin = confaccR-confaccSE, ymax = confaccR+confaccSE), alpha = .5,
                 fill = "darkseagreen3", color = "transparent") +
-    geom_line(color = "aquamarine4", lwd = .7) +
+    geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
     labs(x = "Target contrast", y = "Confidence/Accuracy")
   ###
   
@@ -411,7 +505,8 @@ ggplot(data_all_acc_sum) +
   ggtitle("Accuracy by decision") +
   ylab("Accuracy") + xlab("Decision") + theme_custom()
 # save the plot
-ggsave(file=sprintf("%sAccPerDec.png",PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=sprintf("%sAccPerDec.png",PlotDir), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
 # 3. Left-right response bias (should we also plot this as function of confidence?)
@@ -448,7 +543,8 @@ for(dec in (seq(5,ncol(all_dec)-1))) {
           ggtitle(colnames(all_dec)[dec]) +
           ylab("Count") + xlab("Decision") + theme_custom())
   # save the plot
-  ggsave(file=sprintf(paste0("%sLRChoice_",as.character(dec-4),".png"),PlotDirLR), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sLRChoice_",as.character(dec-4),".png"),PlotDirLR), 
+                          dpi = 300, units=c("cm"), height =20, width = 20)}
 }
 
 # plot target choice (left/right) split by target contrast BY PAIR
@@ -464,8 +560,8 @@ for (p in unique(all_dec$Pair)) { # p = pair
             ggtitle(paste(colnames(all_dec)[dec], "Pair", as.character(p))) +
             ylab("Count") + xlab("Decision") + theme_custom())
     # save the plot
-    ggsave(file=sprintf(paste0("%sLRChoice_",as.character(p),"_",as.character(dec-4),".png"),
-                        PlotDirLR), dpi = 300, units=c("cm"), height =20, width = 20)
+    if (save_plots) {ggsave(file=sprintf(paste0("%sLRChoice_",as.character(p),"_",as.character(dec-4),".png"), PlotDirLR), 
+                            dpi = 300, units=c("cm"), height =20, width = 20)}
   }
 }
 
@@ -486,8 +582,8 @@ for (p in unique(all_dec$Pair)) { # p = pair
             ggtitle(paste("Pair", as.character(p), "Agent", agent)) +
             ylab("Count") + xlab("Decision") + theme_custom())
     # save the plot
-    ggsave(file=sprintf(paste0("%sLRChoice_",as.character(p),"_",agent,".png"),
-                        PlotDirLR), dpi = 300, units=c("cm"), height =20, width = 20)
+    if (save_plots) {ggsave(file=sprintf(paste0("%sLRChoice_",as.character(p),"_",agent,".png"), PlotDirLR), 
+                            dpi = 300, units=c("cm"), height =20, width = 20)}
   }
 }
 
@@ -497,7 +593,8 @@ for (p in unique(all_dec$Pair)) { # p = pair
 # High/low confidence: Select high/low confidence trials for each agent and average the values
 # XXX not working
 # perc_conf_lo = round(100*(dim(curdat[(curdat$B_conf>=1 & curdat$B_conf<=3)|(curdat$Y_conf>=1 & curdat$Y_conf<=3),])[1])/(2*dim(curdat)[1]))
-# perc_conf_hi = round(100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1]))
+# perc_conf_hi = round(100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | 
+#                curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1]))
 # sprintf("Low confidence trials (1-3): %d %s", perc_conf_lo, "%")
 # sprintf("High confidence trials (4-6): %d %s", perc_conf_hi, "%")
 
@@ -507,15 +604,20 @@ dt      = curdat[curdat$agree==-1,]
 
 # check correlation between confidence of A1 and A2, for all/agree,disagree
 # this should be done on pair level!!?
-plot(jitter(curdat$confidence2,2) ~ jitter(curdat$confidence1,2),main = "Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
+plot(jitter(curdat$confidence2,2) ~ jitter(curdat$confidence1,2),
+     main = "Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
 abline(lm(confidence2 ~ confidence1, data = curdat), col = "blue")
-plot(jitter(dt$confidence2,2) ~ jitter(dt$confidence1,2),main = "Disagree: Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
+plot(jitter(dt$confidence2,2) ~ jitter(dt$confidence1,2),
+     main = "Disagree: Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
 abline(lm(confidence2 ~ confidence1, data = dt), col = "blue")
-plot(jitter(at$confidence2,2) ~ jitter(at$confidence1,2),main = "Agree: Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
+plot(jitter(at$confidence2,2) ~ jitter(at$confidence1,2),
+     main = "Agree: Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
 abline(lm(confidence2 ~ confidence1, data = at), col = "blue")
-plot(jitter(curdat$Coll_conf,2) ~ jitter(curdat$confidence1,2),main = "Relation of Conf1 and collConf",xlab="Confidence1",ylab="collConfidence")
+plot(jitter(curdat$Coll_conf,2) ~ jitter(curdat$confidence1,2),
+     main = "Relation of Conf1 and collConf",xlab="Confidence1",ylab="collConfidence")
 abline(lm(Coll_conf ~ confidence1, data = curdat), col = "blue")
-plot(jitter(curdat$Coll_conf,2) ~ jitter(curdat$confidence1-curdat$confidence2,2),main = "Relation of Conf2-Conf1 and collConf",xlab="Confidence2-Confidence1",ylab="collConfidence")
+plot(jitter(curdat$Coll_conf,2) ~ jitter(curdat$confidence1-curdat$confidence2,2),
+     main = "Relation of Conf2-Conf1 and collConf",xlab="Confidence2-Confidence1",ylab="collConfidence")
 abline(lm(Coll_conf ~ (confidence2-confidence1), data = curdat), col = "blue")
 
 
@@ -548,7 +650,8 @@ ggplot(contrastD, aes(x=targetContrast, fill=agree)) +
   scale_y_continuous(limits = count_scale$lim, breaks = count_scale$breaks) +
   scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
     xlab("Target contrasts") + ylab("Count") + theme_custom()
-ggsave(file=paste0(PlotDir,"hist_agree_contrast.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"hist_agree_contrast.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 # plot switch as a function of target contrast (only disagreement!)
 contrastD_dt = contrastD[contrastD$agree=="disagree",]
 ggplot(contrastD_dt, aes(x=contrastD_dt$targetContrast, fill=contrastD_dt$switch)) +
@@ -556,7 +659,8 @@ ggplot(contrastD_dt, aes(x=contrastD_dt$targetContrast, fill=contrastD_dt$switch
   scale_y_continuous(limits = count_scale_dt$lim, breaks = count_scale_dt$breaks) +
   scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
   xlab("Target contrasts") + ylab("Count") + theme_custom()
-ggsave(file=paste0(PlotDir,"hist_contrast_switch_dt.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"hist_contrast_switch_dt.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 # Percentage of (dis)agreement trials relative to all trials
 perc_dt          = round(100*(dim(dt)[1]/dim(curdat)[1])) #40% in exp #39% in pilot
@@ -625,7 +729,8 @@ print(plotSE(df=conf_all_sum,xvar=conf_all_sum$targetContrast,yvar=conf_all_sum$
              manual_col=c("steelblue1", "darkgreen"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
              scale_shape_manual(values=c(16,16))+
              xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
-ggsave(file=paste0(PlotDir,"conf_agree",".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"conf_agree",".png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
 # 1b. Split by agreement and accuracy (only collective decision)
@@ -649,7 +754,8 @@ print(plotSE(df=conf_all_sum_acc,xvar=conf_all_sum_acc$targetContrast,yvar=conf_
              manual_col=c("red", "green"),linevar=c("dotted","solid"),sizevar=c(3,3),disco=FALSE)+
              scale_shape_manual(values=c(16,16))+
              xlab("Target contrasts") + ylab("Confidence level") + theme_custom())
-ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",".png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",".png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
 # 2. ACCURACY AND CONFIDENCE as a function of AGREEMENT / SWITCH
@@ -676,7 +782,8 @@ ggplot(conf_all_sum_acc_sw, aes(x=targetContrast, y=value, color=variable, shape
   scale_y_continuous(limits = acc_scale$lim, breaks=acc_scale$breaks)+
   scale_x_continuous(breaks=target_scale$breaks, labels = target_scale$labels)+
   xlab("Target contrasts") + ylab("Accuracy") + theme_custom()
-ggsave(file=paste0(PlotDir,"acc_agree_switch.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"acc_agree_switch.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
 # 2b. Confidence split by agreement and switch (only A1 and collective decisions)
@@ -702,7 +809,8 @@ ggplot(conf_all_sum_sw, aes(x=targetContrast, y=value, color=variable, shape=swi
   scale_y_continuous(limits = conf_scale$lim, breaks=conf_scale$breaks)+
   scale_x_continuous(breaks=target_scale$breaks, labels = target_scale$labels)+
   xlab("Target contrasts") + ylab("Confidence") + theme_custom()
-ggsave(file=paste0(PlotDir,"conf_agree_switch.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"conf_agree_switch.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
 # 3. mean ACCURACY AND CONFIDENCE as a function of AGREEMENT / SWITCH (bar plots)
@@ -729,7 +837,8 @@ ggplot(data=csaAcc_data, aes(x=variable, y=value, fill=agree)) +
   geom_rect(aes(fill=switch),xmin =-Inf,xmax=Inf,ymin=-Inf,ymax=Inf,alpha = 0.3) + #alpha = background opacity
   geom_bar(stat="identity", position=position_dodge2(width = 0.5, preserve = "single"), color = "black") +
   scale_fill_manual(values=bar_colors) +
-  geom_errorbar(data=csaAcc_data, mapping=aes(x=variable, ymin=value-se, ymax=value+se), size=0.5, width=0.1, color="black", position=position_dodge(.9)) + 
+  geom_errorbar(data=csaAcc_data, mapping=aes(x=variable, ymin=value-se, ymax=value+se), 
+                size=0.5, width=0.1, color="black", position=position_dodge(.9)) + 
   facet_grid(. ~ as.factor(switch)) +
   scale_y_continuous(limits = acc_scale2$lim, breaks=acc_scale2$breaks)+
   xlab("Decision") + ylab("Accuracy") + 
@@ -737,7 +846,8 @@ ggplot(data=csaAcc_data, aes(x=variable, y=value, fill=agree)) +
         panel.grid.minor = element_line(color = "black", size = .25),
         panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank())
-ggsave(file=paste0(PlotDir,"Accuracy_Agree+Switch.png"), dpi = 300, units=c("cm"), height =20, width = 30)
+if (save_plots) {ggsave(file=paste0(PlotDir,"Accuracy_Agree+Switch.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 30)}
 
 
 # 3b. Confidence split by agreement and switch (only A1 and collective decisions)
@@ -769,7 +879,8 @@ ggplot(data=csa_data, aes(x=variable, y=value, fill=agree)) +
   geom_rect(aes(fill=switch),xmin =-Inf,xmax=Inf,ymin=-Inf,ymax=Inf,alpha = 0.3) + #alpha = background opacity
   geom_bar(stat="identity", position=position_dodge2(width = 0.5, preserve = "single"), color = "black") +
   scale_fill_manual(values=bar_colors) +
-  geom_errorbar(data=csa_data, mapping=aes(x=variable, ymin=value-se, ymax=value+se), size=0.5, width=0.1, color="black", position=position_dodge(.9)) + 
+  geom_errorbar(data=csa_data, mapping=aes(x=variable, ymin=value-se, ymax=value+se), 
+                size=0.5, width=0.1, color="black", position=position_dodge(.9)) + 
   facet_grid(. ~ as.factor(switch)) + # separate facets for switch / no switch
   scale_y_discrete(limits = factor(conf_scale2$breaks), breaks=conf_scale2$breaks) +
   xlab("Decision") + ylab("Confidence") + 
@@ -777,7 +888,8 @@ ggplot(data=csa_data, aes(x=variable, y=value, fill=agree)) +
         panel.grid.minor = element_line(color = "black", size = .25),
         panel.grid.major.x = element_blank(),
         panel.grid.minor.x = element_blank())
-ggsave(file=paste0(PlotDir,"Confidence_Agree+Switch.png"), dpi = 300, units=c("cm"), height =20, width = 30)
+if (save_plots) {ggsave(file=paste0(PlotDir,"Confidence_Agree+Switch.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 30)}
 
 
 # 4. CONFIDENCE DIFFERENCE for A1 and A2
@@ -803,7 +915,8 @@ if(pair_plots){
             scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
             xlab("decision")+ylab("Confidence level")+
             ggtitle(paste0("Confidence with no switch - disagreement trials n.",as.character(p))))
-    ggsave(file=sprintf(paste0("%sconf_noSwitch_disagree ",as.character(p),coll_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+    if (save_plots) {ggsave(file=sprintf(paste0("%sconf_noSwitch_disagree ",as.character(p),coll_lab,".png"),PlotDir), 
+                            dpi = 300, units=c("cm"), height =20, width = 20)}
   }
   
   # Switch plots, per pair (disagreement trials)
@@ -815,7 +928,8 @@ if(pair_plots){
             scale_y_discrete(limits = factor(conf_scale$breaks), breaks=conf_scale$breaks)+
             xlab("decision")+ylab("Confidence level")+
             ggtitle(paste0("Confidence with switch - disagreement trials n.",as.character(p))))
-    ggsave(file=sprintf(paste0("%sconf_Switch_disagree ",as.character(p),coll_lab,".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+    if (save_plots) {ggsave(file=sprintf(paste0("%sconf_Switch_disagree ",as.character(p),coll_lab,".png"),PlotDir), 
+                            dpi = 300, units=c("cm"), height =20, width = 20)}
   }
 }
 
@@ -859,14 +973,16 @@ print(plotSE(df=d,xvar=d$conf2,yvar=d$var,
              xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (2nd decision) "),
              manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
         xlab("agent confidence") + ylab("time [s]") + theme_custom())
-ggsave(file=sprintf(paste0("%stime_conf_2d",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=sprintf(paste0("%stime_conf_2d",".png"),PlotDir), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 print(plotSE(df=dColl,xvar=dColl$confColl,yvar=dColl$var,
              colorvar=dColl$var_lab,shapevar=dColl$var_lab,
              xscale=conf_scale,yscale=time_scale,titlestr=paste0("MT/RT as a function of confidence (coll decision) "),
              manual_col=c("grey", "black"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=TRUE) +
         xlab("agent confidence") + ylab("time [s]") + theme_custom())
-ggsave(file=sprintf(paste0("%stime_conf_coll",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=sprintf(paste0("%stime_conf_coll",".png"),PlotDir), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
 # 6. RT and MT as a function of TARGET CONTRAST
@@ -900,7 +1016,8 @@ for (v in 1:2) {
                xscale=target_scale,yscale=mov_scale,titlestr=paste(lab," as a function of task difficulty"),
                manual_col=c("steelblue1", "darkgreen"),linevar=c("dashed","solid"),sizevar=c(3,3),disco=FALSE)+
           xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
-  ggsave(file=sprintf(paste0("%s",lab,"_ave.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+  if (save_plots) {ggsave(file=sprintf(paste0("%s",lab,"_ave.png"),PlotDir), 
+                          dpi = 300, units=c("cm"), height =20, width = 20)}
 }
 
 # 6b. RT and MT per pair
@@ -945,7 +1062,8 @@ for (m in 1:2){
                  xscale=target_scale,yscale=mov_scale,titlestr=paste(as.character(g)," ",lab," as a function of task difficulty"),
                  manual_col=c("blue3", "gold2", "darkgreen"),linevar=c("dotted","dashed","solid"),sizevar=c(3,3,3),disco=FALSE)+
             xlab("Target contrasts") + ylab(paste("Mean ",lab," [s]")) + theme_custom())
-    ggsave(file=sprintf(paste0("%s",as.character(g),"_",lab,"_ave.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)
+    if (save_plots) {ggsave(file=sprintf(paste0("%s",as.character(g),"_",lab,"_ave.png"),PlotDir), 
+                            dpi = 300, units=c("cm"), height =20, width = 20)}
   }
 }
 
@@ -990,7 +1108,8 @@ print(ggplot(data=switch_sum, aes(x=switch, y=value, fill=variable, color = vari
         xlab("Switching") + ylab("Confidence delta") + 
         theme(legend.position = "none") + theme_custom()
 )
-ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_Switching.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_Switching.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 # variable = confidence 1
 print(ggplot(data=switchC1_sum, aes(x=switch, y=value, fill=variable, color = variable)) +
         ggtitle("Switching as a function of confidence delta (only disagreement)") +
@@ -1001,7 +1120,8 @@ print(ggplot(data=switchC1_sum, aes(x=switch, y=value, fill=variable, color = va
         xlab("Switching") + ylab("Confidence 1") + 
         theme(legend.position = "none") + theme_custom()
 )
-ggsave(file=paste0(PlotDir,"Conf1_Switching.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"Conf1_Switching.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
 # COLLECTIVE ADJUSTMENT PLOTS (confidence A1 compared to collective confidence)
@@ -1018,9 +1138,12 @@ sub_switch$agree = as.factor(sub_switch$agree)
 sub_noswitch$agree = as.factor(sub_noswitch$agree)
 sub_dt$agree = as.factor(sub_dt$agree)
 sub_dt$switch = as.factor(sub_dt$switch)
-names(sub_switch) = c("Pair","Trial","Agreement","Switch","Accuracy1", "Accuracy2","coll. Accuracy", "Confidence2", "Coll. Confidence","Confidence1", "Conf. 2 - Conf. 1","coll. Conf. - Conf. 1")
-names(sub_noswitch) = c("Pair","Trial","Agreement","Switch","Accuracy1", "Accuracy2","coll. Accuracy","Confidence2", "Coll. Confidence","Confidence1", "Conf. 2 - Conf. 1","coll. Conf. - Conf. 1")
-names(sub_dt) = c("Pair","Trial","Agreement","Switch","Accuracy1", "Accuracy2","coll. Accuracy","Confidence2", "Coll. Confidence","Confidence1", "Conf. 2 - Conf. 1","coll. Conf. - Conf. 1")
+names(sub_switch) = c("Pair","Trial","Agreement","Switch","Accuracy1", "Accuracy2","coll. Accuracy", 
+                      "Confidence2", "Coll. Confidence","Confidence1", "Conf. 2 - Conf. 1","coll. Conf. - Conf. 1")
+names(sub_noswitch) = c("Pair","Trial","Agreement","Switch","Accuracy1", "Accuracy2","coll. Accuracy",
+                        "Confidence2", "Coll. Confidence","Confidence1", "Conf. 2 - Conf. 1","coll. Conf. - Conf. 1")
+names(sub_dt) = c("Pair","Trial","Agreement","Switch","Accuracy1", "Accuracy2","coll. Accuracy",
+                  "Confidence2", "Coll. Confidence","Confidence1", "Conf. 2 - Conf. 1","coll. Conf. - Conf. 1")
 levels(sub_switch[,"Agreement"]) = c("disagree")
 levels(sub_dt[,"Agreement"]) = c("disagree")
 levels(sub_dt[,"Switch"]) = c("no switch", "switch")
@@ -1038,7 +1161,8 @@ print(ggplot(sub_dt, aes(x=sub_dt[,"Conf. 2 - Conf. 1"], y=sub_dt[,"coll. Conf. 
         xlab("Confidence 2 - Confidence 1") + ylab("collective Confidence - Confidence 1") +
         ggtitle("Conf. 2 - Conf. 1, disagreement trials") +
         theme(legend.position = "none"))
-ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_Disagree.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_Disagree.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 # SWITCH: subjective confidence (switch exists only for disagreement)
 print(ggplot(sub_switch, aes(x=sub_switch[,"Conf. 2 - Conf. 1"], y=sub_switch[,"coll. Conf. - Conf. 1"]))+
@@ -1048,10 +1172,12 @@ print(ggplot(sub_switch, aes(x=sub_switch[,"Conf. 2 - Conf. 1"], y=sub_switch[,"
         scale_x_continuous(limits = c(-5.5,5.5), breaks=seq(-5.5,5.5, by=1)) +
         xlab("Confidence 2 - Confidence 1") + ylab("collective Confidence - Confidence 1") +
         ggtitle("Conf. 2 - Conf. 1, switch trials"))
-ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_Switch.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_Switch.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 # NO SWITCH: subjective confidence (split by agree/disagree)
-print(ggplot(sub_noswitch, aes(x=sub_noswitch[,"Conf. 2 - Conf. 1"], y=sub_noswitch[,"coll. Conf. - Conf. 1"], color = sub_noswitch[,"Agreement"]))+
+print(ggplot(sub_noswitch, aes(x=sub_noswitch[,"Conf. 2 - Conf. 1"], y=sub_noswitch[,"coll. Conf. - Conf. 1"], 
+                               color = sub_noswitch[,"Agreement"]))+
         geom_point(size = 1,position=position_jitter(width = .1, height = .1)) + 
         stat_smooth(method="lm",se=TRUE) +
         scale_color_manual(values=c("limegreen","red4")) +
@@ -1060,7 +1186,8 @@ print(ggplot(sub_noswitch, aes(x=sub_noswitch[,"Conf. 2 - Conf. 1"], y=sub_noswi
         xlab("Confidence 2 - Confidence 1") + ylab("collective Confidence - Confidence 1") +
         ggtitle("Conf. 2 - Conf. 1, no switch trials") +
         theme(legend.position = "none"))
-ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_NoSwitch.png"), dpi = 300, units=c("cm"), height =20, width = 20)
+if (save_plots) {ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_NoSwitch.png"), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
 
@@ -1136,7 +1263,8 @@ if(patel_mt){
   
   #merge
   pcon                = rbind(pcon_A1,pcon_A2); names(pcon) = c("pair","var_pCon","N_pCon","pCon","sd_pCon","se_pCon","ci_pCon","agent")
-  icon                = rbind(icon_A1,icon_A2); names(icon) = c("pair","var_iCon","N_iCon","iCon","sd_iCon","se_iCon","ci_iCon","agent");icon = icon[,c("var_iCon","N_iCon","iCon","sd_iCon","se_iCon","ci_iCon")];
+  icon                = rbind(icon_A1,icon_A2); names(icon) = c("pair","var_iCon","N_iCon","iCon","sd_iCon","se_iCon","ci_iCon","agent");
+  icon                = icon[,c("var_iCon","N_iCon","iCon","sd_iCon","se_iCon","ci_iCon")];
   mergissimo          = cbind(pcon,icon)
   mergissimo_sub      = mergissimo[mergissimo$var_pCon!="diff_mt_signedAve",]
   mergissimo_sub$iconHigh = as.numeric(mergissimo_sub$pCon[mergissimo_sub$var_pCon=="agent_confidence"] < mergissimo_sub$iCon[mergissimo_sub$var_iCon=="conf_aveBlock"])
@@ -1153,5 +1281,6 @@ if(patel_mt){
           geom_point(aes(color=inter_agent_pair,shape=as.factor(iconHigh),size=3)) + 
           labs( y = "Difference in MT (A1 - A2)", x = "Agent and Pair"))
   # scale_color_brewer(palette = "Paired"))
-  ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",".png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 30)
+  if (save_plots) {ggsave(file=sprintf(paste0("%sdiff_mt_pCon_iCon",".png"),PlotDir), 
+                          dpi = 300, units=c("cm"), height =20, width = 30)}
 }
