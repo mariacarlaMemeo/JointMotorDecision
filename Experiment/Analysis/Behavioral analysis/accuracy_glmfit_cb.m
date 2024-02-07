@@ -16,8 +16,8 @@
 close all; clear variables; clc;
 %--------------------------------------------------------------------------
 % Flags
-save_plot   = 1;
-benefitType = 1; % 1=individual benefit, 2=collective (original Bahrami)
+save_plot   = 0;
+benefitType = 2; % 1 or 2 -> 1=individual benefit, 2=collective (Bahrami)
 if benefitType == 1
     ben_lab = '_collBen';
 elseif benefitType == 2
@@ -53,6 +53,10 @@ smax_coll   = []; smin_coll  = [];
 smax_1dec   = []; smin_1dec  = [];
 dmax_coll   = []; dmin_coll  = [];
 dmax_1dec   = []; dmin_1dec  = [];
+% make table to save info on min/max agent per pair
+sz = [length(ptc) 3];
+varTypes = ["double","string","string"]; varNames = ["Pair","maxAgent","minAgent"];
+minmaxTable = table('Size',sz,'VariableTypes',varTypes,'VariableNames',varNames);
 
 % Window analysis (length: default.w_lgt)
 default.step        = 8;
@@ -330,6 +334,11 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         amax = 'Y';
         amin = 'B';
     end
+
+    % save infor on min/max agent in table
+    minmaxTable(p,1)={str2double(each(p).name(2:4))};
+    minmaxTable(p,2)={amax};
+    minmaxTable(p,3)={amin};
 
     %%% Collective benefit
     % sdyad ([mean or max] dyad slope) / smax (slope of more sensitive agent)
@@ -624,6 +633,8 @@ if save_plot
 end
 % -------------------------------------------------------------------------
 
+% save min/max table as Excel file
+writetable(minmaxTable,'minmaxTable.xlsx');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STATISTICAL TESTS

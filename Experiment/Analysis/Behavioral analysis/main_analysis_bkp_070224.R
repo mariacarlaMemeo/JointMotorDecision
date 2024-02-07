@@ -16,29 +16,15 @@ graphics.off()
 # Set flags
 save_plots = 0;
 
-# ### work on an individual theme for all plots --------------------------------
-# library(tidyverse)
-# library(showtext)
-# font_add_google("Fira Sans", "firasans")
-# showtext_auto()
-# theme_customs <- theme(
-#   text = element_text(family = 'firasans', size = 16),
-#   plot.title.position = 'plot',
-#   plot.title = element_text(
-#     face = 'bold', size = 16,
-#     #colour = thematic::okabe_ito(8)[6],
-#     #margin = margin(t = 2, r = 0, b = 7, l = 0, unit = "mm")
-#   ),
-# )
-# theme_set(theme_minimal() + theme_customs)
-# ### --------------------------------------------------------------------------
-
 # Import libraries and load packages
 library(doBy)
 pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
           "MuMIn","BayesFactor","permuco","RVAideMemoire","this.path","ggiraphExtra",
-          "RColorBrewer","stringr","knitr","multcomp","ggplot2","car","dplyr",
-          "plyr","lmerTest","ggrepel","sjstats","reshape2","readxl","writexl","cellranger")
+          "RColorBrewer","readxl","stringr","knitr","multcomp","ggplot2","car","dplyr",
+          "plyr","lmerTest","ggrepel","sjstats","reshape2","writexl","cellranger")
+# further potentially useful packages for plotting:
+#install.packages("remotes")
+#remotes::install_github("coolbutuseless/ggpattern")
 
 # Check how many packages failed to load
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
@@ -48,9 +34,6 @@ local_user = 2;    # set current user (1=MC, 2=LA)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (Patel et al., 2012)
 pair_plots = FALSE # if TRUE: shows the confidence for each pair and each decision
 rt_mt      = TRUE  # if TRUE: includes RT and MT plots
-
-# read info about max./min. agent from Excel file (this is a temporary solution)
-minmax <- read_excel("minmaxTable.xlsx")
 
 # Set paths (*** ADJUST TO LOCAL COMPUTER with flag local_user ***)
 # ! for DataDir, always use the folder with the pre-processed Excel files (see Drive) !
@@ -120,29 +103,13 @@ for (row in 1:dim(curdat)[1]) {
     acc2[row]      = curdat[row,"Y_acc"]
   }
 }
-# Add computed values (decision, confidence, accuracy) for 1st/2nd decision
+# Add computed values (decision, confidence, accuracy) for 1st/2nd decision at end of curdat
 curdat$decision1   = decision1
 curdat$decision2   = decision2
 curdat$confidence1 = conf1
 curdat$confidence2 = conf2
 curdat$accuracy1   = acc1
 curdat$accuracy2   = acc2
-
-# Add columns on min/max agent (each for confidence and accuracy)
-curdat$maxConf = NA; curdat$maxAcc = NA; curdat$minConf = NA; curdat$minAcc = NA;
-for (p in unique(curdat$Pair)) { # p = pair
-  if (minmax[minmax$Pair==p,"maxAgent"] == "B") {
-    curdat[curdat$Pair==p,"maxConf"] = curdat[curdat$Pair==p,"B_conf"]
-    curdat[curdat$Pair==p,"minConf"] = curdat[curdat$Pair==p,"Y_conf"]
-    curdat[curdat$Pair==p,"maxAcc"] = curdat[curdat$Pair==p,"B_acc"]
-    curdat[curdat$Pair==p,"minAcc"] = curdat[curdat$Pair==p,"Y_acc"]
-  } else {
-    curdat[curdat$Pair==p,"maxConf"] = curdat[curdat$Pair==p,"Y_conf"]
-    curdat[curdat$Pair==p,"minConf"] = curdat[curdat$Pair==p,"B_conf"]
-    curdat[curdat$Pair==p,"maxAcc"] = curdat[curdat$Pair==p,"Y_acc"]
-    curdat[curdat$Pair==p,"minAcc"] = curdat[curdat$Pair==p,"B_acc"]
-  }
-}
 
 # Add columns for the confidence difference values (deltas):
 # confidence2 - confidence1:
@@ -179,8 +146,6 @@ switch_colors = c("lightcoral", "lightgreen")
 bar_colors    = c("gray88", "gray44", "lightcoral", "lightgreen")
 con_colors    = c("#D1E5F0", "#92C5DE", "#4393C3", "#2166AC")
 con_scale     = list("lim"=c(0,125),"breaks"=seq(0,125, by=25))
-col_12C       = RColorBrewer::brewer.pal(5, "Paired")[3:5] # light green,dark green,light red
-col_mimaC     = RColorBrewer::brewer.pal(5, "Paired")[c(2,1,5)] # light green,dark green,light red
 
 
 # Initial checks on confidence distribution, target choice and accuracy
@@ -363,120 +328,130 @@ for(confVar in 1:3) {
 }
 
 
-#####################################################
-#### FOCUS ON CONFIDENCE - ACCURACY RELATIONSHIP ####
 # 2b. Accuracy as function of difficulty (target contrast)
 # -------------------------------------------------------
-# First plot all three decisions into the same plot
-
-# Sub-select? if so: agreement or disagreement trials?
-subselect     = 1; # 1=yes,   0=no
-sub_agreement = 1; # 1=agree, 0=disagree 
-# Which decision types to plot?
-dec2plot      = 2; # 1=1st/2nd/coll, 2=max,min,coll
-# Prepare data set accordingly
+# first plot all three decisions into the same plot
+threeCol  = RColorBrewer::brewer.pal(5, "Paired")[3:5] # light green, dark green, light red
+# prepare dataset and optionally subselect agree/disagree
+subselect = 1; sub_agreement = 1; #  subselect/sub_agreement: yes/agree(1) or no/disagree(0) 
 if (subselect) {
   if (sub_agreement) {
     at      = curdat[curdat$agree==1,]
-    data_coac = at[,c("Pair","targetContrast",
-                      "B_conf","B_acc","Y_conf","Y_acc","maxConf","maxAcc","minConf","minAcc",
-                      "confidence1","confidence2","Coll_conf","accuracy1", "accuracy2", "Coll_acc")]
-    agree_lab = '_agree'; agree_title = '- agreement'; 
+    data_coac = at[,c("Pair","confidence1","confidence2","Coll_conf",
+                      "accuracy1", "accuracy2", "Coll_acc", "targetContrast")]
+    agree_lab = '_agree'; agree_title = '- agreement';
   } else {
     dt      = curdat[curdat$agree==-1,]
-    data_coac = dt[,c("Pair","targetContrast",
-                      "B_conf","B_acc","Y_conf","Y_acc","maxConf","maxAcc","minConf","minAcc",
-                      "confidence1","confidence2","Coll_conf","accuracy1", "accuracy2", "Coll_acc")]
+    data_coac = dt[,c("Pair","confidence1","confidence2","Coll_conf",
+                      "accuracy1", "accuracy2", "Coll_acc", "targetContrast")]
     agree_lab = '_disagree'; agree_title = '- disagreement';
   }
 } else {
-  data_coac = curdat[,c("Pair","targetContrast",
-                        "B_conf","B_acc","Y_conf","Y_acc","maxConf","maxAcc","minConf","minAcc",
-                        "confidence1","confidence2","Coll_conf","accuracy1", "accuracy2", "Coll_acc")]
+  data_coac = curdat[,c("Pair","confidence1","confidence2","Coll_conf",
+                        "accuracy1", "accuracy2", "Coll_acc", "targetContrast")]
   agree_lab = ''; agree_title = '';
 }
-
-# transform (subset) data into long format
 data_coac_long = melt(data_coac, id=c("Pair", "targetContrast"))
-# compute SUMMARY statistics, PER PAIR
+
+# previous:
+#data_coac_sum  = summarySE(data_coac_long,measurevar="value",groupvars=c("targetContrast","variable"))
+# data_co_sum = data_coac_sum %>% filter(value > 1)
+# data_ac_sum = data_coac_sum %>% filter(value < 1)
+
+# new
 data_coac_sum  = summarySE(data_coac_long,measurevar="value",groupvars=c("Pair","targetContrast","variable"))
-
-# create separate data subsets for confidence and accuracy
-if (dec2plot==1) {
-  data_co = data_coac_sum[data_coac_sum$variable=="confidence1" | data_coac_sum$variable=="confidence2" | data_coac_sum$variable=="Coll_conf",]
-  data_ac = data_coac_sum[data_coac_sum$variable=="accuracy1" | data_coac_sum$variable=="accuracy2" | data_coac_sum$variable=="Coll_acc",]
-  threeCol= col_12C; dec_lab = '_12'; 
-} else {
-  data_co = data_coac_sum[data_coac_sum$variable=="maxConf" | data_coac_sum$variable=="minConf" | data_coac_sum$variable=="Coll_conf",]
-  data_ac = data_coac_sum[data_coac_sum$variable=="maxAcc" | data_coac_sum$variable=="minAcc" | data_coac_sum$variable=="Coll_acc",]
-  threeCol= col_mimaC; dec_lab = '_mima';
-}
-
-# filter subsets to avoid having value = 0 in denominator of caR (happens if only 1 value for accuracy)
+data_co = data_coac_sum[data_coac_sum$variable=="confidence1" | data_coac_sum$variable=="confidence2" | data_coac_sum$variable=="Coll_conf",]
+data_ac = data_coac_sum[data_coac_sum$variable=="accuracy1" | data_coac_sum$variable=="accuracy2" | data_coac_sum$variable=="Coll_acc",]
+# filter if value = 0
 data_ac_filt = data_ac[data_ac$value>0,]
 data_co_filt = data_co[data_ac$value>0,]
-# create C-A ratio data set, based on data_co and data_ac
+
+
 data_caR = data_co_filt
-data_caR$caR = data_co_filt$value/data_ac_filt$value # compute ratio per row
-
-# change variable names in caR
-if (dec2plot==1) {
-  data_caR$variable=factor(data_caR$variable)
-  levels(data_caR$variable)=c("decision1","decision2","decisionColl")
-} else {
-  data_caR$variable=factor(data_caR$variable)
-  levels(data_caR$variable)=c("decisionMax","decisionMin","decisionColl")
-}
-
-# compute SUMMARY statistics, ACROSS PAIRS
+data_caR$caR = data_co_filt$value/data_ac_filt$value
+# re-name variable in D1, D2, collD
 data_caR_sum = summarySE(data_caR,measurevar="caR",groupvars=c("targetContrast","variable")) 
+
+
 data_co_sum = summarySE(data_co_filt,measurevar="value",groupvars=c("targetContrast","variable")) 
 data_ac_sum = summarySE(data_ac_filt,measurevar="value",groupvars=c("targetContrast","variable")) 
 
-# 1. plot CONFIDENCE by target contrast for d1,d2,dColl (within one plot)
-ggplot(data_co_sum, aes(x = targetContrast, y = value)) + 
+
+# # reshape and rename - confidence subset
+# data_co_sum = reshape_wider(
+#   data_co_sum, id_cols = "targetContrast", names_from = "variable",
+#   values_from = c("value", "sd","se","ci"))
+# names(data_co_sum)[names(data_co_sum)=="value_confidence1"] = "confidenceD1";
+# names(data_co_sum)[names(data_co_sum)=="value_confidence2"] = "confidenceD2";
+# names(data_co_sum)[names(data_co_sum)=="value_Coll_conf"] = "confidenceDColl";
+# # reshape and rename - accuracy subset
+# data_ac_sum = reshape_wider(
+#   data_ac_sum, id_cols = "targetContrast", names_from = "variable",
+#   values_from = c("value", "sd","se","ci"))
+# names(data_ac_sum)[names(data_ac_sum)=="value_accuracy1"] = "accuracyD1";
+# names(data_ac_sum)[names(data_ac_sum)=="value_accuracy2"] = "accuracyD2";
+# names(data_ac_sum)[names(data_ac_sum)=="value_Coll_acc"] = "accuracyDColl";
+
+ggplot(data_co_sum, aes(x = targetContrast, y = value)) +
   geom_line(data=data_co_sum, aes(y = value, color = variable), lwd = .7) + 
   geom_point(data=data_co_sum, aes(y = value, color = variable)) +
-  scale_color_manual(values = threeCol) + 
   geom_ribbon(data=data_co_sum, aes(ymin = value-se, ymax = value+se, fill = variable),
-              alpha = .3, color = "transparent") +
-  scale_fill_manual(values = threeCol) + 
-  xlim(0.115, 0.250) + ylim(2.0,4.75) +
-  ggtitle(paste("Individual and collective confidence",agree_title)) +
-  labs(x = "Target contrast", y = "Confidence") + theme_custom()
-if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_ConfByContrast",dec_lab,agree_lab,".png"),PlotDir), 
-                        dpi = 300, units=c("cm"), height =20, width = 20)}
+              alpha = .3, color = "transparent")
 
-# 2. plot ACCURACY by target contrast for d1,d2,dColl (within one plot)
 ggplot(data_ac_sum, aes(x = targetContrast, y = value)) +
   geom_line(data=data_ac_sum, aes(y = value, color = variable), lwd = .7) + 
-  geom_point(data=data_ac_sum, aes(y = value, color = variable)) + 
-  scale_color_manual(values = threeCol) +
+  geom_point(data=data_ac_sum, aes(y = value, color = variable)) +
   geom_ribbon(data=data_ac_sum, aes(ymin = value-se, ymax = value+se, fill = variable),
-              alpha = .3, color = "transparent") +
-  scale_fill_manual(values = threeCol) +
-  xlim(0.115, 0.250) + ylim(0.3,1) +
-  ggtitle(paste("Individual and collective accuracy",agree_title)) +
-  labs(x = "Target contrast", y = "Accuracy") + theme_custom()
-if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_AccByContrast",dec_lab,agree_lab,".png"),PlotDir), 
-                        dpi = 300, units=c("cm"), height =20, width = 20)}
+              alpha = .3, color = "transparent")
 
-# 3. plot C-A RATIO by target contrast for d1,d2,dColl (within one plot)
 ggplot(data_caR_sum, aes(x = targetContrast, y = caR)) +
   geom_line(data=data_caR_sum, aes(y = caR, color = variable), lwd = .7) + 
   geom_point(data=data_caR_sum, aes(y = caR, color = variable)) +
-  scale_color_manual(values = threeCol) +
   geom_ribbon(data=data_caR_sum, aes(ymin = caR-se, ymax = caR+se, fill = variable),
-              alpha = .3, color = "transparent")+
-  scale_fill_manual(values = threeCol) +
-  xlim(0.115, 0.250) + ylim(3,9.5) +
-  ggtitle(paste("Individual and collective CA-ratio",agree_title)) +
-  labs(x = "Target contrast", y = "Confidence/Accuracy") + theme_custom()
-if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_ConfRContrast",dec_lab,agree_lab,".png"),PlotDir), 
+              alpha = .3, color = "transparent")
+
+
+# plot confidence by target contrast for d1,d2,dColl (within one plot)
+ggplot(data_co_sum, aes(x = targetContrast)) +
+  geom_line(aes(y = confidenceD1), color = threeCol[1], lwd = .7) + 
+  geom_point(aes(y = confidenceD1), color = threeCol[1]) +
+  geom_ribbon(aes(ymin = confidenceD1-se_confidence1, ymax = confidenceD1+se_confidence1),
+              alpha = .3, fill = threeCol[1], color = "transparent") +
+  geom_line(aes(y = confidenceD2), color = threeCol[2], lwd = .7) +
+  geom_point(aes(y = confidenceD2),color = threeCol[2]) +
+  geom_ribbon(aes(ymin = confidenceD2-se_confidence2, ymax = confidenceD2+se_confidence2),
+              alpha = .3, fill = threeCol[2], color = "transparent") +
+  geom_line(aes(y = confidenceDColl), color = threeCol[3], lwd = .7) +
+  geom_point(aes(y = confidenceDColl),color = threeCol[3]) +
+  geom_ribbon(aes(ymin = confidenceDColl-se_Coll_conf, ymax = confidenceDColl+se_Coll_conf),
+              alpha = .3, fill = threeCol[3], color = "transparent") +
+  xlim(0.115, 0.250) + ylim(2.0,4.75) +
+  labs(x = "Target contrast", y = "Confidence") + ggtitle(paste("Individual and collective confidence",agree_title)) +
+  theme(legend.position="none")
+if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_ConfByContrast",agree_lab,".png"),PlotDir), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
+
+# plot accuracy by target contrast for d1,d2,dColl (within one plot)
+ggplot(data_ac_sum, aes(x = targetContrast)) +
+  geom_line(aes(y = accuracyD1), color = threeCol[1], lwd = .7) + 
+  geom_point(aes(y = accuracyD1), color = threeCol[1]) +
+  geom_ribbon(aes(ymin = accuracyD1-se_accuracy1, ymax = accuracyD1+se_accuracy1),
+              alpha = .3, fill = threeCol[1], color = "transparent") +
+  geom_line(aes(y = accuracyD2), color = threeCol[2], lwd = .7) +
+  geom_point(aes(y = accuracyD2),color = threeCol[2]) +
+  geom_ribbon(aes(ymin = accuracyD2-se_accuracy2, ymax = accuracyD2+se_accuracy2),
+              alpha = .3, fill = threeCol[2], color = "transparent") +
+  geom_line(aes(y = accuracyDColl), color = threeCol[3], lwd = .7) +
+  geom_point(aes(y = accuracyDColl),color = threeCol[3]) +
+  geom_ribbon(aes(ymin = accuracyDColl-se_Coll_acc, ymax = accuracyDColl+se_Coll_acc),
+              alpha = .3, fill = threeCol[3], color = "transparent") +
+  xlim(0.115, 0.250) + ylim(0.4,1) +
+  labs(x = "Target contrast", y = "Accuracy") + ggtitle(paste("Individual and collective accuracy",agree_title)) +
+  theme(legend.position="none")
+if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_AccByContrast",agree_lab,".png"),PlotDir), 
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
-#######################################
 # now separate plots (one per decision)
 tar = "targetContrast" 
 for(confVar in 1:3) {
@@ -1007,13 +982,11 @@ if(pair_plots){
 # The new calculation is based on a velocity threshold: from now, we will use this final rt/mt. 
 # NOTE: The variables are related to the rt of the 1st and 2nd decision respectively (not to the agent).
 
-#XXX work on this for collective RT XXX check if summary stats are okay (need to include pair!?)
+#XXX work on this for collective RT
 
 # rt 2nd decision - calc the average, se, ci
 rt_conf_2d                = curdat[,c("confidence2","rt_final2")]
 rt_conf_2d_sum            = summarySE(rt_conf_2d,measurevar="rt_final2",groupvars=c("confidence2"))
-# rt_conf_2d                = curdat[,c("Pair","AgentTakingSecondDecision","confidence2","rt_final2")]
-# rt_conf_2d_sum            = summarySE(rt_conf_2d,measurevar="rt_final2",groupvars=c("Pair","AgentTakingSecondDecision","confidence2"))
 rt_conf_coll              = curdat[,c("Coll_conf","rt_finalColl")]
 rt_conf_coll_sum          = summarySE(rt_conf_coll,measurevar="rt_finalColl",groupvars=c("Coll_conf"))
 # mt 2nd decision - calc the average, se, ci
