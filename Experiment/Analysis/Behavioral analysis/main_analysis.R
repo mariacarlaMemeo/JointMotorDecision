@@ -1,5 +1,5 @@
 # ==============================================================================
-# Analysis of JMD study (JMD=joint motor decisions)
+# Analysis of JMD study (JMD=joint motor decisions) - behavioral data
 # Experiment: conducted in June 2023 @IIT Genova
 # Participants: N=32 (16 pairs) - 1 pair (S119) excluded, so 15 pairs
 # Script: written by Mariacarla Memeo & Laura Schmitz
@@ -13,8 +13,8 @@
 rm(list = ls())
 graphics.off()
 
-# Set flags
-save_plots = 0;
+# Save all plots?
+save_plots = 0
 
 # ### work on an individual theme for all plots --------------------------------
 # library(tidyverse)
@@ -45,15 +45,14 @@ sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Set flags
 local_user = 2;    # set current user (1=MC, 2=LA)
-patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (Patel et al., 2012)
-pair_plots = FALSE # if TRUE: shows the confidence for each pair and each decision
-rt_mt      = TRUE  # if TRUE: includes RT and MT plots
+patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (Patel 2012)
+pair_plots = FALSE # if TRUE: shows the confidence for each pair per decision
 
-# read info about max./min. agent from Excel file (this is a temporary solution)
+# Import info about max./min. agent from Excel file (this is a temporary solution)
 minmax <- read_excel("minmaxTable.xlsx")
 
 # Set paths (*** ADJUST TO LOCAL COMPUTER with flag local_user ***)
-# ! for DataDir, always use the folder with the pre-processed Excel files (see Drive) !
+# ! we access (and save) everything on GitHub - DataDir=pre-processed Excel files (see Drive) !
 if (local_user == 1) {
   DataDir = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Data/Behavioral/preprocessed/" 
   AnaDir  = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
@@ -64,7 +63,7 @@ if (local_user == 1) {
   PlotDir = "C:/Users/Laura/GitHub/JointMotorDecision/Experiment/Analysis/Behavioral analysis/Behavioral plots/"
 }
 
-# Call needed functions/scripts 
+# Call functions
 source(paste0(AnaDir,'bind_all_excel.R'))
 source(paste0(AnaDir,'summarySE.R'))
 source(paste0(AnaDir,'theme_custom.R'))
@@ -82,7 +81,8 @@ decision2 = c(); conf2 = c(); acc2 = c()
 # Steps to achieve goal:
 # 1. Retrieve Excel files (1 per pair) that we created after cutting the trials (jmdData_S1xx.xlsx).
 #    These Excel files are based on the preprocessed .mat files (S1xx.mat) created with the toolbox.
-#    Both Excel and .mat files are located in the Processed folder.
+#    (Files located in DATA/Processed (on individual hard drives):
+#    S1xx.mat (preprocessed), S1xx.mat_post and jmdData_S1xx.xlsx (final files after cutting))
 # 2. Merge all Excel files into one big data frame (curdat) using the function bind_all_excel.
 
 # merge Excel files from all pairs into one data frame named "curdat"
@@ -90,14 +90,14 @@ curdat=as.data.frame(bind_all_excel(DataDir))
 curdat=curdat[,1:1061] # delete last columns (velocity peaks - different no. of columns across pairs)
 
 
-# Add additional vars to the data frame
-# -------------------------------------
+# Add additional vars to the curdat data frame
+# --------------------------------------------
 
-# Add a column (at the end) expressing whether agents Y and B agree in their decisions [1=agreement, -1=disagreement]
+# Add a column expressing whether agents B and Y agree in their decisions [1=agreement, -1=disagreement]
 curdat$agree                  = as.integer(curdat$B_decision == curdat$Y_decision)
 curdat$agree[curdat$agree==0] = -1
 
-# Add columns where decision, confidence, and accuracy are reported per 1st/2nd decision (rather than tied to agent Y and B)
+# Add columns where decision, confidence, and accuracy are reported per 1st/2nd decision (rather than tied to agent B/Y)
 for (row in 1:dim(curdat)[1]) {
   
   f_dec = curdat[row,"AgentTakingFirstDecision"] #agent taking first decision
@@ -128,7 +128,7 @@ curdat$confidence2 = conf2
 curdat$accuracy1   = acc1
 curdat$accuracy2   = acc2
 
-# Add columns on min/max agent (each for confidence and accuracy)
+# Add columns on worse(min)/better(max) agent (each for confidence and accuracy)
 curdat$maxConf = NA; curdat$maxAcc = NA; curdat$minConf = NA; curdat$minAcc = NA;
 for (p in unique(curdat$Pair)) { # p = pair
   if (minmax[minmax$Pair==p,"maxAgent"] == "B") {
@@ -144,24 +144,22 @@ for (p in unique(curdat$Pair)) { # p = pair
   }
 }
 
-# Add columns for the confidence difference values (deltas):
-# confidence2 - confidence1:
-# deltaC2C1 < 0 = conf2 < conf1; deltaC2C1 > 0 = conf2 > conf1
-curdat$deltaC2C1   = curdat$confidence2-curdat$confidence1
-# confidenceColl - confidence1:
-# deltaCcC1 < 0 = Coll_conf < conf1; deltaCcC1 > 0 = Coll_conf > conf1
-curdat$deltaCcC1   = curdat$Coll_conf-curdat$confidence1
-
-# Sanity check: just checks trials in which B=Y -> then also decision1 must be equal to decision2
+# Sanity check: just check trials in which B=Y -> then also decision1 must be equal to decision2
 all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$decision1 == curdat$decision2))
 
-# Add a column that indicates whether 1st and collective decision differ,
+# Add columns for the confidence difference values (deltas):
+# confidence2-confidence1: deltaC2C1<0 = conf2<conf1; deltaC2C1>0 = conf2>conf1
+curdat$deltaC2C1 = curdat$confidence2-curdat$confidence1
+# confidenceColl-confidence1: deltaCcC1<0 = Coll_conf<conf1; deltaCcC1>0 = Coll_conf>conf1
+curdat$deltaCcC1 = curdat$Coll_conf-curdat$confidence1
+
+# Add a column that indicates whether 1st and collective decision differ ("switch"),
 # i.e., whether A1 switched her decision (changed her mind) [1=switch, -1=no switch]
-switchR                         = as.integer(curdat$decision1 != curdat$Coll_decision)
+switchR = as.integer(curdat$decision1 != curdat$Coll_decision)
 # Sanity check: we already added a "switch" column in Matlab - now we check if columns are identical
 all(curdat$switch == switchR) # must be true
 # GO ON ONLY IF THE PREVIOUS IS TRUE
-curdat$switch[curdat$switch==0] = -1
+curdat$switch[curdat$switch==0] = -1 # now 1=switch, -1=no switch
 
 
 # Configure plot parameters
@@ -170,8 +168,7 @@ pd            = position_dodge(0.001)
 acc_scale     = list("lim"=c(0,1),"breaks"=seq(0,1, by=0.2))
 acc_scale2    = list("lim"=c(0,0.85),"breaks"=seq(0,0.85, by=0.1)) # for mean values up to ~0.8
 target_scale  = list("breaks"=sort(unique(curdat$targetContrast)),"labels"=sort(unique(curdat$targetContrast)))
-conf_scale    = list("lim"=c(1,6),"breaks"=seq(1,6, by=1))
-#conf_scale_la = list("lim"=c(1,6),"breaks"=seq(1,6, by=1), "labels"=c(1,2,3,4,5,6))
+conf_scale    = list("lim"=c(1,6),"breaks"=seq(1,6, by=1)) #"labels"=c(1,2,3,4,5,6))
 conf_scale2   = list("lim"=c(1,4.5),"breaks"=seq(1,4.5, by=1)) # for mean values up to ~4
 time_scale    = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
 mov_scale     = list("lim"=c(0.5,1.75),"breaks"=seq(0.5,1.75, by=0.25))
@@ -242,11 +239,10 @@ for(confVar in 1:3) {
   else if (confVar==2) {conf="confidence2"; acc="accuracy2"}
   else if (confVar==3) {conf="Coll_conf";   acc="Coll_acc"}
   
+  # XXX CHANGE SUMMARY STATS HERE: first average across pairs
   all_conf_acc        = curdat[,c(acc,conf)]
   all_conf_acc_sum    = summarySE(all_conf_acc,measurevar=acc,groupvars=c(conf))
-  # add weighted mean (just a try...)
-  # all_conf_acc_sum$wacc = (all_conf_acc_sum$N*all_conf_acc_sum[,c(acc)])/sum(all_conf_acc_sum$N)
-  
+
   print(ggplot(all_conf_acc_sum) +
           geom_bar( aes(x=get(conf), y=get(acc)), stat="identity", fill="grey", alpha=0.7) +
           geom_errorbar( aes(x=get(conf), ymin=get(acc)-se, ymax=get(acc)+se), width=0.2, colour="black", alpha=0.9, size=1)+
@@ -255,10 +251,8 @@ for(confVar in 1:3) {
           scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
           ggtitle(dec_names[confVar]) +
           ylab("Accuracy") + xlab("Confidence") + theme_custom())
-  # save the plot
   if (save_plots) {ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),".png"),PlotDir), 
                           dpi = 300, units=c("cm"), height =20, width = 20)}
-  
   
   # add agreement factor to the original bar plots
   data_ag     = curdat[,c(acc,conf,ag,sw)]
@@ -279,7 +273,6 @@ for(confVar in 1:3) {
                           dpi = 300, units=c("cm"), height =20, width = 20)}
  
   # now create scatter plots, with pair as additional factor
-  # add pair as a factor
   data_p     = curdat[,c(p,acc,conf)]
   data_sum_p = summarySE(data_p,measurevar=acc,groupvars=c(conf,p))
   print(ggplot(data_sum_p, aes(x=get(acc), y=get(conf), color=as.factor(get(p)))) + 
@@ -303,7 +296,6 @@ for(confVar in 1:3) {
           geom_smooth(method=lm,se=FALSE, size=0.5))
   if (save_plots) {ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents.png"),PlotDir), 
                           dpi = 300, units=c("cm"), height =20, width = 20)}
-  
   
   # split by participant and agreement
   data_agent_ag = curdat[,c(p,agent1,acc,conf,ag,sw)]
