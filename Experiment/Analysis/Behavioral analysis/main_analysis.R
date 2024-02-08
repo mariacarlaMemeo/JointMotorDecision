@@ -170,6 +170,7 @@ acc_scale2    = list("lim"=c(0,0.85),"breaks"=seq(0,0.85, by=0.1)) # for mean va
 target_scale  = list("breaks"=sort(unique(curdat$targetContrast)),"labels"=sort(unique(curdat$targetContrast)))
 conf_scale    = list("lim"=c(1,6),"breaks"=seq(1,6, by=1)) #"labels"=c(1,2,3,4,5,6))
 conf_scale2   = list("lim"=c(1,4.5),"breaks"=seq(1,4.5, by=1)) # for mean values up to ~4
+conf_scale4   = list("lim"=c(1,4),"breaks"=seq(1,4, by=1)) # for mean values up to ~4
 time_scale    = list("lim"=c(0,2),"breaks"=seq(0,2, by=0.25))
 mov_scale     = list("lim"=c(0.5,1.75),"breaks"=seq(0.5,1.75, by=0.25))
 switch_colors = c("lightcoral", "lightgreen")
@@ -362,8 +363,8 @@ for(confVar in 1:3) {
 # First plot all three decisions into the same plot
 
 # Sub-select? if so: agreement or disagreement trials?
-subselect     = 1; # 1=yes,   0=no
-sub_agreement = 1; # 1=agree, 0=disagree 
+subselect     = 0; # 1=yes,   0=no
+sub_agreement = 0; # 1=agree, 0=disagree 
 # Which decision types to plot?
 dec2plot      = 2; # 1=1st/2nd/coll, 2=max,min,coll
 # Prepare data set accordingly
@@ -465,6 +466,63 @@ ggplot(data_caR_sum, aes(x = targetContrast, y = caR)) +
   labs(x = "Target contrast", y = "Confidence/Accuracy") + theme_custom()
 if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_ConfRContrast",dec_lab,agree_lab,".png"),PlotDir), 
                         dpi = 300, units=c("cm"), height =20, width = 20)}
+
+### TRY OUT MIN-MAX COMPARISON (use data_co_sum data frame with min/max conf values)
+# include collective confidence and target contrast as factors?
+wCollconf= 0
+wtarget  = 1
+data_co_sum$targetContrast = factor(data_co_sum$targetContrast)
+data_co_sum$variable       = factor(data_co_sum$variable)
+if (wCollconf) {
+  data_confcompare = data_co_sum
+  if (wtarget) {
+    print(ggplot(data_confcompare, aes(x = targetContrast, y = value, fill = variable, colour = variable)) +
+            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
+            geom_errorbar(aes(x=targetContrast, ymin=value-se, ymax=value+se), 
+                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
+            scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
+            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
+            ggtitle("who is more confident?") +
+            ylab("Confidence") + xlab("Target contrast"))
+  } else {
+    data_confcompare = summarySE(data_confcompare,measurevar="value",groupvars=c("variable")) 
+    data_confcompare$variable = factor(data_confcompare$variable)
+    print(ggplot(data_confcompare, aes(x = variable, y = value)) +
+            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
+            geom_errorbar(aes(x=variable, ymin=value-se, ymax=value+se), 
+                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
+            #scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
+            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
+            ggtitle("who is more confident?") +
+            ylab("Confidence") + xlab("Decisionmaker"))
+  }
+} else {
+  data_confcompare = data_co_sum[data_co_sum$variable=="maxConf" | data_co_sum$variable=="minConf",]
+  if (wtarget) {
+    print(ggplot(data_confcompare, aes(x = targetContrast, y = value, fill = variable, colour = variable)) +
+            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
+            geom_errorbar(aes(x=targetContrast, ymin=value-se, ymax=value+se), 
+                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
+            scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
+            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
+            ggtitle("who is more confident?") +
+            ylab("Confidence") + xlab("Target contrast"))
+  } else {
+    data_confcompare = summarySE(data_confcompare,measurevar="value",groupvars=c("variable")) 
+    data_confcompare$variable = factor(data_confcompare$variable)
+    print(ggplot(data_confcompare, aes(x = variable, y = value)) +
+            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
+            geom_errorbar(aes(x=variable, ymin=value-se, ymax=value+se), 
+                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
+            #scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
+            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
+            ggtitle("who is more confident?") +
+            ylab("Confidence") + xlab("Decisionmaker"))
+  }
+}
+
+
+##############################
 
 
 #######################################
