@@ -239,7 +239,7 @@ for(confVar in 1:3) {
   else if (confVar==2) {conf="confidence2"; acc="accuracy2"}
   else if (confVar==3) {conf="Coll_conf";   acc="Coll_acc"}
   
-  # XXX CHANGE SUMMARY STATS HERE: first average across pairs
+  # XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
   all_conf_acc        = curdat[,c(acc,conf)]
   all_conf_acc_sum    = summarySE(all_conf_acc,measurevar=acc,groupvars=c(conf))
 
@@ -357,8 +357,8 @@ for(confVar in 1:3) {
 
 #####################################################
 #### FOCUS ON CONFIDENCE - ACCURACY RELATIONSHIP ####
-# 2b. Accuracy as function of difficulty (target contrast)
-# -------------------------------------------------------
+# 2b. Conf/Acc as function of difficulty (target contrast)
+# --------------------------------------------------------
 # First plot all three decisions into the same plot
 
 # Sub-select? if so: agreement or disagreement trials?
@@ -369,13 +369,13 @@ dec2plot      = 2; # 1=1st/2nd/coll, 2=max,min,coll
 # Prepare data set accordingly
 if (subselect) {
   if (sub_agreement) {
-    at      = curdat[curdat$agree==1,]
+    at        = curdat[curdat$agree==1,]
     data_coac = at[,c("Pair","targetContrast",
                       "B_conf","B_acc","Y_conf","Y_acc","maxConf","maxAcc","minConf","minAcc",
                       "confidence1","confidence2","Coll_conf","accuracy1", "accuracy2", "Coll_acc")]
     agree_lab = '_agree'; agree_title = '- agreement'; 
   } else {
-    dt      = curdat[curdat$agree==-1,]
+    dt        = curdat[curdat$agree==-1,]
     data_coac = dt[,c("Pair","targetContrast",
                       "B_conf","B_acc","Y_conf","Y_acc","maxConf","maxAcc","minConf","minAcc",
                       "confidence1","confidence2","Coll_conf","accuracy1", "accuracy2", "Coll_acc")]
@@ -388,7 +388,7 @@ if (subselect) {
   agree_lab = ''; agree_title = '';
 }
 
-# transform (subset) data into long format
+# transform data_coac into long format
 data_coac_long = melt(data_coac, id=c("Pair", "targetContrast"))
 # compute SUMMARY statistics, PER PAIR
 data_coac_sum  = summarySE(data_coac_long,measurevar="value",groupvars=c("Pair","targetContrast","variable"))
@@ -408,24 +408,23 @@ if (dec2plot==1) {
 data_ac_filt = data_ac[data_ac$value>0,]
 data_co_filt = data_co[data_ac$value>0,]
 # create C-A ratio data set, based on data_co and data_ac
-data_caR = data_co_filt
+data_caR     = data_co_filt
 data_caR$caR = data_co_filt$value/data_ac_filt$value # compute ratio per row
 
 # change variable names in caR
+data_caR$variable=factor(data_caR$variable)
 if (dec2plot==1) {
-  data_caR$variable=factor(data_caR$variable)
   levels(data_caR$variable)=c("decision1","decision2","decisionColl")
 } else {
-  data_caR$variable=factor(data_caR$variable)
   levels(data_caR$variable)=c("decisionMax","decisionMin","decisionColl")
 }
 
 # compute SUMMARY statistics, ACROSS PAIRS
 data_caR_sum = summarySE(data_caR,measurevar="caR",groupvars=c("targetContrast","variable")) 
-data_co_sum = summarySE(data_co_filt,measurevar="value",groupvars=c("targetContrast","variable")) 
-data_ac_sum = summarySE(data_ac_filt,measurevar="value",groupvars=c("targetContrast","variable")) 
+data_co_sum  = summarySE(data_co_filt,measurevar="value",groupvars=c("targetContrast","variable")) 
+data_ac_sum  = summarySE(data_ac_filt,measurevar="value",groupvars=c("targetContrast","variable")) 
 
-# 1. plot CONFIDENCE by target contrast for d1,d2,dColl (within one plot)
+# 1. plot CONFIDENCE by target contrast for all 3 decision types (within one plot)
 ggplot(data_co_sum, aes(x = targetContrast, y = value)) + 
   geom_line(data=data_co_sum, aes(y = value, color = variable), lwd = .7) + 
   geom_point(data=data_co_sum, aes(y = value, color = variable)) +
@@ -439,7 +438,7 @@ ggplot(data_co_sum, aes(x = targetContrast, y = value)) +
 if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_ConfByContrast",dec_lab,agree_lab,".png"),PlotDir), 
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 
-# 2. plot ACCURACY by target contrast for d1,d2,dColl (within one plot)
+# 2. plot ACCURACY by target contrast for all 3 decision types (within one plot)
 ggplot(data_ac_sum, aes(x = targetContrast, y = value)) +
   geom_line(data=data_ac_sum, aes(y = value, color = variable), lwd = .7) + 
   geom_point(data=data_ac_sum, aes(y = value, color = variable)) + 
@@ -453,7 +452,7 @@ ggplot(data_ac_sum, aes(x = targetContrast, y = value)) +
 if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_AccByContrast",dec_lab,agree_lab,".png"),PlotDir), 
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 
-# 3. plot C-A RATIO by target contrast for d1,d2,dColl (within one plot)
+# 3. plot C-A RATIO by target contrast for all 3 decision types (within one plot)
 ggplot(data_caR_sum, aes(x = targetContrast, y = caR)) +
   geom_line(data=data_caR_sum, aes(y = caR, color = variable), lwd = .7) + 
   geom_point(data=data_caR_sum, aes(y = caR, color = variable)) +
@@ -477,16 +476,11 @@ for(confVar in 1:3) {
   else if (confVar==2) {conf="confidence2"; acc="accuracy2"}
   else if (confVar==3) {conf="Coll_conf";   acc="Coll_acc"}
   
+  # XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
   data_tar          = curdat[,c(conf,acc,tar)]
   data_acc_tar_sum  = summarySE(data_tar,measurevar=acc,groupvars=c(tar))
   data_conf_tar_sum = summarySE(data_tar,measurevar=conf,groupvars=c(tar))
   
-  # trying out to add pair and put both conf and acc together right away
-  # data_tar          = curdat[,c(p,conf,acc,tar)]
-  # data_acc_tar_sum  = summarySE(data_tar,measurevar=acc,groupvars=c(p,tar))
-  # data_conf_tar_sum = summarySE(data_tar,measurevar=conf,groupvars=c(p,tar))
-  # data_tar_long     = melt(data_tar, id=c(p,tar))
-  # data_confacc_sumT = summarySE(data_tar_long,measurevar="value",groupvars=c(p,tar,"variable"))
   data_confacc_sum  = data_conf_tar_sum[, c(tar, "N", conf, "se")]
   names(data_confacc_sum)[names(data_confacc_sum)=="se"] = "confSE"; #rename
   data_confacc_sum$accuracy  = data_acc_tar_sum[, c(acc)] # add accuracy column
@@ -504,17 +498,14 @@ for(confVar in 1:3) {
           scale_y_continuous(limits = acc_scale$lim, breaks = acc_scale$breaks) +
           ggtitle(dec_names[confVar]) +
           ylab("Accuracy") + xlab("Target contrast") + theme_custom())
-  # save the plot
   if (save_plots) {ggsave(file=sprintf(paste0("%sAccByContrast_",as.character(confVar),".png"),PlotDir), 
                           dpi = 300, units=c("cm"), height =20, width = 20)}
 
-  ###
-  ggplot(data_acc_tar_sum, aes(x = get(tar), y = get(acc))) +
-    geom_ribbon(aes(ymin = get(acc)-se, ymax = get(acc)+se), alpha = .5,
-                fill = "darkseagreen3", color = "transparent") +
-    geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
-    labs(x = "Target contrast", y = "Accuracy")
-  ###
+  # ggplot(data_acc_tar_sum, aes(x = get(tar), y = get(acc))) +
+  #   geom_ribbon(aes(ymin = get(acc)-se, ymax = get(acc)+se), alpha = .5,
+  #               fill = "darkseagreen3", color = "transparent") +
+  #   geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
+  #   labs(x = "Target contrast", y = "Accuracy")
   
   print(ggplot(data_conf_tar_sum) +
           geom_bar(aes(x=as.factor(get(tar)), y=get(conf)), stat="identity", fill="grey", alpha=0.7) +
@@ -524,14 +515,12 @@ for(confVar in 1:3) {
           ggtitle(dec_names[confVar]) +
           ylab("Confidence") + xlab("Target contrast") + theme_custom())
   
-  ###
-  ggplot(data_conf_tar_sum, aes(x = get(tar), y = get(conf))) +
-    geom_ribbon(aes(ymin = get(conf)-se, ymax = get(conf)+se), alpha = .5,
-                fill = "darkseagreen3", color = "transparent") +
-    geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
-    labs(x = "Target contrast", y = "Accuracy")
-  ###
-  
+  # ggplot(data_conf_tar_sum, aes(x = get(tar), y = get(conf))) +
+  #   geom_ribbon(aes(ymin = get(conf)-se, ymax = get(conf)+se), alpha = .5,
+  #               fill = "darkseagreen3", color = "transparent") +
+  #   geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
+  #   labs(x = "Target contrast", y = "Accuracy")
+
   print(ggplot(data_confacc_sum) +
           geom_bar(aes(x=as.factor(get(tar)), y=confaccR), stat="identity", fill="grey", alpha=0.7) +
           #geom_errorbar(aes(x=as.factor(get(tar)), ymin=confaccR-confaccSE, ymax=confaccR+confaccSE), width=0.2, colour="black", alpha=0.9, size=1) +
@@ -540,17 +529,16 @@ for(confVar in 1:3) {
           scale_y_continuous(limits = c(0,6), breaks = seq(0,6, by=1)) +
           ggtitle(dec_names[confVar]) +
           ylab("Confidence / Accuracy") + xlab("Target contrast") + theme_custom())
-  ###
-  ggplot(data_confacc_sum, aes(x = get(tar), y = confaccR)) +
-    geom_ribbon(aes(ymin = confaccR-confaccSE, ymax = confaccR+confaccSE), alpha = .5,
-                fill = "darkseagreen3", color = "transparent") +
-    geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
-    labs(x = "Target contrast", y = "Confidence/Accuracy")
-  ###
-  
+ 
+  # ggplot(data_confacc_sum, aes(x = get(tar), y = confaccR)) +
+  #   geom_ribbon(aes(ymin = confaccR-confaccSE, ymax = confaccR+confaccSE), alpha = .5,
+  #               fill = "darkseagreen3", color = "transparent") +
+  #   geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
+  #   labs(x = "Target contrast", y = "Confidence/Accuracy")
 }
 
 # Average accuracy for each decision
+# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
 data_all_acc      = curdat[,c("accuracy1","accuracy2","Coll_acc")]
 data_all_acc_long = melt(data_all_acc)
 data_all_acc_sum  = summarySE(data_all_acc_long,measurevar="value",groupvars="variable")
@@ -562,7 +550,6 @@ ggplot(data_all_acc_sum) +
   scale_y_continuous(limits = c(0.5,1), breaks = seq(0.5,1, by=0.1)) +
   ggtitle("Accuracy by decision") +
   ylab("Accuracy") + xlab("Decision") + theme_custom()
-# save the plot
 if (save_plots) {ggsave(file=sprintf("%sAccPerDec.png",PlotDir), 
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 
@@ -600,7 +587,6 @@ for(dec in (seq(5,ncol(all_dec)-1))) {
           #scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
           ggtitle(colnames(all_dec)[dec]) +
           ylab("Count") + xlab("Decision") + theme_custom())
-  # save the plot
   if (save_plots) {ggsave(file=sprintf(paste0("%sLRChoice_",as.character(dec-4),".png"),PlotDirLR), 
                           dpi = 300, units=c("cm"), height =20, width = 20)}
 }
@@ -617,7 +603,6 @@ for (p in unique(all_dec$Pair)) { # p = pair
             #scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
             ggtitle(paste(colnames(all_dec)[dec], "Pair", as.character(p))) +
             ylab("Count") + xlab("Decision") + theme_custom())
-    # save the plot
     if (save_plots) {ggsave(file=sprintf(paste0("%sLRChoice_",as.character(p),"_",as.character(dec-4),".png"), PlotDirLR), 
                             dpi = 300, units=c("cm"), height =20, width = 20)}
   }
@@ -648,20 +633,25 @@ for (p in unique(all_dec$Pair)) { # p = pair
 
 # Check PROPORTIONS: high/low confidence, agreement/disagreement, switch/no switch
 # --------------------------------------------------------------------------------
-# High/low confidence: Select high/low confidence trials for each agent and average the values
-# XXX not working
-# perc_conf_lo = round(100*(dim(curdat[(curdat$B_conf>=1 & curdat$B_conf<=3)|(curdat$Y_conf>=1 & curdat$Y_conf<=3),])[1])/(2*dim(curdat)[1]))
-# perc_conf_hi = round(100*(dim(curdat[(curdat$B_conf==c(4) | curdat$B_conf==c(5) | 
-#                curdat$B_conf==c(6)) ])[1]+dim(curdat[(curdat$Y_conf==c(4) | curdat$Y_conf==c(5) | curdat$Y_conf==c(6))])[1])/(2*dim(curdat)[1]))
-# sprintf("Low confidence trials (1-3): %d %s", perc_conf_lo, "%")
-# sprintf("High confidence trials (4-6): %d %s", perc_conf_hi, "%")
+# count trials separately for each agent B /Y for low and high confidence
+lo_conf_trialcount_B = dim(curdat[(curdat$B_conf>=1 & curdat$B_conf<=3),])[1]
+lo_conf_trialcount_Y = dim(curdat[(curdat$Y_conf>=1 & curdat$Y_conf<=3),])[1]
+lo_conf_trialcount   = lo_conf_trialcount_B+lo_conf_trialcount_Y
+hi_conf_trialcount_B = dim(curdat[(curdat$B_conf>3),])[1]
+hi_conf_trialcount_Y = dim(curdat[(curdat$Y_conf>3),])[1]
+hi_conf_trialcount   = hi_conf_trialcount_B+hi_conf_trialcount_Y
+# divide by total trial number*2 (because each agent took 1 ind. dec. per trial)
+lo_conf_perc         = round(100*(lo_conf_trialcount/(2*(dim(curdat)[1]))))
+hi_conf_perc         = round(100*(hi_conf_trialcount/(2*(dim(curdat)[1]))))
+sprintf("Low confidence decisions (1-3): %d %s", lo_conf_perc, "%")
+sprintf("High confidence decisions (4-6): %d %s", hi_conf_perc, "%")
 
 # Sub-select agreement/disagreement trials
-at      = curdat[curdat$agree==1,]
-dt      = curdat[curdat$agree==-1,]
+at = curdat[curdat$agree==1,]
+dt = curdat[curdat$agree==-1,]
 
 # check correlation between confidence of A1 and A2, for all/agree,disagree
-# this should be done on pair level!!?
+# XXX this should be done on pair level!!?
 plot(jitter(curdat$confidence2,2) ~ jitter(curdat$confidence1,2),
      main = "Relation of Conf1 and Conf2",xlab="Confidence1",ylab="Confidence2")
 abline(lm(confidence2 ~ confidence1, data = curdat), col = "blue")
@@ -681,8 +671,9 @@ abline(lm(Coll_conf ~ (confidence2-confidence1), data = curdat), col = "blue")
 
 # Plot disagreement according to target contrast
 # agreement: 1=agreement, -1=disagreement; contrasts = c(0.115, 0.135, 0.170, 0.250)
-# quick version: hist(at$targetContrast)
+# (for a quick check, just do hist(at$targetContrast))
 contrastData_all  = curdat[,c('Pair','targetContrast','agree','switch')]
+
 # XXX for indi=1, create loop to run through all pairs
 contrastData_indi = contrastData_all[contrastData_all$Pair==124,] # select pair
 indi = 0; # select whether to plot aggregate or individual data ((indi=0 vs. indi=1)
@@ -721,8 +712,8 @@ if (save_plots) {ggsave(file=paste0(PlotDir,"hist_contrast_switch_dt.png"),
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 
 # Percentage of (dis)agreement trials relative to all trials
-perc_dt          = round(100*(dim(dt)[1]/dim(curdat)[1])) #40% in exp #39% in pilot
-perc_at          = round(100*(dim(at)[1]/dim(curdat)[1])) #60% in exp #61% in pilot
+perc_dt = round(100*(dim(dt)[1]/dim(curdat)[1])) #40% in exp #39% in pilot
+perc_at = round(100*(dim(at)[1]/dim(curdat)[1])) #60% in exp #61% in pilot
 sprintf("Disagreement trials: %d %s", perc_dt, "%")
 sprintf("Agreement trials: %d %s", perc_at, "%")
 
@@ -769,6 +760,7 @@ if (nrow(at_switch) == 0) {
 # 1. CONFIDENCE as a function of TARGET CONTRAST
 # 1a. Split by agreement (only A1 and collective decisions)
 # ---------------------------------------------------------
+# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
 conf_all <- curdat[,c("targetContrast","confidence1","Coll_conf","agree")]
 conf_all_long <- melt(conf_all, id=c("targetContrast","agree"))  # convert to long format
 levels(conf_all_long$variable) <- c("Individual_A1", "Collective")
@@ -793,6 +785,7 @@ if (save_plots) {ggsave(file=paste0(PlotDir,"conf_agree",".png"),
 
 # 1b. Split by agreement and accuracy (only collective decision)
 # ------------------------------------------------------------------------------
+# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
 conf_all_acc      = curdat[,c("targetContrast","Coll_acc","Coll_conf","agree")]
 conf_all_long_acc = melt(conf_all_acc, id=c("targetContrast","agree","Coll_acc"))
 conf_all_sum_acc  = summarySE(conf_all_long_acc,measurevar="value",groupvars=c("targetContrast","agree","Coll_acc"))
@@ -819,6 +812,7 @@ if (save_plots) {ggsave(file=paste0(PlotDir,"conf_agree_acc_coll",".png"),
 # 2. ACCURACY AND CONFIDENCE as a function of AGREEMENT / SWITCH
 # 2a. Accuracy split by agreement and switch (only A1 and collective decisions)
 # ------------------------------------------------------------------------------
+# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
 acc_sw               = curdat[,c("targetContrast","switch","agree","accuracy1","Coll_acc")]
 conf_all_long_acc_sw = melt(acc_sw, id=c("targetContrast","switch","agree"))
 conf_all_sum_acc_sw  = summarySE(conf_all_long_acc_sw,measurevar="value",groupvars=c("targetContrast","switch","agree","variable"))
@@ -846,6 +840,7 @@ if (save_plots) {ggsave(file=paste0(PlotDir,"acc_agree_switch.png"),
 
 # 2b. Confidence split by agreement and switch (only A1 and collective decisions)
 # -------------------------------------------------------------------------------
+# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
 conf_sw          = curdat[,c("targetContrast","switch","agree","confidence1","Coll_conf")]
 conf_all_long_sw = melt(conf_sw, id=c("targetContrast","switch","agree"))
 conf_all_sum_sw  = summarySE(conf_all_long_sw,measurevar="value",groupvars=c("targetContrast","switch","agree","variable"))
@@ -875,6 +870,7 @@ if (save_plots) {ggsave(file=paste0(PlotDir,"conf_agree_switch.png"),
 # 3a. Accuracy split by agreement and switch (only A1 and collective decisions)
 # -------------------------------------------------------------------------------
 # prep accuracy bars
+# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
 acc_tar_sw               = curdat[,c("switch","agree","accuracy1","Coll_acc")]
 conf_all_long_acc_tar_sw = melt(acc_tar_sw, id=c("switch","agree"))  # convert to long format
 conf_all_sum_acc_tar_sw  = summarySE(conf_all_long_acc_tar_sw,measurevar="value",groupvars=c("switch","agree","variable"))
@@ -917,6 +913,7 @@ if (save_plots) {ggsave(file=paste0(PlotDir,"Accuracy_Agree+Switch.png"),
 # panels: green (switch) vs. red (no switch)
 
 # prep confidence bars
+# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
 conf_targ_sw              = curdat[,c("switch","agree","confidence1","Coll_conf")]
 conf_all_targ_long_sw     = melt(conf_targ_sw, id=c("switch","agree"))
 conf_all_targ_sum_acc_sw  = summarySE(conf_all_targ_long_sw,measurevar="value",groupvars=c("switch","agree","variable"))
@@ -999,7 +996,7 @@ if(pair_plots){
 # The new calculation is based on a velocity threshold: from now, we will use this final rt/mt. 
 # NOTE: The variables are related to the rt of the 1st and 2nd decision respectively (not to the agent).
 
-#XXX work on this for collective RT XXX check if summary stats are okay (need to include pair!?)
+# XXX work on this for collective RT XXX check if summary stats are okay (need to include pair!?)
 
 # rt 2nd decision - calc the average, se, ci
 rt_conf_2d                = curdat[,c("confidence2","rt_final2")]
@@ -1085,7 +1082,7 @@ for (v in 1:2) {
 # ---------------------------------------
 
 # Add 4 columns with rt/mt split by agent
-curdat = final_rtmt_byAgent(curdat) # xxx check if function is correct!!!
+curdat = final_rtmt_byAgent(curdat) # XXX double-check if function is correct!!!
 
 # plot for RT (m=1) and MT (m=2)
 for (m in 1:2){
@@ -1131,8 +1128,8 @@ for (m in 1:2){
 # 7. Confidence delta as a function of switch
 # ------------------------------------------------------------------------------
 
-# add confidence deltas to long format (only disagreement trials)
-# without collective
+# add confidence deltas to long format (only disagreement trials) without coll.
+# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
 dt_long_delta = melt(dt[,c("Pair","deltaC2C1","switch")], id=c("Pair","switch"))
 switch_sum  = summarySE(dt_long_delta,measurevar="value",groupvars=c("switch","variable"))
 # check only for A1 confidence
@@ -1166,8 +1163,7 @@ print(ggplot(data=switch_sum, aes(x=switch, y=value, fill=variable, color = vari
         geom_errorbar(aes(ymin=value-se, ymax=value+se), size=0.5, width=0.1, color="black", position=position_dodge(.9)) + 
         scale_y_continuous(limits = delta_scale$lim, breaks=delta_scale$breaks) +
         xlab("Switching") + ylab("Confidence delta") + 
-        theme(legend.position = "none") + theme_custom()
-)
+        theme(legend.position = "none") + theme_custom())
 if (save_plots) {ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_Switching.png"), 
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 # variable = confidence 1
@@ -1178,8 +1174,7 @@ print(ggplot(data=switchC1_sum, aes(x=switch, y=value, fill=variable, color = va
         geom_errorbar(aes(ymin=value-se, ymax=value+se), size=0.5, width=0.1, color="black", position=position_dodge(.9)) + 
         scale_y_continuous(limits = C1_scale$lim, breaks=C1_scale$breaks) +
         xlab("Switching") + ylab("Confidence 1") + 
-        theme(legend.position = "none") + theme_custom()
-)
+        theme(legend.position = "none") + theme_custom())
 if (save_plots) {ggsave(file=paste0(PlotDir,"Conf1_Switching.png"), 
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 
@@ -1187,11 +1182,11 @@ if (save_plots) {ggsave(file=paste0(PlotDir,"Conf1_Switching.png"),
 # COLLECTIVE ADJUSTMENT PLOTS (confidence A1 compared to collective confidence)
 # ------------------------------------------------------------------------------
 sub_switch   = curdat[curdat$switch==1,c("Pair","Trial","agree","switch","accuracy1", 
-               "accuracy2","Coll_acc", "confidence2", "Coll_conf","confidence1", "deltaC2C1","deltaCcC1")] # only switch
+               "accuracy2","Coll_acc", "confidence2", "Coll_conf","confidence1", "deltaC2C1","deltaCcC1")] # switch
 sub_noswitch = curdat[curdat$switch==-1,c("Pair","Trial","agree","switch","accuracy1", 
-               "accuracy2","Coll_acc","confidence2", "Coll_conf","confidence1", "deltaC2C1","deltaCcC1")] # only no switch
+               "accuracy2","Coll_acc","confidence2", "Coll_conf","confidence1", "deltaC2C1","deltaCcC1")] # no switch
 sub_dt       = dt[,c("Pair","Trial","agree","switch","accuracy1", 
-               "accuracy2","Coll_acc", "confidence2", "Coll_conf","confidence1", "deltaC2C1","deltaCcC1")] # only switch
+               "accuracy2","Coll_acc", "confidence2", "Coll_conf","confidence1", "deltaC2C1","deltaCcC1")] # disagree
 
 #rename and factorize levels
 sub_switch$agree = as.factor(sub_switch$agree)
@@ -1250,7 +1245,7 @@ if (save_plots) {ggsave(file=paste0(PlotDir,"deltaConf2-Conf1_CollConf_NoSwitch.
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 
 
-
+# SCRIPT WORKS UP TO HERE (BUT CHECK XXX PARTS AND CORRECT!!!)
 ################################################################################
 # BELOW IS WORK IN PROGRESS
 
