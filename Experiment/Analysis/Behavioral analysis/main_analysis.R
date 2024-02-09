@@ -38,7 +38,8 @@ library(doBy)
 pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
           "MuMIn","BayesFactor","permuco","RVAideMemoire","this.path","ggiraphExtra",
           "RColorBrewer","stringr","knitr","multcomp","ggplot2","car","dplyr",
-          "plyr","lmerTest","ggrepel","sjstats","reshape2","readxl","writexl","cellranger")
+          "plyr","lmerTest","ggrepel","sjstats","reshape2","readxl","writexl",
+          "cellranger")
 
 # Check how many packages failed to load
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
@@ -211,7 +212,7 @@ for (row in 1:dim(curdat)[1]) {
 curdat$switchMax = swMax
 curdat$switchMin = swMin
 
-# add to columns to minmax data frame to record probability of switching
+# add two columns to minmax data frame to record probability of switching
 minmax[c("maxSwitchProb", "minSwitchProb")] <- NA
 for (p in unique(curdat$Pair)) { # p = pair
   
@@ -226,6 +227,12 @@ for (p in unique(curdat$Pair)) { # p = pair
   minmax[minmax$Pair==p,"maxSwitchProb"]=swMax
   minmax[minmax$Pair==p,"minSwitchProb"]=swMin
 }
+
+################################################################################
+# SAVE CURDAT INTO EXCEL FILE HERE - make sure that all vars are added before
+write_xlsx(curdat, path = paste0(DataDir,"jmdData_allPairs.xlsx"),
+           col_names = TRUE, format_headers = TRUE)
+################################################################################
 
 
 # Configure plot parameters
