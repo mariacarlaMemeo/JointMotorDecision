@@ -69,6 +69,7 @@ source(paste0(AnaDir,'summarySE.R'))
 source(paste0(AnaDir,'theme_custom.R'))
 source(paste0(AnaDir,'plotSE.R'))
 source(paste0(AnaDir,'final_rtmt_byAgent.R'))
+source(paste0(AnaDir,'compareMinMax.R'))
 
 # Initialize variables
 decision1 = c(); conf1 = c(); acc1 = c()
@@ -128,24 +129,48 @@ curdat$confidence2 = conf2
 curdat$accuracy1   = acc1
 curdat$accuracy2   = acc2
 
+# Sanity check: just check trials in which B=Y -> then also decision1 must be equal to decision2
+all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$decision1 == curdat$decision2))
+
+
 # Add columns on worse(min)/better(max) agent (each for confidence and accuracy)
+curdat$maxAgent = NA; curdat$minAgent = NA;
 curdat$maxConf = NA; curdat$maxAcc = NA; curdat$minConf = NA; curdat$minAcc = NA;
 for (p in unique(curdat$Pair)) { # p = pair
   if (minmax[minmax$Pair==p,"maxAgent"] == "B") {
-    curdat[curdat$Pair==p,"maxConf"] = curdat[curdat$Pair==p,"B_conf"]
-    curdat[curdat$Pair==p,"minConf"] = curdat[curdat$Pair==p,"Y_conf"]
-    curdat[curdat$Pair==p,"maxAcc"] = curdat[curdat$Pair==p,"B_acc"]
-    curdat[curdat$Pair==p,"minAcc"] = curdat[curdat$Pair==p,"Y_acc"]
+    curdat[curdat$Pair==p,"maxConf"]  = curdat[curdat$Pair==p,"B_conf"]
+    curdat[curdat$Pair==p,"minConf"]  = curdat[curdat$Pair==p,"Y_conf"]
+    curdat[curdat$Pair==p,"maxAcc"]   = curdat[curdat$Pair==p,"B_acc"]
+    curdat[curdat$Pair==p,"minAcc"]   = curdat[curdat$Pair==p,"Y_acc"]
+    curdat[curdat$Pair==p,"maxAgent"] = "B" # max agent in this pair
+    curdat[curdat$Pair==p,"minAgent"] = "Y" # min agent in this pair
   } else {
-    curdat[curdat$Pair==p,"maxConf"] = curdat[curdat$Pair==p,"Y_conf"]
-    curdat[curdat$Pair==p,"minConf"] = curdat[curdat$Pair==p,"B_conf"]
-    curdat[curdat$Pair==p,"maxAcc"] = curdat[curdat$Pair==p,"Y_acc"]
-    curdat[curdat$Pair==p,"minAcc"] = curdat[curdat$Pair==p,"B_acc"]
+    curdat[curdat$Pair==p,"maxConf"]  = curdat[curdat$Pair==p,"Y_conf"]
+    curdat[curdat$Pair==p,"minConf"]  = curdat[curdat$Pair==p,"B_conf"]
+    curdat[curdat$Pair==p,"maxAcc"]   = curdat[curdat$Pair==p,"Y_acc"]
+    curdat[curdat$Pair==p,"minAcc"]   = curdat[curdat$Pair==p,"B_acc"]
+    curdat[curdat$Pair==p,"maxAgent"] = "Y"
+    curdat[curdat$Pair==p,"minAgent"] = "B"
   }
 }
 
-# Sanity check: just check trials in which B=Y -> then also decision1 must be equal to decision2
-all(as.integer(curdat$B_decision == curdat$Y_decision) == as.integer(curdat$decision1 == curdat$decision2))
+# Add column on whether min or max agent takes first decision
+mima_f_dec = c()
+for (row in 1:dim(curdat)[1]) {
+  f_dec   = curdat[row,"AgentTakingFirstDecision"]
+  max_ag  = curdat[row,"maxAgent"]
+  if (f_dec=="B" & max_ag=="B") {
+    mima_f_dec[row] = "max"
+  } else if (f_dec=="Y" & max_ag=="Y") {
+    mima_f_dec[row] = "max"
+  } else if (f_dec=="B" & max_ag=="Y") {
+    mima_f_dec[row] = "min"
+  } else if (f_dec=="Y" & max_ag=="B") {
+    mima_f_dec[row] = "min"
+  }
+}
+curdat$mima_dec1 = mima_f_dec # who takes 1st dec. in this trial? (min or max agent)
+
 
 # Add columns for the confidence difference values (deltas):
 # confidence2-confidence1: deltaC2C1<0 = conf2<conf1; deltaC2C1>0 = conf2>conf1
@@ -160,6 +185,47 @@ switchR = as.integer(curdat$decision1 != curdat$Coll_decision)
 all(curdat$switch == switchR) # must be true
 # GO ON ONLY IF THE PREVIOUS IS TRUE
 curdat$switch[curdat$switch==0] = -1 # now 1=switch, -1=no switch
+
+# Check probability of switching per agent (only AgentTakingFirstDecision can switch)
+# -1= no switch, 1=switch, 0=no data because agent took 2nd decision
+swMax = c(); swMin = c()
+for (row in 1:dim(curdat)[1]) {
+  
+  switch_d = curdat[row,"switch"]
+  mima_d  = curdat[row,"mima_dec1"]
+  
+  if (switch_d==1 & mima_d=="max") {
+    swMax[row] = 1
+    swMin[row] = 0
+  } else if (switch_d==-1 & mima_d=="max") {
+    swMax[row] = -1
+    swMin[row] = 0
+  } else if (switch_d==1 & mima_d=="min") {
+    swMax[row] = 0
+    swMin[row] = 1
+  } else if (switch_d==-1 & mima_d=="min") {
+    swMax[row] = 0
+    swMin[row] = -1
+  }
+}
+curdat$switchMax = swMax
+curdat$switchMin = swMin
+
+# add to columns to minmax data frame to record probability of switching
+minmax[c("maxSwitchProb", "minSwitchProb")] <- NA
+for (p in unique(curdat$Pair)) { # p = pair
+  
+  # swMax = sum of switches for maxAgent / no. of trials in which maxAgent could switch (i.e., acted first)
+  # sanity check: length(curdat[curdat$Pair==p & curdat$mima_dec1=="max","switchMax"])==
+  #               length(curdat[curdat$Pair==p & curdat$switchMax!=0,"switchMax"])
+  swMax=sum(curdat[curdat$Pair==p & curdat$switchMax==1,"switchMax"]) /
+        length(curdat[curdat$Pair==p & curdat$switchMax!=0,"switchMax"])
+  swMin=sum(curdat[curdat$Pair==p & curdat$switchMin==1,"switchMin"]) /
+    length(curdat[curdat$Pair==p & curdat$switchMin!=0,"switchMin"])
+  
+  minmax[minmax$Pair==p,"maxSwitchProb"]=swMax
+  minmax[minmax$Pair==p,"minSwitchProb"]=swMin
+}
 
 
 # Configure plot parameters
@@ -467,62 +533,18 @@ ggplot(data_caR_sum, aes(x = targetContrast, y = caR)) +
 if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_ConfRContrast",dec_lab,agree_lab,".png"),PlotDir), 
                         dpi = 300, units=c("cm"), height =20, width = 20)}
 
-### TRY OUT MIN-MAX COMPARISON (use data_co_sum data frame with min/max conf values)
-# include collective confidence and target contrast as factors?
-wCollconf= 0
-wtarget  = 1
-data_co_sum$targetContrast = factor(data_co_sum$targetContrast)
-data_co_sum$variable       = factor(data_co_sum$variable)
-if (wCollconf) {
-  data_confcompare = data_co_sum
-  if (wtarget) {
-    print(ggplot(data_confcompare, aes(x = targetContrast, y = value, fill = variable, colour = variable)) +
-            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
-            geom_errorbar(aes(x=targetContrast, ymin=value-se, ymax=value+se), 
-                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
-            scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
-            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-            ggtitle("who is more confident?") +
-            ylab("Confidence") + xlab("Target contrast"))
-  } else {
-    data_confcompare = summarySE(data_confcompare,measurevar="value",groupvars=c("variable")) 
-    data_confcompare$variable = factor(data_confcompare$variable)
-    print(ggplot(data_confcompare, aes(x = variable, y = value)) +
-            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
-            geom_errorbar(aes(x=variable, ymin=value-se, ymax=value+se), 
-                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
-            #scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
-            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-            ggtitle("who is more confident?") +
-            ylab("Confidence") + xlab("Decisionmaker"))
-  }
-} else {
-  data_confcompare = data_co_sum[data_co_sum$variable=="maxConf" | data_co_sum$variable=="minConf",]
-  if (wtarget) {
-    print(ggplot(data_confcompare, aes(x = targetContrast, y = value, fill = variable, colour = variable)) +
-            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
-            geom_errorbar(aes(x=targetContrast, ymin=value-se, ymax=value+se), 
-                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
-            scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
-            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-            ggtitle("who is more confident?") +
-            ylab("Confidence") + xlab("Target contrast"))
-  } else {
-    data_confcompare = summarySE(data_confcompare,measurevar="value",groupvars=c("variable")) 
-    data_confcompare$variable = factor(data_confcompare$variable)
-    print(ggplot(data_confcompare, aes(x = variable, y = value)) +
-            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
-            geom_errorbar(aes(x=variable, ymin=value-se, ymax=value+se), 
-                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
-            #scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
-            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-            ggtitle("who is more confident?") +
-            ylab("Confidence") + xlab("Decisionmaker"))
-  }
-}
 
+###############
+# RUN MIN-MAX COMPARISON with function compareMinmax
+# IMPORTANT: the function uses data_co_sum from above - before running the following,
+# make sure that subselect=0 and dec2plot=2
 
-##############################
+# Decide if you want to include collective decision (as var) and targetContrast (as factor)
+wCollconf = 1 # 0=without collective, 1=with collective
+wtarget   = 0 # 0=average across targets, 1=target as factor
+# now run function - XXX function does not return all plots - WHY? FIX!
+compareMinMax()
+###############
 
 
 #######################################
@@ -792,12 +814,6 @@ if (nrow(at_switch) == 0) {
 } else {
   print("WHAAAT? Switches even if agreement?")
 }
-
-
-# Comparisons between more vs. less sensitive dyad members
-# --------------------------------------------------------
-# XXX work on this
-# source(paste0(DataDir,'goodVSbadGuys.R')) # call separate script good vs. bad
 
 
 
