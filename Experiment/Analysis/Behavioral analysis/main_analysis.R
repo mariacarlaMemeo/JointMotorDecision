@@ -15,6 +15,8 @@ graphics.off()
 
 # Save all plots?
 save_plots = 0
+# Write Excel file with all data and info file?
+save_data_final = 0
 
 # ### work on an individual theme for all plots --------------------------------
 # library(tidyverse)
@@ -71,6 +73,7 @@ source(paste0(AnaDir,'theme_custom.R'))
 source(paste0(AnaDir,'plotSE.R'))
 source(paste0(AnaDir,'final_rtmt_byAgent.R'))
 source(paste0(AnaDir,'compareMinMax.R'))
+source(paste0(AnaDir,'jmdData_info.R'))
 
 # Initialize variables
 decision1 = c(); conf1 = c(); acc1 = c()
@@ -214,6 +217,7 @@ curdat$switchMin = swMin
 
 # add two columns to minmax data frame to record probability of switching
 minmax[c("maxSwitchProb", "minSwitchProb")] <- NA
+
 for (p in unique(curdat$Pair)) { # p = pair
   
   # swMax = sum of switches for maxAgent / no. of trials in which maxAgent could switch (i.e., acted first)
@@ -228,10 +232,18 @@ for (p in unique(curdat$Pair)) { # p = pair
   minmax[minmax$Pair==p,"minSwitchProb"]=swMin
 }
 
+
 ################################################################################
 # SAVE CURDAT INTO EXCEL FILE HERE - make sure that all vars are added before
-write_xlsx(curdat, path = paste0(DataDir,"jmdData_allPairs.xlsx"),
-           col_names = TRUE, format_headers = TRUE)
+if (save_data_final) {
+  curpath = dirname(dirname(DataDir)) # save in Experiment/Data
+  write_xlsx(curdat, path = paste0(curpath,"/jmdData_allPairs.xlsx"),
+             col_names = TRUE, format_headers = TRUE)
+  # also save info on lost trials etc.
+  jmdData_info() # compute info in function XXX not running yet!
+  write_xlsx(dataInfo, path = paste0(curpath,"/jmdData_Info.xlsx"),
+             col_names = TRUE, format_headers = TRUE)
+}
 ################################################################################
 
 
