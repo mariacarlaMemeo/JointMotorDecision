@@ -22,11 +22,11 @@ subselect_similar = 0; % subselect only pairs whose members are similar (> ratio
 % which benefit to compute and plot? (1 or 2)
 % 1=individual benefit (does the individual participant benefit from interaction?)
 % 2=collective benefit (is collective better than better individual? Bahrami 2010)
-benefitType = 1; 
+benefitType = 2; 
 if benefitType == 1
-    ben_lab = '_collBen';
-elseif benefitType == 2
     ben_lab = '_indiBen';
+elseif benefitType == 2
+    ben_lab = '_collBen';
 end
 %--------------------------------------------------------------------------
 
@@ -53,7 +53,8 @@ coll_ben     = zeros(length(ptc),3); % one row per pair
 coll_ben_hdr = {'indiBenB','indiBenY','collBen'};
 
 % Figure labels (if not filled below, then they should be empty)
-lab  = ''; block_lab = ''; ind_lab = '';
+lab  = ''; block_lab = ''; %ind_lab = '';
+x_width  = 18; y_width = 18; % size of saved figure
 
 % Preallocate variables to save average values for all participants
 % [max/mean] SLOPE VALUES (15x1, row=pair,col=var)
@@ -85,29 +86,30 @@ default.slope_wcoll = [];
 
 % Specify colors and markers for plots
 % for PAIR plots
-plotSym    = {'o' 's' 'diamond' ...                              % B,Y,Coll
-              'o' 's' 'o' 's'};                                  % min,max,min,max
-      
-color      = [[0.1176 0.2353 0.7451]; [0.9412 0.7843 0.1569];... % blue, yellow, 
-              [0.0667 0.4118 0.1569]; ...                        % dark green
-              [0 0.4470 0.7410]; [0.6350 0.0780 0.1840];...      % blue(min), red(max)
-              [0.2 0.2 0.2]]; % dark gray (for horizontal line = 1)
+color_B    = [0.1176 0.2353 0.7451]; color_Y = [0.9412 0.7843 0.1569];
+color_coll = [0.0667 0.4118 0.1569];
+color_min  = [0 0.4470 0.7410]; color_max = [0.6350 0.0780 0.1840];
+plotSym    = {'o' 's' 'diamond' ...             % B,Y,Coll
+              'o' 's' 'o' 's'};                 % min,max,min,max      
+color      = [color_B; color_Y; color_coll; ... % blue, yellow, dark green
+              color_min; color_max; ...         % blue(min), red(max)
+              [0.2 0.2 0.2]];                   % dark gray (for horizontal line = 1)
 % this is used to have different marker fillings in individual plots
-mrkColor   = [[1 1 1]; [1 1 1];...                               % white, white, 
-              [0 0.4470 0.7410]; [0.6350 0.0780 0.1840]];        % blue(min), red(max)           
+mrkColor   = [[1 1 1]; [1 1 1]; ...             % white, white, 
+              color_B; color_Y; ...             % blue, yellow, 
+              color_min; color_max];            % blue(min), red(max)           
 
 % for AVERAGE plots (pass colorAve and plotSymAve to plot_psy function)
 if benefitType     == 2 % min, max, Coll (original Bahrami plots)
-    colorAve       = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; [0 0 0]]; % Blue, Red, Black
-    plotSymAve     = {'o' 's' 'diamond'}; % min, max, coll
+    colorAve       = [color_min; color_max; [0 0 0]]; % min,max,Coll (black)
+    plotSymAve     = {'o' 's' 'diamond'};             % min,max,Coll
 elseif benefitType == 1 % individual benefit: min (blue) vs. max (red) agent
-    colorAve       = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; ...       % Blue, Red
-                      [0 0.4470 0.7410]; [0.6350 0.0780 0.1840]];          % Blue, Red
-    plotSymAve     = {'o' 's' 'o' 's'}; % min, max, min, max
+    colorAve       = [color_min; color_max; color_min; color_max]; % mi,ma,mi,ma                           
+    plotSymAve     = {'o' 's' 'o' 's'};                            % mi,ma,mi,ma  
 end
 
 %--------------------------------------------------------------------------
-%% Ask for user input
+%% Ask for user input (current defaults: 1,2,2,0)
 %--------------------------------------------------------------------------
 disp('*ASK FOR USER INPUT*');  fprintf('\n');
 % Calculate collective benefit with 'max' or 'mean' function? (we use MAX)
@@ -130,11 +132,11 @@ end
 % Use all individual trials or only those in which the agent acted first
 % (and thus also took the respective joint decision)
 ind_CB = input('How to compute individual benefit?:\n 1 = use all ind. trials\n 2 = use only 1dec ind. trials\n');
-if ind_CB==1
-    ind_lab = '_indBenAll';
-elseif ind_CB==2
-    ind_lab = '_indBen1dec';
-end
+% if ind_CB==1
+%     ind_lab = '_indBenAll';
+% elseif ind_CB==2
+%     ind_lab = '_indBen1dec';
+% end
 % Subselect block?
 sub_block = input('Choose to select block:\n 0 = allBlocks\n 1 = 1stBlock\n 2 = 2ndBlock\n');
 if sub_block==0 % all trials
@@ -268,16 +270,17 @@ for p = 1:length(ptc) % start pair loop (p=current pair; ptc=cell array with all
         hold on;
         semilogx(absConSteps,data.result.a2.acc,'-o','MarkerSize',6,'LineWidth',1.5,'Color',color(2,:));   % Yellow
         semilogx(absConSteps,data.result.coll.acc,'-*','MarkerSize',6,'LineWidth',2.5,'Color',color(3,:)); % Green
-        xlabel('Absolute contrast difference','FontSize',18); % ('LOG |C2 - C1|')
+        xlabel('Absolute contrast difference','FontSize',20); % ('LOG |C2 - C1|')
         xlim([min(absConSteps)*.8 max(absConSteps)*1.2]);
         xticks([min(absConSteps)*.8 max(absConSteps)*1.2]); % remove ticks?
-        ylabel('Accuracy','FontSize',18);
-        ylim([0.3 1]);
+        ylabel('Accuracy','FontSize',20);
+        ylim([0.3 1]); ax = gca; ax.FontSize = 16; 
         title(['Accuracy - ','S' ptc{p}],'FontSize',22);
     end
-    %if save_plot
-        %saveas(gcf,[path_to_save,'S',ptc{p},'_Acc_',lab,block_lab,ind_lab,ben_lab],'png');
-    %end
+%     if save_plot
+%         set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+%         saveas(gcf,[path_to_save,'S',ptc{p},'_Acc_',lab,block_lab],'png');
+%     end
    
     % Collect and average DECISIONS per contrast level (for B,Y,Coll,B1dec,Y1dec,BColl,YColl)
     for cI = 1 : size(conSteps,1)
@@ -324,14 +327,15 @@ for p = 1:length(ptc) % start pair loop (p=current pair; ptc=cell array with all
         hold on;
         plot(conSteps,data.result.a2.fs,'-o','MarkerSize',6,'LineWidth',1.5,'Color',color(2,:));   %'yo-'
         plot(conSteps,data.result.coll.fs,'-*','MarkerSize',6,'LineWidth',2.5,'Color',color(3,:)); %'gv-'
-        xlabel('Contrast difference','FontSize',18);
-        ylabel('P(Report 2nd)','FontSize',18);
-        ylim([0 1]);
+        xlabel('Contrast difference','FontSize',20);
+        ylabel('P(Report 2nd)','FontSize',20);
+        ylim([0 1]); ax = gca; ax.FontSize = 16; 
         title(['Sensitivity - ','S' ptc{p}],'FontSize',22);
     end
-    %if save_plot
-        %saveas(gcf,[path_to_save,'S',ptc{p},'_PerSens_',lab,block_lab,ind_lab],'png');
-    %end
+%     if save_plot
+%         set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+%         saveas(gcf,[path_to_save,'S',ptc{p},'_PerSens_',lab,block_lab],'png');
+%     end
 
     
     %----------------------------------------------------------------------
@@ -360,10 +364,10 @@ for p = 1:length(ptc) % start pair loop (p=current pair; ptc=cell array with all
                           benefitType,mrkColor,aveFlag);
     % ---------------------------------------------------------------------
 
-    % Set figure properties for psychometric function plots
-    ylim([0 1]);
-    xlabel("Contrast difference",'FontSize',18);
-    ylabel("Proportion 2nd interval",'FontSize',18);
+    % Set figure properties for psychometric curve plots (created in plot_psy)
+    ylim([0 1]); ax = gca; ax.FontSize = 16; 
+    xlabel("Contrast difference",'FontSize',20);
+    ylabel("Proportion 2nd interval",'FontSize',20);
 
     %----------------------------------------------------------------------
     %% COMPUTE COLLECTIVE BENEFIT
@@ -407,17 +411,12 @@ for p = 1:length(ptc) % start pair loop (p=current pair; ptc=cell array with all
     end
 
     % based on ind. benefits for B/Y (above), assign ind. benefits min/max
-    % XXX COLORS SHOULD BE ASSIGNED BEFORE PLOT_PSY BUT THIS IS NOT
-    % POSSIBLE
     if agent_max == 1
         coll_ben_max = coll_ben(p,1);
         coll_ben_min = coll_ben(p,2);
-        % order colors such that min=blue and max=red
-        mrkColor     = [[1 1 1]; [1 1 1]; [0.6350 0.0780 0.1840]; [0 0.4470 0.7410]]; 
     elseif agent_max == 2
         coll_ben_max = coll_ben(p,2);
         coll_ben_min = coll_ben(p,1);
-        mrkColor     = [[1 1 1]; [1 1 1]; [0 0.4470 0.7410]; [0.6350 0.0780 0.1840]];
     end
 
     % Display the computed values as text in plot
@@ -427,23 +426,31 @@ for p = 1:length(ptc) % start pair loop (p=current pair; ptc=cell array with all
     elseif benefitType == 1
         if agent_max == 1 % if B is max agent
             text(-0.18,0.95,['ind. benefit B (max) = ' num2str(coll_ben_max,'%.2f')],...
-                'FontSize',18, 'Color', color(5,:));
+                'FontSize',18, 'Color', color(1,:));
             text(-0.18,0.9, ['ind. benefit Y (min) = ' num2str(coll_ben_min,'%.2f')],...
-                'FontSize',18, 'Color', color(4,:));
+                'FontSize',18, 'Color', color(2,:));
         elseif agent_max == 2 % if Y is max agent
             text(-0.18,0.95, ['ind. benefit Y (max) = ' num2str(coll_ben_max,'%.2f')],...
-                'FontSize',18, 'Color', color(5,:));
+                'FontSize',18, 'Color', color(2,:));
             text(-0.18,0.9,['ind. benefit B (min) = ' num2str(coll_ben_min,'%.2f')],...
-                'FontSize',18, 'Color', color(4,:));
+                'FontSize',18, 'Color', color(1,:));
         end
         title(['Ind. benefit - ','S' ptc{p}],'FontSize',22);
     end
 
     % Save psychometric curve figure
     if save_plot
-        saveas(gcf,[path_to_save,'S',ptc{p},'_PsyC',lab,block_lab,ind_lab],'png');
+        set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+        saveas(gcf,[path_to_save,'S',ptc{p},'_PsyC',lab,block_lab,ben_lab],'png');
     end
-    hold off;
+    hold off; % end of psychometric function pair plot
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % plot pair curves again, but this time colored according to min/max
+    if full && benefitType == 1
+        plot_minmax;
+    end
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % ---------------------------------------------------------------------
 
     % ---------------------------------------------------------------------
@@ -547,27 +554,29 @@ cb_ave=figure('Name','CB_Average'); set(cb_ave, 'WindowStyle', 'Docked');
 % -------------------------------------------------------------------------
 % -> GO INTO FUNCTION PLOT_PSY to fit and plot psych. curves
 aveFlag=1;
-sAverage = plot_psy(conSteps,y_ave,plotSymAve,colorAve,default,full,coll_calc,benefitType,mrkColor,aveFlag);
+sAverage = plot_psy(conSteps,y_ave,plotSymAve,colorAve,default,full,...
+                    coll_calc,benefitType,mrkColor,aveFlag);
 % -------------------------------------------------------------------------
 
 % Set figure properties
-ylim([0 1]);
-xlabel('Contrast difference','FontSize',18);
-ylabel('Proportion 2nd interval','FontSize',18);
+ylim([0 1]); ax = gca; ax.FontSize = 16; 
+xlabel('Contrast difference','FontSize',20);
+ylabel('Proportion 2nd interval','FontSize',20);
 
 % Display the computed values as text in plot
 if benefitType == 2
-    text(-0.18,0.95,['mean coll. benefit = ' num2str(mean(cb_all),'%.2f')],'FontSize',18);
+    text(-0.18,0.95,['mean coll. benefit = ' num2str(mean(cb_all),'%.2f')],'FontSize',20);
     title('Grand averages: collective benefit','FontSize',22);
 elseif benefitType == 1
-    text(-0.18,0.95,['mean ind. benefit MAX = ' num2str(mean(ib_all_max),'%.2f')],'FontSize',18, 'Color', colorAve(2,:));
-    text(-0.18,0.9,['mean ind. benefit MIN = ' num2str(mean(ib_all_min),'%.2f')],'FontSize',18, 'Color', colorAve(1,:));
+    text(-0.18,0.95,['mean ind. benefit MAX = ' num2str(mean(ib_all_max),'%.2f')],'FontSize',20, 'Color', colorAve(2,:));
+    text(-0.18,0.9,['mean ind. benefit MIN = ' num2str(mean(ib_all_min),'%.2f')],'FontSize',20, 'Color', colorAve(1,:));
     title('Grand averages: individual benefit','FontSize',22);
 end
 
 % Save figure
 if save_plot
-    saveas(gcf,[path_to_save,'Average_PsyC',lab,block_lab],'png');
+    set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
+    saveas(gcf,[path_to_save,'Average_PsyC',lab,block_lab,ben_lab],'png');
 end
 % -------------------------------------------------------------------------
 
@@ -584,16 +593,16 @@ if not(subcon_calc) && sub_block==0 && length(ptc)>1
              'Color', color(3,:),'LineWidth',3); hold on;
     % plot a horizontal line at 1
     line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
-    xlim([0 (default.w_lgt/default.step)+1]);
-    xticks(0:1:10);
-    ylim([0.95 1.25]);
-    yticks(0.95:0.05:1.25);
-    %     axis([0 (default.w_lgt/default.step)+1 0.8 1.2]);
-    xlabel('Sliding window (80 trials each)','FontSize',18);
-    ylabel('sdyad/smax','FontSize',18);
+    xlim([0 (default.w_lgt/default.step)+1]); xticks(0:1:10);
+    ylim([0.95 1.25]); yticks(0.95:0.05:1.25);
+    ax = gca; ax.FontSize = 16; 
+    %axis([0 (default.w_lgt/default.step)+1 0.8 1.2]);
+    xlabel('Sliding window (80 trials each)','FontSize',20);
+    ylabel('sdyad/smax','FontSize',20);
     title('Average values across pairs - coll. benefit','FontSize',22);
     % Save figure
     if save_plot
+        set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
         saveas(gcf,[path_to_save,'Average_WindowCB_',lab,block_lab],'png');
     end
 
@@ -611,6 +620,7 @@ if not(subcon_calc) && sub_block==0 && length(ptc)>1
     title('Coll. benefit - each pair','FontSize',22);
     % Save figure
     if save_plot
+        set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
         saveas(gcf,[path_to_save,'AllPairs_WindowCB_',lab,block_lab],'png');
     end
 
@@ -622,22 +632,23 @@ end
 % --------------------------------------------------
 % Compute average accuracy for sdyad and sindividual
 accDyad_ave = mean(accDyad_all,1);
-accB_ave   = mean(accB_all,1);
-accY_ave   = mean(accY_all,1);
-accInd_ave = mean([accB_ave; accY_ave],1);
+accB_ave    = mean(accB_all,1);
+accY_ave    = mean(accY_all,1);
+accInd_ave  = mean([accB_ave; accY_ave],1);
 acc_fig_contrasts_ave=figure('Name','AccAverage');
 set(acc_fig_contrasts_ave, 'WindowStyle', 'Docked');
-semilogx(absConSteps,accInd_ave,'--o','MarkerSize',8,'LineWidth',2,'Color',[0.7804 0.3412 0.8706]); % Ind=purple
+semilogx(absConSteps,accInd_ave,'o','LineStyle','--','MarkerSize',8,'LineWidth',2,'Color',[0.7804 0.3412 0.8706]); % Ind=purple
 hold on;
-semilogx(absConSteps,accDyad_ave,'-*','MarkerSize',8,'LineWidth',2,'Color',[0 0 0]); % Coll=black
-xlabel('Contrast difference','FontSize',18); %xlabel('LOG |C2 - C1|');
+semilogx(absConSteps,accDyad_ave,'diamond','LineStyle','-','MarkerSize',8,'LineWidth',2,'Color',[0 0 0]); % Coll=black
+xlabel('Absolute contrast difference','FontSize',20); %xlabel('LOG |C2 - C1|');
 xlim([min(absConSteps)*.8 max(absConSteps)*1.2]);
 xticks([min(absConSteps)*.8 max(absConSteps)*1.2]);
-ylabel('Accuracy','FontSize',18);
-ylim([0.3 1]);
+ylabel('Accuracy','FontSize',20);
+ylim([0.3 1]); ax = gca; ax.FontSize = 16; 
 title('Accuracy average across pairs','FontSize',22);
 % save figure
 if save_plot
+    set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
     saveas(gcf,[path_to_save,'Average_Acc_',lab,block_lab],'png');
 end
 % -------------------------------------------------------------------------
@@ -669,7 +680,7 @@ fprintf('\n');
 
 % scatter plot properties:
 mrksz=50; mrkedge=[0 0 0]; mrkfill=[1 1 1]; mrkw=1.5;
-cbcol=[0.7529  0.9412  0.5059];
+cbcol=[0.4667 0.6745 0.1882];
 % Plot ratio on x-axis and collective benefit on y-axis
 xdata=cb_ratio_combo_sorted(:,2); ydata=cb_ratio_combo_sorted(:,1);
 ratio_fig=figure(); set(ratio_fig, 'WindowStyle', 'Docked');
@@ -681,14 +692,16 @@ line = lsline(gca); line.LineWidth=2; hold on;
 scatter(xdata(ydata(:,1)>=1, 1), ydata(ydata(:,1)>=1, 1),mrksz,"MarkerEdgeColor",mrkedge,...
     "MarkerFaceColor",cbcol,"LineWidth",mrkw); % color dots above 1 in green
 hold on; 
-yline(1, '-','Collective benefit','LineWidth',2, 'Color',cbcol, 'FontSize',12);
+yl = yline(1, '-','Collective benefit','LineWidth',2, 'Color',cbcol, 'FontSize',14);
+yl.LabelHorizontalAlignment = 'left';
 text(0.35,1.55,['R: ' num2str(R(2,1),'%.4f')],'Color','k','FontSize',18);
-text(0.35,1.52,['p: ' num2str(P(2,1),'%.4f')],'Color','k','FontSize',18);
+text(0.35,1.50,['p: ' num2str(P(2,1),'%.4f')],'Color','k','FontSize',18);
 xlabel('smin/smax','FontSize',18);
 ylabel('sdyad/smax','FontSize',18);
 title('Coll. benefit as a function of similarity','FontSize',22);
 % Save figure
 if save_plot
+    set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
     saveas(gcf,[path_to_save,'SimilarityCorr',lab,block_lab],'png');
 end
 % -------------------------------------------------------------------------
@@ -699,35 +712,35 @@ writetable(minmaxTable,'minmaxTable.xlsx');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STATISTICAL TESTS
 % test whether collective slope differs from max. slope
-[h,p,ci,stats] = ttest(sdyad_all', smax_all', "Tail","right");
+[h,pval,ci,stats] = ttest(sdyad_all', smax_all', "Tail","right");
 % % use non-parametric test (Wilcoxon signed rank test):
 % [p,h,stats] = signrank(sdyad_all',smax_all');
 disp('Is there a collective benefit?');
-if p < 0.05
+if pval < 0.05
     disp('Collective is better than more sensitive individual!')
-elseif p >= 0.05
+elseif pval >= 0.05
     disp('No collective benefit!')
 end
-disp(['p-value (coll. slope vs. max. slope): ' num2str(p,'%.7f')]);
+disp(['p-value (coll. slope vs. max. slope): ' num2str(pval,'%.7f')]);
 fprintf('\n');
 
 % test if max/min individual differs from max/min collective slope
-[h,p,ci,stats] = ttest(smax_coll', smax_1dec', "Tail","right");
+[h,pval,ci,stats] = ttest(smax_coll', smax_1dec', "Tail","right");
 disp('Did the more sensitive individual benefit?');
-if p < 0.05
+if pval < 0.05
     disp('The more sensitive individual had a benefit!')
-elseif p >= 0.05
+elseif pval >= 0.05
     disp('The more sensitive individual did NOT benefit.')
 end
-disp(['p-value (max coll. vs. max indi.): ' num2str(p,'%.7f')]);
+disp(['p-value (max coll. vs. max indi.): ' num2str(pval,'%.7f')]);
 fprintf('\n');
 
-[h,p,ci,stats] = ttest(smin_coll', smin_1dec', "Tail","right");
+[h,pval,ci,stats] = ttest(smin_coll', smin_1dec', "Tail","right");
 disp('Did the less sensitive individual benefit?');
-if p < 0.05
+if pval < 0.05
     disp('The less sensitive individual had a benefit!')
-elseif p >= 0.05
+elseif pval >= 0.05
     disp('The less sensitive individual did NOT benefit.')
 end
-disp(['p-value (min coll. vs. min indi.): ' num2str(p,'%.7f')]);
+disp(['p-value (min coll. vs. min indi.): ' num2str(pval,'%.7f')]);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
