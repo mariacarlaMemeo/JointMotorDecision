@@ -11,13 +11,18 @@
 % detection task (oddball in 1st or 2nd interval?). Each participant
 % first takes her individual decision; then one of the two participants
 % takes the final, collective decision. The two participants are labelled
-% Blue agent (formerly A1) and Yellow agent (formerly A2).
+% Blue agent and Yellow agent.
 
 close all; clear variables; clc;
 %--------------------------------------------------------------------------
 % Flags
-save_plot   = 0;
-benefitType = 2; % 1 or 2 -> 1=individual benefit, 2=collective (Bahrami)
+save_plot         = 1; % save the plots (1) or not (0)?
+plot_acc_sens_ind = 0; % plot accuracy and non-fitted sensitivity curves per pair (B,Y,Coll)?
+subselect_similar = 0; % subselect only pairs whose members are similar (> ratio mean .0.68)
+% which benefit to compute and plot? (1 or 2)
+% 1=individual benefit (does the individual participant benefit from interaction?)
+% 2=collective benefit (is collective better than better individual? Bahrami 2010)
+benefitType = 1; 
 if benefitType == 1
     ben_lab = '_collBen';
 elseif benefitType == 2
@@ -26,34 +31,47 @@ end
 %--------------------------------------------------------------------------
 
 %--------------------------------------------------------------------------
-% Prepare path and variables
+%% Prepare path and variables
 %--------------------------------------------------------------------------
 path_data    = fullfile(pwd,'..\..\Data\Behavioral\original_files\'); % mat files
 path_to_save = fullfile(pwd,'Behavioral plots\Accuracy_PsychCurves\'); % save here
 each         = dir([path_data,'*.mat']); % list of mat files
-% Retrieve participant number (take first 3 digits)
-ptc          = cellfun(@(s) cell2mat(regexp(s,'\d{3}','Match')),{each.name},'uni',0);
+% Retrieve all participant numbers (take first 3 digits), as cell array
+if subselect_similar % take only a subset
+    ptc = {'110','113','115','116','117','122','123','124'};
+else
+    ptc = cellfun(@(s) cell2mat(regexp(s,'\d{3}','Match')),{each.name},'uni',0);
+end
 
-% Initialize variable to save slope values for:
+% Initialize variable to save slope (i.e., sensitivity) values for:
 % B, Y, Collective, Collective taken by B, Collective taken by Y, B 1st dec, Y 1st dec
-slope        = zeros(length(ptc),7);
+slope        = zeros(length(ptc),7); % one row per pair
+slope_hdr    = {'sB','sY','sColl','sCollB','sCollY','dec1B','dec1Y'};
 % Initialize variable to save individual and collective benefit values:
 % 1 = benefit for Blue; 2 = benefit for Yellow; 3 = collective benefit (cb)
-coll_ben     = zeros(length(ptc),3);
+coll_ben     = zeros(length(ptc),3); % one row per pair
+coll_ben_hdr = {'indiBenB','indiBenY','collBen'};
 
-% Figure labels (if not used below, then they should be empty)
+% Figure labels (if not filled below, then they should be empty)
 lab  = ''; block_lab = ''; ind_lab = '';
 
-% Preallocate variables to save specific values for all participants
-sdyad_all   = []; smax_all   = []; smin_all   = [];
-decDyad_all = []; decMax_all = []; decMin_all = [];
-accDyad_all = []; accB_all   = []; accY_all   = [];
-ratio_all   = []; cb_all     = []; ib_all_max = []; ib_all_min = [];
-smax_coll   = []; smin_coll  = [];
-smax_1dec   = []; smin_1dec  = [];
-dmax_coll   = []; dmin_coll  = [];
-dmax_1dec   = []; dmin_1dec  = [];
-% make table to save info on min/max agent per pair
+% Preallocate variables to save average values for all participants
+% [max/mean] SLOPE VALUES (15x1, row=pair,col=var)
+sdyad_all   = []; smax_all   = []; smin_all   = []; % for coll, max ind., min ind.
+smax_coll   = []; smin_coll  = [];                  % collective decisions split by max/min agent                  
+smax_1dec   = []; smin_1dec  = [];                  % 1st individual decisions split by max/min agent 
+% PROPORTION 2ND INTERVAL per contrast diff. (15x8, row=pair,col=contrast diff.)
+decDyad_all = []; decMax_all = []; decMin_all = []; % for coll, max ind., min ind.
+dmax_coll   = []; dmin_coll  = [];                  % collective decisions split by max/min agent 
+dmax_1dec   = []; dmin_1dec  = [];                  % 1st decisions split by max/min agent
+% ACCURACY per contrast (15x4, row=pair,col=contrast)
+accDyad_all = []; accB_all   = []; accY_all   = []; % for coll, B, Y
+% BENEFIT ratios (15x1, row=pair,col=var)
+cb_all      = []; ib_all_max = []; ib_all_min = []; % for coll (sdyad/smax), max ind., min ind.
+% SMIN/SMAX ratios to measure similarity between pair members (15x1, row=pair,col=var)
+ratio_all   = [];
+
+% Make table to save info on min/max agent per pair (then import this to R)
 sz = [length(ptc) 3];
 varTypes = ["double","string","string"]; varNames = ["Pair","maxAgent","minAgent"];
 minmaxTable = table('Size',sz,'VariableTypes',varTypes,'VariableNames',varNames);
@@ -66,28 +84,33 @@ default.slope_wnd   = [];
 default.slope_wcoll = [];
 
 % Specify colors and markers for plots
-plotSym    = {'o' 's' '*' 'o' 's' 'o' 's'}; %{'s' 'o' '*' '+' '+'};
-mrkColor   = [[255 255 255]; [255 255 255]; ... % white, white
-              [30 60 190]; [240 200 40]]./255;  % blue, yellow
-color      = [[30 60 190]; [240 200 40]; [17 105 40];... % blue, yellow, dark green
-              [30 60 190]; [240 200 40]; ... % blue, yellow
-              % gray, emerald green, persian green, pine green
-              [51 51 51]; [80 200 120]; [0 165 114]; [1 121 111]]./255;
-% colors for average plots
-if benefitType == 2 % blue (min), red (max), black (coll)
-    colorAve = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; [0 0 0]];
-    plotSymAve = {'o' 's' 'diamond'};
-elseif benefitType == 1
-    colorAve = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; ...
-                [0 0.4470 0.7410]; [0.6350 0.0780 0.1840]];
-     plotSymAve = {'o' 's' 'o' 's'};
+% for PAIR plots
+plotSym    = {'o' 's' 'diamond' ...                              % B,Y,Coll
+              'o' 's' 'o' 's'};                                  % min,max,min,max
+      
+color      = [[0.1176 0.2353 0.7451]; [0.9412 0.7843 0.1569];... % blue, yellow, 
+              [0.0667 0.4118 0.1569]; ...                        % dark green
+              [0 0.4470 0.7410]; [0.6350 0.0780 0.1840];...      % blue(min), red(max)
+              [0.2 0.2 0.2]]; % dark gray (for horizontal line = 1)
+% this is used to have different marker fillings in individual plots
+mrkColor   = [[1 1 1]; [1 1 1];...                               % white, white, 
+              [0 0.4470 0.7410]; [0.6350 0.0780 0.1840]];        % blue(min), red(max)           
+
+% for AVERAGE plots (pass colorAve and plotSymAve to plot_psy function)
+if benefitType     == 2 % min, max, Coll (original Bahrami plots)
+    colorAve       = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; [0 0 0]]; % Blue, Red, Black
+    plotSymAve     = {'o' 's' 'diamond'}; % min, max, coll
+elseif benefitType == 1 % individual benefit: min (blue) vs. max (red) agent
+    colorAve       = [[0 0.4470 0.7410]; [0.6350 0.0780 0.1840]; ...       % Blue, Red
+                      [0 0.4470 0.7410]; [0.6350 0.0780 0.1840]];          % Blue, Red
+    plotSymAve     = {'o' 's' 'o' 's'}; % min, max, min, max
 end
 
 %--------------------------------------------------------------------------
-% Ask for user input
+%% Ask for user input
 %--------------------------------------------------------------------------
 disp('*ASK FOR USER INPUT*');  fprintf('\n');
-% Calculate collective benefit with 'max' or 'mean' function?
+% Calculate collective benefit with 'max' or 'mean' function? (we use MAX)
 fcalc = input('Choose the function to calculate collective benefit:\n 1 = max\n 2 = mean\n');
 if fcalc==1
     coll_calc = 'max';
@@ -103,16 +126,16 @@ if sub_con==1
 elseif sub_con==2
     subcon_calc = 0;
 end
-% Select how to compute the individual collective benefit
+% Select how to compute the individual benefit
 % Use all individual trials or only those in which the agent acted first
 % (and thus also took the respective joint decision)
-ind_CB = input('Choose to select individual CB:\n 1 = all ind. trials\n 2 = only 1dec ind. trials\n');
+ind_CB = input('How to compute individual benefit?:\n 1 = use all ind. trials\n 2 = use only 1dec ind. trials\n');
 if ind_CB==1
     ind_lab = '_indBenAll';
 elseif ind_CB==2
     ind_lab = '_indBen1dec';
 end
-% Select only first or second block?
+% Subselect block?
 sub_block = input('Choose to select block:\n 0 = allBlocks\n 1 = 1stBlock\n 2 = 2ndBlock\n');
 if sub_block==0 % all trials
 elseif sub_block==1
@@ -124,17 +147,24 @@ fprintf('\n');
 disp('*END OF USER INPUT*'); fprintf('\n');
 
 %--------------------------------------------------------------------------
-% START ANALYSIS
+%% START ANALYSIS
 %--------------------------------------------------------------------------
-for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
+for p = 1:length(ptc) % start pair loop (p=current pair; ptc=cell array with all pair numbers)
 
     % Load each pair's data
-    load([path_data,each(p).name])
-    disp(['Loading ',each(p).name]);
-
-    % Remove header, save agent_order (e.g., B-Y-B) and convert cell to mat
+    if subselect_similar % load only specific pairs
+        select = [2 5 7 8 9 13 14 15];
+        load([path_data,each(select(p)).name])
+        disp(['Loading ',each(select(p)).name]);
+    else
+        load([path_data,each(p).name])
+        disp(['Loading ',each(p).name]);
+    end
+    
+    % Remove header, save agent_order (e.g., B-Y-B) separately, then
+    % save data.output without agent order (col 28:30) and convert cell to mat
     % Optionally: select 1st or 2nd block
-    if sub_block==0 % all data
+    if sub_block==0     % all data
         agent_order = data.output(2:end,28:30);
         data.output = cell2mat(data.output(2:end,1:27));
     elseif sub_block==1 % only 1st block
@@ -168,7 +198,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     contrast_v      = data.output(:,6); % current contrast (-baseline 0.1)
     firstSecond_v   = data.output(:,8); % oddball in 1st or 2nd?
     % Give sign to the contrast (- if 1st interval, + if 2nd interval)
-    % -> equivalent to: contrast at oddball location in 1st - 2nd intervall
+    % -> equivalent to: contrast at oddball location in 1st - 2nd interval
     C2_C1_v         = contrast_v .* (2.*firstSecond_v - 3);
     conSteps        = unique(C2_C1_v); % -.15,-.07,-.035,-.015,.015,.035,.07,.15
     absConSteps     = unique(abs(conSteps)); % .015,.035,.07,.15
@@ -193,13 +223,12 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     coll_fs_vA1       = coll_fs_v(cell2mat(cellfun(@(x) x=='B',agentExecColl_clmn,'UniformOutput',false)));
     coll_fs_vA2       = coll_fs_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false)));
     % Select only those *individual* decisions where agent acted 1st (and last).
-    % (We need this value as a denominator for computing the indiv. coll.
-    %  benefit (lines 209-210) when ind_CB=2.)
+    % We need this value as a denominator for computing the individual benefit (ind_CB==2)
     a1_1dec_fs_v      = a1_fs_v(cell2mat(cellfun(@(x) x=='B',agentExecColl_clmn,'UniformOutput',false))); % B 1st decision
     a2_1dec_fs_v      = a2_fs_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false))); % Y 1st decision
     %----------------------------------------------------------------------
 
-    % Collect ACCURACIES per contrast level (for B,Y,Coll,BColl,YColl)
+    % Collect and average ACCURACIES per contrast level (for B,Y,Coll,BColl,YColl)
     for cI = 1 : size(absConSteps,1)
         c                         = absConSteps(cI);
         % MEANS
@@ -208,20 +237,24 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         data.result.a2.acc(cI)    = mean(a2_acc_v(abs(C2_C1_v)==c & ~isnan(a2_acc_v)));
         data.result.coll.acc(cI)  = mean(coll_acc_v(abs(C2_C1_v)==c & ~isnan(coll_acc_v)));
         % Collective decisions taken by Blue, Collective decisions taken by Yellow
-        data.result.collA1.acc(cI)= mean(coll_acc_vA1(abs(C2_C1_v(cell2mat(cellfun(@(x) x=='B',agentExecColl_clmn,'UniformOutput',false))))==c & ~isnan(coll_acc_vA1)));
-        data.result.collA2.acc(cI)= mean(coll_acc_vA2(abs(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false))))==c & ~isnan(coll_acc_vA2)));
+        data.result.collA1.acc(cI)= mean(coll_acc_vA1(abs(C2_C1_v(cell2mat(cellfun(@(x) x=='B',...
+                                         agentExecColl_clmn,'UniformOutput',false))))==c & ~isnan(coll_acc_vA1)));
+        data.result.collA2.acc(cI)= mean(coll_acc_vA2(abs(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',...
+                                         agentExecColl_clmn,'UniformOutput',false))))==c & ~isnan(coll_acc_vA2)));
         % LENGTH
         data.result.a1.N(cI)      = length(a1_acc_v(abs(C2_C1_v)==c & ~isnan(a1_acc_v)));
         data.result.a2.N(cI)      = length(a2_acc_v(abs(C2_C1_v)==c & ~isnan(a2_acc_v)));
         data.result.coll.N(cI)    = length(coll_acc_v(abs(C2_C1_v)==c & ~isnan(coll_acc_v)));
-        data.result.collA1.N(cI)  = length(coll_acc_vA1(abs(C2_C1_v(cell2mat(cellfun(@(x) x=='B',agentExecColl_clmn,'UniformOutput',false))))==c & ~isnan(coll_acc_vA1)));
-        data.result.collA2.N(cI)  = length(coll_acc_vA2(abs(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false))))==c & ~isnan(coll_acc_vA2)));
+        data.result.collA1.N(cI)  = length(coll_acc_vA1(abs(C2_C1_v(cell2mat(cellfun(@(x) x=='B',...
+                                           agentExecColl_clmn,'UniformOutput',false))))==c & ~isnan(coll_acc_vA1)));
+        data.result.collA2.N(cI)  = length(coll_acc_vA2(abs(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',...
+                                           agentExecColl_clmn,'UniformOutput',false))))==c & ~isnan(coll_acc_vA2)));
     end
 
     % Save accuracies for all pairs
     accDyad_all  = [accDyad_all; data.result.coll.acc];
-    accB_all     = [accB_all; data.result.a1.acc];
-    accY_all     = [accY_all; data.result.a2.acc];
+    accB_all     = [accB_all;    data.result.a1.acc];
+    accY_all     = [accY_all;    data.result.a2.acc];
     
     %----------------------------------------------------------------------
     % PLOTTING accuracy
@@ -229,22 +262,24 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     % Plot accuracies across abs., log-transformed contrast differences
     % -> Here we use the accuracy data (0 or 1)
     % -----------------------------------------
-    acc_fig_contrasts=figure('Name',['S' ptc{p}]); set(acc_fig_contrasts, 'WindowStyle', 'Docked');
-    semilogx(absConSteps,data.result.a1.acc,'-s','MarkerSize',6,'LineWidth',1.5,'Color',color(1,:)); % Blue
-    hold on;
-    semilogx(absConSteps,data.result.a2.acc,'-o','MarkerSize',6,'LineWidth',1.5,'Color',color(2,:)); % Yellow
-    semilogx(absConSteps,data.result.coll.acc,'-*','MarkerSize',6,'LineWidth',1.5,'Color',color(3,:)); % Coll green
-    xlabel('Contrast difference','FontSize',18); %xlabel('LOG |C2 - C1|');
-    xlim([min(absConSteps)*.8 max(absConSteps)*1.2]);
-    xticks([min(absConSteps)*.8 max(absConSteps)*1.2]); % remove ticks?
-    ylabel('Accuracy','FontSize',18);
-    ylim([0.3 1]);
-    title(['Accuracy - ','S' ptc{p}],'FontSize',22);
+    if plot_acc_sens_ind
+        acc_fig_contrasts=figure('Name',['S' ptc{p}]); set(acc_fig_contrasts, 'WindowStyle', 'Docked');
+        semilogx(absConSteps,data.result.a1.acc,'-s','MarkerSize',6,'LineWidth',1.5,'Color',color(1,:));   % Blue
+        hold on;
+        semilogx(absConSteps,data.result.a2.acc,'-o','MarkerSize',6,'LineWidth',1.5,'Color',color(2,:));   % Yellow
+        semilogx(absConSteps,data.result.coll.acc,'-*','MarkerSize',6,'LineWidth',2.5,'Color',color(3,:)); % Green
+        xlabel('Absolute contrast difference','FontSize',18); % ('LOG |C2 - C1|')
+        xlim([min(absConSteps)*.8 max(absConSteps)*1.2]);
+        xticks([min(absConSteps)*.8 max(absConSteps)*1.2]); % remove ticks?
+        ylabel('Accuracy','FontSize',18);
+        ylim([0.3 1]);
+        title(['Accuracy - ','S' ptc{p}],'FontSize',22);
+    end
     %if save_plot
         %saveas(gcf,[path_to_save,'S',ptc{p},'_Acc_',lab,block_lab,ind_lab,ben_lab],'png');
     %end
    
-    % Collect DECISIONS per contrast level (for B,Y,Coll,B1dec,Y1dec,BColl,YColl)
+    % Collect and average DECISIONS per contrast level (for B,Y,Coll,B1dec,Y1dec,BColl,YColl)
     for cI = 1 : size(conSteps,1)
         c                           = conSteps(cI);
         % MEANS
@@ -253,52 +288,62 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         data.result.a2.fs(cI)       = mean(a2_fs_v(C2_C1_v==c & ~isnan(a2_fs_v)));
         data.result.coll.fs(cI)     = mean(coll_fs_v(C2_C1_v==c & ~isnan(coll_fs_v)));
         % Individual decisions where B/Y took the 1st and collective decision
-        data.result.a1_1dec.fs(cI)  = mean(a1_1dec_fs_v(C2_C1_v(cell2mat(cellfun(@(x) x=='B',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(a1_1dec_fs_v)));
-        data.result.a2_1dec.fs(cI)  = mean(a2_1dec_fs_v(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(a2_1dec_fs_v)));
+        data.result.a1_1dec.fs(cI)  = mean(a1_1dec_fs_v(C2_C1_v(cell2mat(cellfun(@(x) x=='B',...
+                                           agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(a1_1dec_fs_v)));
+        data.result.a2_1dec.fs(cI)  = mean(a2_1dec_fs_v(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',...
+                                           agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(a2_1dec_fs_v)));
         % Collective decisions taken by Blue, Collective decisions taken by Yellow
-        data.result.collA1.fs(cI)   = mean(coll_fs_vA1(C2_C1_v(cell2mat(cellfun(@(x) x=='B',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA1)));
-        data.result.collA2.fs(cI)   = mean(coll_fs_vA2(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA2)));
+        data.result.collA1.fs(cI)   = mean(coll_fs_vA1(C2_C1_v(cell2mat(cellfun(@(x) x=='B',...
+                                           agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA1)));
+        data.result.collA2.fs(cI)   = mean(coll_fs_vA2(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',...
+                                           agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA2)));
         % LENGTH
         data.result.a1.fsN(cI)      = length(a1_fs_v(C2_C1_v==c & ~isnan(a1_fs_v)));
         data.result.a2.fsN(cI)      = length(a2_fs_v(C2_C1_v==c & ~isnan(a2_fs_v)));
         data.result.coll.fsN(cI)    = length(coll_fs_v(C2_C1_v==c & ~isnan(coll_fs_v)));
-        data.result.a1_1dec.fsN(cI) = length(a1_1dec_fs_v(C2_C1_v(cell2mat(cellfun(@(x) x=='B',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(a1_1dec_fs_v)));
-        data.result.a2_1dec.fsN(cI) = length(a2_1dec_fs_v(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(a2_1dec_fs_v)));
-        data.result.collA1.N(cI)    = length(coll_fs_vA1(C2_C1_v(cell2mat(cellfun(@(x) x=='B',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA1)));
-        data.result.collA2.N(cI)    = length(coll_fs_vA2(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA2)));
+        data.result.a1_1dec.fsN(cI) = length(a1_1dec_fs_v(C2_C1_v(cell2mat(cellfun(@(x) x=='B',...
+                                             agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(a1_1dec_fs_v)));
+        data.result.a2_1dec.fsN(cI) = length(a2_1dec_fs_v(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',...
+                                             agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(a2_1dec_fs_v)));
+        data.result.collA1.N(cI)    = length(coll_fs_vA1(C2_C1_v(cell2mat(cellfun(@(x) x=='B',...
+                                             agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA1)));
+        data.result.collA2.N(cI)    = length(coll_fs_vA2(C2_C1_v(cell2mat(cellfun(@(x) x=='Y',...
+                                             agentExecColl_clmn,'UniformOutput',false)))==c & ~isnan(coll_fs_vA2)));
     end
 
     %----------------------------------------------------------------------
-    % PLOTTING decision
+    % PLOTTING sensitivity
     %----------------------------------------------------------------------
     % Plot P(Report 2nd) across contrast differences (non-logarithmic)
     % Note: This plot is like the psych. curve but without curve fitting!
     % -> Here we use the decision data (1 or 2)
     % -----------------------------------------
-    acc_fig_psy=figure('Name',['S' ptc{p}]); set(acc_fig_psy, 'WindowStyle', 'Docked');
-    plot(conSteps,data.result.a1.fs,'bs-');
-    hold on;
-    plot(conSteps,data.result.a2.fs,'yo-');
-    plot(conSteps,data.result.coll.fs,'gv-','LineWidth',1);
-    xlabel('C2 - C1','FontSize',18);
-    ylabel('P(Report 2nd)','FontSize',18);
-    ylim([0 1]);
-    title(['Sensitivity - ','S' ptc{p}],'FontSize',22);
+    if plot_acc_sens_ind
+        acc_fig_psy=figure('Name',['S' ptc{p}]); set(acc_fig_psy, 'WindowStyle', 'Docked');
+        plot(conSteps,data.result.a1.fs,'-s','MarkerSize',6,'LineWidth',1.5,'Color',color(1,:));   %'bs-'
+        hold on;
+        plot(conSteps,data.result.a2.fs,'-o','MarkerSize',6,'LineWidth',1.5,'Color',color(2,:));   %'yo-'
+        plot(conSteps,data.result.coll.fs,'-*','MarkerSize',6,'LineWidth',2.5,'Color',color(3,:)); %'gv-'
+        xlabel('Contrast difference','FontSize',18);
+        ylabel('P(Report 2nd)','FontSize',18);
+        ylim([0 1]);
+        title(['Sensitivity - ','S' ptc{p}],'FontSize',22);
+    end
     %if save_plot
         %saveas(gcf,[path_to_save,'S',ptc{p},'_PerSens_',lab,block_lab,ind_lab],'png');
     %end
 
     
     %----------------------------------------------------------------------
-    % FIT and PLOT PSYCHOMETRIC CURVES
+    %% FIT and PLOT PSYCHOMETRIC CURVES
     %----------------------------------------------------------------------
     full = 1; % 1 = compute cb for all trials, not for windows
     
-    % *y* contains the DECISION data - for each of the 8 contrast levels  
+    % *y* contains the averaged DECISION data - for each of the 8 contrast levels  
     % 7 columns: [Blue, Yellow, Collective , BColl, YColl, Bdec1, Ydec1]
-    % 15 rows (participant pairs)
-    y    = [data.result.a1.fs' data.result.a2.fs' data.result.coll.fs'...
-            data.result.collA1.fs' data.result.collA2.fs'...
+    % 15 rows  : pairs
+    y    = [data.result.a1.fs'      data.result.a2.fs' data.result.coll.fs'...
+            data.result.collA1.fs'  data.result.collA2.fs'...
             data.result.a1_1dec.fs' data.result.a2_1dec.fs'];
 
     % Prepare figure (per pair) to show psychometric curves
@@ -307,11 +352,12 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     % *slope* contains the slope values (max or mean)
     % -> computed inside function plot_psy, see below
     % 7 columns: [Blue, Yellow, Collective , BColl, YColl, Bdec1, Ydec1]
-    % 15 rows (participant pairs)
+    % 15 rows  : pairs
     % ---------------------------------------------------------------------
     % -> GO INTO FUNCTION PLOT_PSY to fit and plot psych. curves
     aveFlag=0;
-    slope(p,:) = plot_psy(conSteps,y,plotSym,color,default,full,coll_calc,benefitType,mrkColor,aveFlag);
+    slope(p,:) = plot_psy(conSteps,y,plotSym,color,default,full,coll_calc,...
+                          benefitType,mrkColor,aveFlag);
     % ---------------------------------------------------------------------
 
     % Set figure properties for psychometric function plots
@@ -320,7 +366,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     ylabel("Proportion 2nd interval",'FontSize',18);
 
     %----------------------------------------------------------------------
-    % COMPUTE COLLECTIVE BENEFIT
+    %% COMPUTE COLLECTIVE BENEFIT
     %----------------------------------------------------------------------
     % Which individual (B or Y) has larger slope (= higher sensitivity)?
     % agent_max/min = the agent names (1 = Blue, 2 = Yellow)
@@ -335,7 +381,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         amin = 'B';
     end
 
-    % save infor on min/max agent in table
+    % save info on min/max agent in table
     minmaxTable(p,1)={str2double(each(p).name(2:4))};
     minmaxTable(p,2)={amax};
     minmaxTable(p,3)={amin};
@@ -361,12 +407,17 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
     end
 
     % based on ind. benefits for B/Y (above), assign ind. benefits min/max
+    % XXX COLORS SHOULD BE ASSIGNED BEFORE PLOT_PSY BUT THIS IS NOT
+    % POSSIBLE
     if agent_max == 1
         coll_ben_max = coll_ben(p,1);
         coll_ben_min = coll_ben(p,2);
+        % order colors such that min=blue and max=red
+        mrkColor     = [[1 1 1]; [1 1 1]; [0.6350 0.0780 0.1840]; [0 0.4470 0.7410]]; 
     elseif agent_max == 2
         coll_ben_max = coll_ben(p,2);
         coll_ben_min = coll_ben(p,1);
+        mrkColor     = [[1 1 1]; [1 1 1]; [0 0.4470 0.7410]; [0.6350 0.0780 0.1840]];
     end
 
     % Display the computed values as text in plot
@@ -374,12 +425,16 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         text(-0.18,0.95,['coll. benefit = ' num2str(coll_ben(p,3),'%.2f')],'FontSize',18);
         title(['Coll. benefit - ','S' ptc{p}],'FontSize',22);
     elseif benefitType == 1
-        if agent_max == 1
-            text(-0.18,0.95,['ind. benefit B (max) = ' num2str(coll_ben(p,1),'%.2f')],'FontSize',18, 'Color', color(1,:));
-            text(-0.18,0.9, ['ind. benefit Y (min) = ' num2str(coll_ben(p,2),'%.2f')],'FontSize',18, 'Color', color(2,:));
-        elseif agent_max == 2
-            text(-0.18,0.95,['ind. benefit B (min) = ' num2str(coll_ben(p,1),'%.2f')],'FontSize',18, 'Color', color(1,:));
-            text(-0.18,0.9, ['ind. benefit Y (max) = ' num2str(coll_ben(p,2),'%.2f')],'FontSize',18, 'Color', color(2,:));
+        if agent_max == 1 % if B is max agent
+            text(-0.18,0.95,['ind. benefit B (max) = ' num2str(coll_ben_max,'%.2f')],...
+                'FontSize',18, 'Color', color(5,:));
+            text(-0.18,0.9, ['ind. benefit Y (min) = ' num2str(coll_ben_min,'%.2f')],...
+                'FontSize',18, 'Color', color(4,:));
+        elseif agent_max == 2 % if Y is max agent
+            text(-0.18,0.95, ['ind. benefit Y (max) = ' num2str(coll_ben_max,'%.2f')],...
+                'FontSize',18, 'Color', color(5,:));
+            text(-0.18,0.9,['ind. benefit B (min) = ' num2str(coll_ben_min,'%.2f')],...
+                'FontSize',18, 'Color', color(4,:));
         end
         title(['Ind. benefit - ','S' ptc{p}],'FontSize',22);
     end
@@ -452,7 +507,7 @@ for p=1:length(ptc) % start pair loop (p=number of pairs; ptc=pair numbers)
         slope_wcoll(p,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full,coll_calc,benefitType,mrkColor,aveFlag);
         % -----------------------------------------------------------------
         slope_wcoll(p,:) = slope_wcoll(p,:)/smax;
-        plot(slope_wcoll(p,:),['-' plotSym{3}],'Color',color(3,:));
+        plot(slope_wcoll(p,:),['-' plotSym{3}],'Color',color(3,:),'MarkerSize',8,'LineWidth',3);
         title(['Coll benefit - ','S' ptc{p},'- wnd'],'FontSize',22);
     end
 end
@@ -481,7 +536,7 @@ dmin_1dec_ave = median(dmin_1dec, 1);
 
 % y_ave contains AVERAGE DECISION data for each of the 8 contrast levels
 if benefitType == 2 % "traditional" collective benefit
-    y_ave = [decMin_ave' decMax_ave' decDyad_ave']; % [smin, smax, Collective]
+    y_ave = [decMin_ave' decMax_ave' decDyad_ave']; % [min, max, Collective]
 elseif benefitType == 1
     y_ave = [dmin_coll_ave' dmax_coll_ave' dmin_1dec_ave' dmax_1dec_ave'];
 end
@@ -524,7 +579,9 @@ if not(subcon_calc) && sub_block==0 && length(ptc)>1
 
     % Average across pairs
     h4=figure(); set(h4,'WindowStyle','Docked');
-    errorbar(1:default.w_lgt/default.step,mean(slope_wcoll),-std(slope_wcoll)/sqrt(length((slope_wcoll))),+std(slope_wcoll)/sqrt(length((slope_wcoll))),'Color', color(3,:),'LineWidth',1);hold on;
+    errorbar(1:default.w_lgt/default.step,...
+             mean(slope_wcoll),-std(slope_wcoll)/sqrt(length((slope_wcoll))),+std(slope_wcoll)/sqrt(length((slope_wcoll))),...
+             'Color', color(3,:),'LineWidth',3); hold on;
     % plot a horizontal line at 1
     line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
     xlim([0 (default.w_lgt/default.step)+1]);
@@ -544,7 +601,7 @@ if not(subcon_calc) && sub_block==0 && length(ptc)>1
     allColors = jet(16);
     h5=figure(); set(h5, 'WindowStyle', 'Docked');
     colororder(allColors(1:end,:));
-    plot(slope_wcoll',['-' plotSym{3}]); hold on;
+    plot(slope_wcoll',['-' plotSym{3}],'LineWidth',2, 'MarkerSize',6); hold on;
     % plot a horizontal line at 1
     line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:),'LineWidth',1.5);
     hold off;
@@ -570,9 +627,9 @@ accY_ave   = mean(accY_all,1);
 accInd_ave = mean([accB_ave; accY_ave],1);
 acc_fig_contrasts_ave=figure('Name','AccAverage');
 set(acc_fig_contrasts_ave, 'WindowStyle', 'Docked');
-semilogx(absConSteps,accInd_ave,'--o','MarkerSize',6,'LineWidth',1.5,'Color',[1 0 1]); % Individual
+semilogx(absConSteps,accInd_ave,'--o','MarkerSize',8,'LineWidth',2,'Color',[0.7804 0.3412 0.8706]); % Ind=purple
 hold on;
-semilogx(absConSteps,accDyad_ave,'-*','MarkerSize',6,'LineWidth',1.5,'Color',colorAve(3,:)); % Collective
+semilogx(absConSteps,accDyad_ave,'-*','MarkerSize',8,'LineWidth',2,'Color',[0 0 0]); % Coll=black
 xlabel('Contrast difference','FontSize',18); %xlabel('LOG |C2 - C1|');
 xlim([min(absConSteps)*.8 max(absConSteps)*1.2]);
 xticks([min(absConSteps)*.8 max(absConSteps)*1.2]);
@@ -596,6 +653,9 @@ end
 % Define x-y values (x: ratio, y: cb)
 cb_ratio_combo = [cb_all ratio_all];
 cb_ratio_combo_sorted = sortrows(cb_ratio_combo,2);
+disp('What is the average similarity ratio across pairs?');
+disp(['mean similarity ratio: ' num2str(mean(ratio_all),'%.2f')]);
+fprintf('\n');
 
 % Check correlation
 [R,P] = corrcoef(cb_ratio_combo_sorted(:,2),cb_ratio_combo_sorted(:,1));
