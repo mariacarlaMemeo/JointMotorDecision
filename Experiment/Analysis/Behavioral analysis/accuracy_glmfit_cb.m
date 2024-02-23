@@ -16,13 +16,15 @@
 close all; clear variables; clc;
 %--------------------------------------------------------------------------
 % Flags
-save_plot         = 1; % save the plots (1) or not (0)?
+save_plot         = 0; % save the plots (1) or not (0)?
 plot_acc_sens_ind = 0; % plot accuracy and non-fitted sensitivity curves per pair (B,Y,Coll)?
-subselect_similar = 0; % subselect only pairs whose members are similar (> ratio mean .0.68)
-% which benefit to compute and plot? (1 or 2)
+% Subselect participants?
+% 0=all, 1=only pairs whose members are similar (ratio mean >.0.68), 2=exclude S110
+subselect = 2; 
+% Which benefit to compute and plot? (1 or 2)
 % 1=individual benefit (does the individual participant benefit from interaction?)
 % 2=collective benefit (is collective better than better individual? Bahrami 2010)
-benefitType = 2; 
+benefitType = 1; 
 if benefitType == 1
     ben_lab = '_indiBen';
 elseif benefitType == 2
@@ -37,9 +39,11 @@ path_data    = fullfile(pwd,'..\..\Data\Behavioral\original_files\'); % mat file
 path_to_save = fullfile(pwd,'Behavioral plots\Accuracy_PsychCurves\'); % save here
 each         = dir([path_data,'*.mat']); % list of mat files
 % Retrieve all participant numbers (take first 3 digits), as cell array
-if subselect_similar % take only a subset
+if subselect == 1 % take only a subset
     ptc = {'110','113','115','116','117','122','123','124'};
-else
+elseif subselect == 2 % exclude S110 (because issues with kinematics)
+    ptc = {'108','111','113','114','115','116','117','118','120','121','122','123','124'};
+elseif subselect == 0 % take all pairs
     ptc = cellfun(@(s) cell2mat(regexp(s,'\d{3}','Match')),{each.name},'uni',0);
 end
 
@@ -154,11 +158,15 @@ disp('*END OF USER INPUT*'); fprintf('\n');
 for p = 1:length(ptc) % start pair loop (p=current pair; ptc=cell array with all pair numbers)
 
     % Load each pair's data
-    if subselect_similar % load only specific pairs
+    if subselect == 1 % only similar pairs
         select = [2 5 7 8 9 13 14 15];
         load([path_data,each(select(p)).name])
         disp(['Loading ',each(select(p)).name]);
-    else
+    elseif subselect == 2 % exclude S110
+        select = [1 3 4:15];
+        load([path_data,each(select(p)).name])
+        disp(['Loading ',each(select(p)).name]);
+    elseif subselect == 0 % all pairs
         load([path_data,each(p).name])
         disp(['Loading ',each(p).name]);
     end
