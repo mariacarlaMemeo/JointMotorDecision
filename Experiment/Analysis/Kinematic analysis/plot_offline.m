@@ -23,7 +23,7 @@ clear; close all; clc;
 % and adjust directory path accordingly
 [~, name] = system('hostname');
 if strcmp(name(1:end-1),'DESKTOP-1C66RTI')
-    data_dir  = 'D:\DATA\Processed';
+    data_dir  = 'E:\DATA\Processed';
 elseif strcmp(name(1:end-1),'IITCMONLAP008')
     data_dir  = 'D:\joint-motor-decision\kin_data\Processed';
 end
@@ -61,7 +61,7 @@ spa_param   = {'x' 'y' 'z'};
 
 
 %% START DECISION LOOP: run through all three decisions
-for dec = 1:length(list_Dec)
+for dec = 2%1:length(list_Dec)
 
     % pair loop: run through this for all selected pairs (n_pr = number of pairs)
     for sel_p = 1:n_pr
@@ -79,7 +79,7 @@ for dec = 1:length(list_Dec)
         plot_indiv     = 0; % Plots for individual agents? (1=yes, 0=no)
         n_var          = 1; % Plot which variables? (1=V,A,Z,X; 2=XY,YZ)
         plot_sd        = 1; % Plot mean+variability? (1=yes, 0=no ->trial-by-trial)
-        dev            = 1; % Which variability? (1=SD, 2=SEM), for indiv. plots
+        dev            = 2; % Which variability? (1=SD, 2=SEM), for indiv. plots
         show_med_split = 1; % Apply a median split? (1=yes, 0=no)
         % Note: trial-by-trial plots need to be adjusted for n_var=2
         % -----------------------------------------------------------------
@@ -260,6 +260,22 @@ for dec = 1:length(list_Dec)
                 name_struct = [(ave_all.pairID) 'mean_A' agents{g}];
                 eval([(name_struct) '= ave_all.A;'])
 
+                % left-right/x-coordinate (NOTE: X doesn't work for averaging!)
+                meanHall_X.index = [meanHall_X.index, ave_all.X.space.index.meanH];
+                meanLall_X.index = [meanLall_X.index,ave_all.X.space.index.meanL];
+                meanHall_X.ulna  = [meanHall_X.ulna,ave_all.X.space.ulna.meanH];
+                meanLall_X.ulna  = [meanLall_X.ulna,ave_all.X.space.ulna.meanL];
+                name_struct = [(ave_all.pairID) 'mean_X' agents{g}];
+                eval([(name_struct) '= ave_all.X;'])
+
+                % foward/y-coordinate (ave_all.Y.space)
+                meanHall_Y.index = [meanHall_Y.index, ave_all.Y.space.index.meanH];
+                meanLall_Y.index = [meanLall_Y.index,ave_all.Y.space.index.meanL];
+                meanHall_Y.ulna  = [meanHall_Y.ulna,ave_all.Y.space.ulna.meanH];
+                meanLall_Y.ulna  = [meanLall_Y.ulna,ave_all.Y.space.ulna.meanL];
+                name_struct = [(ave_all.pairID) 'mean_Y' agents{g}];
+                eval([(name_struct) '= ave_all.Y;'])
+
                 % Height/z-coordinate (ave_all.Z.space)
                 meanHall_Z.index = [meanHall_Z.index, ave_all.Z.space.index.meanH];
                 meanLall_Z.index = [meanLall_Z.index,ave_all.Z.space.index.meanL];
@@ -267,14 +283,6 @@ for dec = 1:length(list_Dec)
                 meanLall_Z.ulna  = [meanLall_Z.ulna,ave_all.Z.space.ulna.meanL];
                 name_struct = [(ave_all.pairID) 'mean_Z' agents{g}];
                 eval([(name_struct) '= ave_all.Z;'])
-
-                % foward/y-coordinate (ave_all.X.space) XXX
-                meanHall_Y.index = [meanHall_Y.index, ave_all.Y.space.index.meanH];
-                meanLall_Y.index = [meanLall_Y.index,ave_all.Y.space.index.meanL];
-                meanHall_Y.ulna  = [meanHall_Y.ulna,ave_all.Y.space.ulna.meanH];
-                meanLall_Y.ulna  = [meanLall_Y.ulna,ave_all.Y.space.ulna.meanL];
-                name_struct = [(ave_all.pairID) 'mean_Y' agents{g}];
-                eval([(name_struct) '= ave_all.Y;'])
 
             end
 
@@ -307,30 +315,7 @@ for dec = 1:length(list_Dec)
                 eval([(name_struct) '= ave_all;'])
 
             end
-
-            % MAKE THIS WORK OR DELETE
-%             % THIS IS NOT STRICTLY NECESSARY (already done in main script)
-%             % Save number of plotted (i.e., clean!) trials in which either 
-%             % agent B or Y took 2nd decision (in sum, this is the total
-%             % number of clean trials for the pair).
-%             % trials_clean contains two values (b/y)
-%             if (which_Dec == 1 || which_Dec ==2)
-%                 % Add the agent label to the 'ave_all' variable.
-%                 % (this label is already there for the collective ave_all)
-%                 if plot_sd==1
-%                     ave_all.agent = agents{g};
-%                     trials_clean(g) = ...
-%                         length(ave_all(~isnan(ave_all(1,pairS.at2ndDec(1:size(ave_all,2))==agents{g}))));
-%                 elseif plot_sd==0
-%                     trials_clean(g) = ...
-%                     length(ave_all(~isnan(ave_all(1,pairS.at2ndDec==agents{g}))));
-%                     % XXX double check this
-%                     %if g==2
-%                         %fprintf(['Clean trials are: ' num2str(trials_clean(1)) 'plus ' [num2str(trials_clean(2))]], '\n');
-%                     %end
-%                 end
-%             end
-        
+       
         end % end of agent loop -------------------------------------------
 
         % clear variables, except those that are still needed!
@@ -364,7 +349,7 @@ for dec = 1:length(list_Dec)
         
         for m = 1:length(mrks)
 
-            if n_var == 1 % velocity, acceleration, z-coordinate           
+            if n_var == 1 % velocity, acceleration, z- and y-coordinate           
 
                 for v = 1:length(var_list)
 
@@ -427,6 +412,9 @@ for dec = 1:length(list_Dec)
                     hold off;
 
                 end
+
+                % create one multipanel plot with mean V,A,Z per sub, for hi/lo confidence
+                plot_HiLo_means;
 
             elseif n_var == 2 % only Y-Z (can be adapted to Z-X)
 
