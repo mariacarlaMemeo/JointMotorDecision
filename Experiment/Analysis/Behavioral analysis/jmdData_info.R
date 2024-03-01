@@ -1,4 +1,4 @@
-jmdData_info <- function() {
+jmdData_info <- function(curdat) {
   
   # create empty data frame to record missing data and further info
   dataInfo = setNames(data.frame(matrix(ncol = 11, nrow = length(unique(curdat$Pair)))), 
@@ -67,6 +67,6 @@ jmdData_info <- function() {
     
   }
   
-  sprintf("eccolo qui: jmdData_info!")
+  #sprintf("eccolo qui: jmdData_info!")
   return(dataInfo)
 }

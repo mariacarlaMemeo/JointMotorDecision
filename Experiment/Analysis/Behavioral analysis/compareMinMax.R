@@ -11,7 +11,8 @@ compareMinMax <- function(wCollconf,wtarget,data_co_sum) {
   data_co_sum$variable       = factor(data_co_sum$variable)
   if (wCollconf) {
     data_confcompare = data_co_sum
-    if (wtarget) {
+    # include target contrast as factor
+    #if (wtarget) {
       print(ggplot(data_confcompare, aes(x = targetContrast, y = value, fill = variable, colour = variable)) +
               geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
               geom_errorbar(aes(x=targetContrast, ymin=value-se, ymax=value+se), 
@@ -22,7 +23,8 @@ compareMinMax <- function(wCollconf,wtarget,data_co_sum) {
               ylab("Confidence") + xlab("Target contrast"))
       if (save_plots) {ggsave(file=sprintf("%sminmax_conf_wcoll_wtarget.png",PlotDir), 
                               dpi = 300, units=c("cm"), height =20, width = 20)}
-    } else {
+      # across target contrasts
+    #} else {
       data_confcompare = summarySE(data_confcompare,measurevar="value",groupvars=c("variable")) 
       data_confcompare$variable = factor(data_confcompare$variable)
       print(ggplot(data_confcompare, aes(x = variable, y = value)) +
@@ -35,34 +37,36 @@ compareMinMax <- function(wCollconf,wtarget,data_co_sum) {
               ylab("Confidence") + xlab("Decisionmaker (max - min - coll)"))
       if (save_plots) {ggsave(file=sprintf("%sminmax_conf_wcoll.png",PlotDir), 
                               dpi = 300, units=c("cm"), height =20, width = 20)}
-    }
+    #}
   } else {
     data_confcompare = data_co_sum[data_co_sum$variable=="maxConf" | data_co_sum$variable=="minConf",]
-    if (wtarget) {
-      print(ggplot(data_confcompare, aes(x = targetContrast, y = value, fill = variable, colour = variable)) +
-              geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
-              geom_errorbar(aes(x=targetContrast, ymin=value-se, ymax=value+se), 
-                            position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
-              scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
-              scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-              ggtitle("who is more confident?") +
-              ylab("Confidence") + xlab("Target contrast"))
-      if (save_plots) {ggsave(file=sprintf("%sminmax_conf_wtarget.png",PlotDir), 
-                              dpi = 300, units=c("cm"), height =20, width = 20)}
-    } else {
-      data_confcompare = summarySE(data_confcompare,measurevar="value",groupvars=c("variable")) 
-      data_confcompare$variable = factor(data_confcompare$variable)
-      print(ggplot(data_confcompare, aes(x = variable, y = value)) +
-              geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
-              geom_errorbar(aes(x=variable, ymin=value-se, ymax=value+se), 
-                            position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
-              #scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
-              scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-              ggtitle("who is more confident?") +
-              ylab("Confidence") + xlab("Decisionmaker (max - min)"))
-      if (save_plots) {ggsave(file=sprintf("%sminmax_conf.png",PlotDir), 
-                              dpi = 300, units=c("cm"), height =20, width = 20)}
-    }
+    # include target contrast as factor
+    #if (wtarget) {
+    print(ggplot(data_confcompare, aes(x = targetContrast, y = value, fill = variable, colour = variable)) +
+            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
+            geom_errorbar(aes(x=targetContrast, ymin=value-se, ymax=value+se), 
+                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
+            scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
+            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
+            ggtitle("who is more confident?") +
+            ylab("Confidence") + xlab("Target contrast"))
+    if (save_plots) {ggsave(file=sprintf("%sminmax_conf_wtarget.png",PlotDir), 
+                            dpi = 300, units=c("cm"), height =20, width = 20)}
+    # across target contrasts
+    #} else {
+    data_confcompare = summarySE(data_confcompare,measurevar="value",groupvars=c("variable")) 
+    data_confcompare$variable = factor(data_confcompare$variable)
+    print(ggplot(data_confcompare, aes(x = variable, y = value)) +
+            geom_bar(stat = "identity", position = "dodge", alpha = 0.5)+
+            geom_errorbar(aes(x=variable, ymin=value-se, ymax=value+se), 
+                          position = position_dodge(0.9), width=0.2, size=1, alpha=0.9) +
+            #scale_y_continuous(breaks = conf_scale4$breaks, labels = conf_scale4$breaks) +
+            scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
+            ggtitle("who is more confident?") +
+            ylab("Confidence") + xlab("Decisionmaker (max - min)"))
+    if (save_plots) {ggsave(file=sprintf("%sminmax_conf.png",PlotDir), 
+                            dpi = 300, units=c("cm"), height =20, width = 20)}
+    #}
   }
   
   
@@ -96,6 +100,6 @@ compareMinMax <- function(wCollconf,wtarget,data_co_sum) {
   # levels(data_mima_filt$variable)=c("bla","bla","bla")
   # data_mm_sum  = summarySE(data_mima_filt,measurevar="value",groupvars=c("variable")) 
   
-  sprintf("compareMinMax function was run!")
+  #sprintf("compareMinMax function was run!")
   
 }

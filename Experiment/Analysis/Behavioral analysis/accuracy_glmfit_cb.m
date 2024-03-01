@@ -20,7 +20,7 @@ save_plot         = 0; % save the plots (1) or not (0)?
 plot_acc_sens_ind = 0; % plot accuracy and non-fitted sensitivity curves per pair (B,Y,Coll)?
 % Subselect participants?
 % 0=all, 1=only pairs whose members are similar (ratio mean >.0.68), 2=exclude S110
-subselect = 2; 
+subselect = 0; 
 % Which benefit to compute and plot? (1 or 2)
 % 1=individual benefit (does the individual participant benefit from interaction?)
 % 2=collective benefit (is collective better than better individual? Bahrami 2010)

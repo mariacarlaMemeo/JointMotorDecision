@@ -14,36 +14,17 @@ rm(list = ls())
 graphics.off()
 
 # Save all plots?
-save_plots = 0
+save_plots      = 1
 # Write Excel file with all data and info file?
 save_data_final = 0
 
-# ### work on an individual theme for all plots --------------------------------
-# library(tidyverse)
-# library(showtext)
-# font_add_google("Fira Sans", "firasans")
-# showtext_auto()
-# theme_customs <- theme(
-#   text = element_text(family = 'firasans', size = 16),
-#   plot.title.position = 'plot',
-#   plot.title = element_text(
-#     face = 'bold', size = 16,
-#     #colour = thematic::okabe_ito(8)[6],
-#     #margin = margin(t = 2, r = 0, b = 7, l = 0, unit = "mm")
-#   ),
-# )
-# theme_set(theme_minimal() + theme_customs)
-# ### --------------------------------------------------------------------------
-
 # Import libraries and load packages
-library(doBy)
 pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
-          "MuMIn","BayesFactor","permuco","RVAideMemoire","this.path","ggiraphExtra",
-          "RColorBrewer","stringr","knitr","multcomp","ggplot2","car","dplyr",
+          "MuMIn","BayesFactor","permuco","RVAideMemoire",
+          "RColorBrewer","stringr","knitr","multcomp","ggplot2","ggiraph","car","dplyr",
           "plyr","lmerTest","ggrepel","sjstats","reshape2","readxl","writexl",
           "cellranger")
-
-# Check how many packages failed to load
+# Load all of them and heck how many packages failed to load
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Set flags
@@ -51,11 +32,11 @@ local_user = 2;    # set current user (1=MC, 2=LA)
 patel_mt   = FALSE # if TRUE: Does difference in MT predict inferred confidence? (Patel 2012)
 pair_plots = FALSE # if TRUE: shows the confidence for each pair per decision
 
-# Import info about max./min. agent from Excel file (this is a temporary solution)
+# Import info about max./min. agent from Excel file (created in Matlab)
 minmax <- read_excel("minmaxTable.xlsx")
 
 # Set paths (*** ADJUST TO LOCAL COMPUTER with flag local_user ***)
-# ! we access (and save) everything on GitHub - DataDir=pre-processed Excel files (see Drive) !
+# ! We access (and save) everything on GitHub - DataDir=pre-processed Excel files !
 if (local_user == 1) {
   DataDir = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Data/Behavioral/preprocessed/" 
   AnaDir  = "D:/GitHub_D/joint-motor-decision/JointMotorDecision/Experiment/Analysis/Behavioral analysis/"
@@ -74,10 +55,7 @@ source(paste0(AnaDir,'plotSE.R'))
 source(paste0(AnaDir,'final_rtmt_byAgent.R'))
 source(paste0(AnaDir,'compareMinMax.R'))
 source(paste0(AnaDir,'jmdData_info.R'))
-
-# Initialize variables
-decision1 = c(); conf1 = c(); acc1 = c()
-decision2 = c(); conf2 = c(); acc2 = c()
+source(paste0(AnaDir,'check_confDistribution.R'))
 
 
 # RETRIEVE DATA and CREATE DATA FRAME
@@ -103,6 +81,11 @@ curdat$agree                  = as.integer(curdat$B_decision == curdat$Y_decisio
 curdat$agree[curdat$agree==0] = -1
 
 # Add columns where decision, confidence, and accuracy are reported per 1st/2nd decision (rather than tied to agent B/Y)
+
+# Initialize variables
+decision1 = c(); conf1 = c(); acc1 = c()
+decision2 = c(); conf2 = c(); acc2 = c()
+# Assign values to variables
 for (row in 1:dim(curdat)[1]) {
   
   f_dec = curdat[row,"AgentTakingFirstDecision"] #agent taking first decision
@@ -240,7 +223,7 @@ if (save_data_final) {
   write_xlsx(curdat, path = paste0(curpath,"/jmdData_allPairs.xlsx"),
              col_names = TRUE, format_headers = TRUE)
   # also save info on lost trials etc.
-  jmdData_info() # compute info in function XXX not running yet!
+  dataInfo = jmdData_info(curdat)
   write_xlsx(dataInfo, path = paste0(curpath,"/jmdData_Info.xlsx"),
              col_names = TRUE, format_headers = TRUE)
 }
@@ -271,6 +254,10 @@ col_mimaC     = RColorBrewer::brewer.pal(5, "Paired")[c(2,1,5)] # light green,da
 # 1. confidence distribution: all levels (1-6) used equally? (on average)
 # 2. accuracy as a function of confidence / target contrast (correlations expected)
 # 3. target1/target2 distribution: left/right bias (on average and per participant)
+
+
+# 0. check distribution per pair and agent (use separate function)
+check_confDistribution(curdat)
 
 # 1. Confidence distribution - HISTOGRAMS
 all_conf = curdat[,c("Pair","confidence1","confidence2","Coll_conf","targetContrast")]
@@ -303,32 +290,63 @@ for(confy in (seq(2,ncol(all_conf)-1))) { # take columns 2-4 in all_conf
           scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
           ggtitle(colnames(all_conf)[confy]) +
           ylab("Count") + xlab("Confidence level") + theme_custom())
-  # print the confidence means in the console
-  print(sprintf("Average %s%s %.2f", colnames(all_conf)[confy], ":", round(mean(all_conf[,confy]),2)))
-  print(sprintf("SD %s%s %.2f", colnames(all_conf)[confy], ":", round(sd(all_conf[,confy]),2)))
+  # print the confidence means in the console (! CHANGE ! values not computed correctly!)
+  # print(sprintf("Average %s%s %.2f", colnames(all_conf)[confy], ":", round(mean(all_conf[,confy]),2)))
+  # print(sprintf("SD %s%s %.2f", colnames(all_conf)[confy], ":", round(sd(all_conf[,confy]),2)))
   # save the plot
   if (save_plots) {ggsave(file=sprintf(paste0("%sConfidenceHist_",as.character(confy-1),".png"),PlotDir), 
                           dpi = 300, units=c("cm"), height =20, width = 20)}
 }
 
+
 # 2. Accuracy by confidence/target contrast
-dec_names = c("1st decision","2nd decision","Collective decision") # for plot title
-p = "Pair"; ag = "agree"; sw = "switch" # variables for column names
-Bconf = "B_conf"; Yconf = "Y_conf"; agent1 = "AgentTakingFirstDecision"
+
+# preparatory steps
+# plot titles
+dec_names = c("1st decision","2nd decision","Collective decision") 
+# column names
+p = "Pair"; ag = "agree"; sw = "switch"; Bconf = "B_conf"; Yconf = "Y_conf"
+agent1 = "AgentTakingFirstDecision"; agent2 = "AgentTakingSecondDecision"
+
+# 2.0 Average accuracy per decision (1st, 2nd, coll)
+# --------------------------------------------------
+threeCol     = col_12C
+data_all_acc = curdat[,c("Pair","accuracy1","accuracy2","Coll_acc")]
+# transform into long format
+data_all_acc_long = melt(data_all_acc, id="Pair")
+# SUMMARY STATS per PAIR
+data_all_acc_sub  = summarySE(data_all_acc_long,measurevar="value",groupvars=c("Pair","variable"))
+# SUMMARY STATS across PAIRS
+data_all_acc_sum  = summarySE(data_all_acc_sub,measurevar="value",groupvars="variable")
+ggplot(data_all_acc_sum,aes(x=variable,y = value)) +
+  geom_point(data=data_all_acc_sum, aes(y = value, color = threeCol),alpha=0.9, size=3) + 
+  scale_color_manual(values = threeCol) +
+  geom_errorbar(aes(x=variable, ymin=value-se, ymax=value+se, color = threeCol,), width=0.2, alpha=0.9, size=1) +
+  geom_hline(yintercept=0.5, linetype='dashed', col = 'limegreen', size=1.4, alpha=0.6) +
+  scale_x_discrete(labels = c("1st","2nd","Collective")) +
+  scale_y_continuous(limits = c(0.5,1), breaks = seq(0.5,1, by=0.1)) +
+  ggtitle("Accuracy by decision") +
+  ylab("Accuracy") + xlab("Decision") + theme_custom()
+if (save_plots) {ggsave(file=sprintf("%sAccPerDec.png",PlotDir), 
+                        dpi = 300, units=c("cm"), height =20, width = 20)}
 
 # 2a. Accuracy as function of confidence
 # --------------------------------------
 # Note: this is a big for-loop going through all 3 decisions and ag/disag(switch/noswitch)
 for(confVar in 1:3) {
   
-  if (confVar==1)      {conf="confidence1"; acc="accuracy1"}
-  else if (confVar==2) {conf="confidence2"; acc="accuracy2"}
-  else if (confVar==3) {conf="Coll_conf";   acc="Coll_acc"}
+  if (confVar==1){
+    conf="confidence1"; acc="accuracy1"
+  }else if (confVar==2) {
+    conf="confidence2"; acc="accuracy2"
+  }else if (confVar==3) {
+    conf="Coll_conf";   acc="Coll_acc"
+  }
   
-  # XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
-  all_conf_acc        = curdat[,c(acc,conf)]
-  all_conf_acc_sum    = summarySE(all_conf_acc,measurevar=acc,groupvars=c(conf))
-
+  all_conf_acc        = curdat[,c(p,acc,conf)]
+  all_conf_acc_sub    = summarySE(all_conf_acc,measurevar=acc,groupvars=c(p,conf))
+  all_conf_acc_sum    = summarySE(all_conf_acc_sub,measurevar=acc,groupvars=c(conf))
+ 
   print(ggplot(all_conf_acc_sum) +
           geom_bar( aes(x=get(conf), y=get(acc)), stat="identity", fill="grey", alpha=0.7) +
           geom_errorbar( aes(x=get(conf), ymin=get(acc)-se, ymax=get(acc)+se), width=0.2, colour="black", alpha=0.9, size=1)+
@@ -341,15 +359,18 @@ for(confVar in 1:3) {
                           dpi = 300, units=c("cm"), height =20, width = 20)}
   
   # add agreement factor to the original bar plots
-  data_ag     = curdat[,c(acc,conf,ag,sw)]
-  data_sum_ag = summarySE(data_ag,measurevar=acc,groupvars=c(conf,ag,sw))
+  data_ag     = curdat[,c(p,acc,conf,ag)]
+  data_sub_ag = summarySE(data_ag,measurevar=acc,groupvars=c(p,conf,ag))
+  data_sum_ag = summarySE(data_sub_ag,measurevar=acc,groupvars=c(conf,ag))
   # factorize and rename
-  data_sum_ag$ag = as.factor(data_sum_ag$ag)
-  levels(data_sum_ag$ag)= c("disagree","agree")
-  names(data_sum_ag)[names(data_sum_ag)=="agree"] ="Agreement"
+  data_sum_ag$agree = as.factor(data_sum_ag$agree)
+  levels(data_sum_ag$agree)= c("disagree","agree")
+  names(data_sum_ag)[names(data_sum_ag)=="agree"]="Agreement"
   
-  print(ggplot(data_sum_ag, aes(x = get(conf), y = get(acc), fill = ag, colour = ag)) +
-          geom_bar(stat = "identity", position = "dodge")+
+  print(ggplot(data_sum_ag, aes(x = get(conf), y = get(acc), colour = Agreement)) +
+          geom_point(position = position_dodge(width = 0.2), alpha=0.9, size=4)+
+          geom_errorbar(aes(x=get(conf), ymin=get(acc)-se, ymax=get(acc)+se, colour = Agreement),
+                        position = position_dodge(width = 0.2), width=0.2, alpha=0.9, size=1)+
           geom_hline(yintercept=0.5, linetype='dashed', col = 'limegreen', size=1.4, alpha=0.6) +
           scale_y_continuous(limits = acc_scale$lim, breaks = acc_scale$breaks) +
           scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
@@ -358,22 +379,18 @@ for(confVar in 1:3) {
   if (save_plots) {ggsave(file=sprintf(paste0("%sConfidenceAcc_",as.character(confVar),"_agdag.png"),PlotDir), 
                           dpi = 300, units=c("cm"), height =20, width = 20)}
  
-  # now create scatter plots, with pair as additional factor
-  data_p     = curdat[,c(p,acc,conf)]
-  data_sum_p = summarySE(data_p,measurevar=acc,groupvars=c(conf,p))
-  print(ggplot(data_sum_p, aes(x=get(acc), y=get(conf), color=as.factor(get(p)))) + 
-          geom_point(shape=1) + scale_colour_discrete() + 
-          scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
-          scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
-          ggtitle(dec_names[confVar]) +
-          xlab("Accuracy") + ylab("Confidence") + theme_custom() +
-          geom_smooth(method=lm,se=FALSE, size=0.5))
-  if (save_plots) {ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_pairs.png"),PlotDir), dpi = 300, units=c("cm"), height =20, width = 20)}
+  # now create scatter plots, one dot per agent per confidence level
+  if(confVar==1 | confVar==3){
+    data_agent = curdat[,c(p,agent1,acc,conf,ag,sw)]
+    names(data_agent)[names(data_agent)==agent1] = "agent"
+    data_sum_agent = summarySE(data_agent,measurevar=acc,groupvars=c(p,"agent",conf))
+  }else if (confVar==2){
+    data_agent = curdat[,c(p,agent2,acc,conf,ag,sw)]
+    names(data_agent)[names(data_agent)==agent2] = "agent"
+    data_sum_agent = summarySE(data_agent,measurevar=acc,groupvars=c(p,"agent",conf))
+  }
   
-  # do the same split by participant (instead of pair)
-  data_agent     = curdat[,c(p,agent1,acc,conf)]
-  data_sum_agent = summarySE(data_agent,measurevar=acc,groupvars=c(conf,p,agent1))
-  print(ggplot(data_sum_agent, aes(x=get(acc), y=get(conf), color=interaction(as.factor(get(agent1)),as.factor(get(p))))) + 
+  print(ggplot(data_sum_agent, aes(x=get(acc), y=get(conf), color=interaction(as.factor(agent),as.factor(get(p))))) + 
           geom_point(shape=1) + scale_colour_discrete() + 
           scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
           scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
@@ -383,16 +400,15 @@ for(confVar in 1:3) {
   if (save_plots) {ggsave(file=sprintf(paste0("%sConfAcc_",as.character(confVar),"_agents.png"),PlotDir), 
                           dpi = 300, units=c("cm"), height =20, width = 20)}
   
-  # split by participant and agreement
-  data_agent_ag = curdat[,c(p,agent1,acc,conf,ag,sw)]
+  
   # create separate plots for agreement and disagreement (+switch) trials
   for(agVar in 1:2) {
     
     # agreement
     if (agVar==1)    {  
-      data_sum_p_ag = summarySE(data_agent_ag,measurevar=acc,groupvars=c(conf,p,ag,sw,agent1));
-      data_sum_p_ag = data_sum_p_ag[data_sum_p_ag$ag==1,]; alab="agree"
-      print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=interaction(as.factor(get(agent1)),as.factor(get(p))))) + 
+      data_sum_p_ag = summarySE(data_agent,measurevar=acc,groupvars=c(p,"agent",conf,ag));
+      data_sum_p_ag = data_sum_p_ag[data_sum_p_ag$agree==1,]; alab="agree"
+      print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=interaction(as.factor(agent),as.factor(get(p))))) + 
               geom_point(shape=1) + scale_colour_discrete() + 
               scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
               scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
@@ -406,9 +422,9 @@ for(confVar in 1:3) {
     else if (agVar==2) {
       # decisions 1 and 2
       if (confVar==1 || confVar==2) {
-        data_sum_p_ag = summarySE(data_agent_ag,measurevar=acc,groupvars=c(conf,p,ag,sw,agent1));
-        data_sum_p_ag = data_sum_p_ag[data_sum_p_ag$ag==-1,]; alab="disagree"
-        print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=interaction(as.factor(get(agent1)),as.factor(get(p))))) +
+        data_sum_p_ag = summarySE(data_agent,measurevar=acc,groupvars=c(p,"agent",conf,ag));
+        data_sum_p_ag = data_sum_p_ag[data_sum_p_ag$agree==-1,]; alab="disagree"
+        print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=interaction(as.factor(agent),as.factor(get(p))))) +
                 geom_point(shape=1) + scale_colour_discrete() +
                 scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
                 scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
@@ -421,11 +437,14 @@ for(confVar in 1:3) {
       # collective decision: split into switch and no switch
       else if (confVar==3) {
         for(swVar in 1:2) {
-          data_sum_p_ag = summarySE(data_agent_ag,measurevar=acc,groupvars=c(conf,p,ag,sw,agent1));
-          if (swVar==1)      {data_sum_p_ag=data_sum_p_ag[data_sum_p_ag$ag==-1 & data_sum_p_ag$sw==1,]; alab="disagree&change"}
-          else if (swVar==2) {data_sum_p_ag=data_sum_p_ag[data_sum_p_ag$ag==-1 & data_sum_p_ag$sw==-1,]; alab="disagree&nochange"}
+          data_sum_p_ag = summarySE(data_agent,measurevar=acc,groupvars=c(p,"agent",conf,ag,sw));
+          if (swVar==1){
+            data_sum_p_ag=data_sum_p_ag[data_sum_p_ag$agree==-1 & data_sum_p_ag$switch==1,]; alab="disagree&change"
+          }else if (swVar==2){
+            data_sum_p_ag=data_sum_p_ag[data_sum_p_ag$agree==-1 & data_sum_p_ag$switch==-1,]; alab="disagree&nochange"
+          }
           
-          print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=interaction(as.factor(get(agent1)),as.factor(get(p))))) + 
+          print(ggplot(data_sum_p_ag, aes(x=get(acc), y=get(conf), color=interaction(as.factor(agent),as.factor(get(p))))) + 
                   geom_point(shape=1) + scale_colour_discrete() + 
                   scale_x_continuous(limits = c(0.2,1), breaks = acc_scale$breaks) +
                   scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
@@ -449,7 +468,7 @@ for(confVar in 1:3) {
 
 # Sub-select? if so: agreement or disagreement trials?
 subselect     = 0; # 1=yes,   0=no
-sub_agreement = 0; # 1=agree, 0=disagree 
+sub_agreement = 1; # 1=agree, 0=disagree 
 # Which decision types to plot?
 dec2plot      = 2; # 1=1st/2nd/coll, 2=max,min,coll
 # Prepare data set accordingly
@@ -554,106 +573,20 @@ if (save_plots) {ggsave(file=sprintf(paste0("%sallDec_ConfRContrast",dec_lab,agr
 
 
 ###############
-# RUN MIN-MAX COMPARISON with function compareMinmax
+# RUN MIN-MAX COMPARISON with function compareMinMax
 # IMPORTANT: the function uses data_co_sum from above - before running the following,
 # make sure that subselect=0 and dec2plot=2
 
 # Decide if you want to include collective decision (as var) and targetContrast (as factor)
-wCollconf = 1 # 0=without collective, 1=with collective
-wtarget   = 0 # 0=average across targets, 1=target as factor
-# now run function - XXX function does not return all plots - WHY? FIX!
-compareMinMax()
+wCollconf = 0 # 0=without collective, 1=with collective
+wtarget   = 1 # 0=average across targets, 1=target as factor
+# now run function
+compareMinMax(wCollconf,wtarget,data_co_sum)
 ###############
 
 
-#######################################
-# now separate plots (one per decision)
-tar = "targetContrast" 
-for(confVar in 1:3) {
-  
-  if (confVar==1)      {conf="confidence1"; acc="accuracy1"}
-  else if (confVar==2) {conf="confidence2"; acc="accuracy2"}
-  else if (confVar==3) {conf="Coll_conf";   acc="Coll_acc"}
-  
-  # XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
-  data_tar          = curdat[,c(conf,acc,tar)]
-  data_acc_tar_sum  = summarySE(data_tar,measurevar=acc,groupvars=c(tar))
-  data_conf_tar_sum = summarySE(data_tar,measurevar=conf,groupvars=c(tar))
-  
-  data_confacc_sum  = data_conf_tar_sum[, c(tar, "N", conf, "se")]
-  names(data_confacc_sum)[names(data_confacc_sum)=="se"] = "confSE"; #rename
-  data_confacc_sum$accuracy  = data_acc_tar_sum[, c(acc)] # add accuracy column
-  names(data_confacc_sum)[names(data_confacc_sum)=="accuracy"] = acc; #rename to get current acc
-  data_confacc_sum$se  = data_acc_tar_sum[, c("se")] # add accSE
-  names(data_confacc_sum)[names(data_confacc_sum)=="se"] = "accSE";
-  data_confacc_sum <- data_confacc_sum %>% mutate(confaccR = get(conf)/get(acc)) # add conf/acc ratio
-  data_confacc_sum <- data_confacc_sum %>% mutate(confaccSE = confSE/accSE) # add SE ratio
-  
-  print(ggplot(data_acc_tar_sum) +
-          geom_bar(aes(x=as.factor(get(tar)), y=get(acc)), stat="identity", fill="grey", alpha=0.7) +
-          geom_errorbar(aes(x=as.factor(get(tar)), ymin=get(acc)-se, ymax=get(acc)+se), width=0.2, colour="black", alpha=0.9, size=1) +
-          geom_hline(yintercept=0.5, linetype='dashed', col = 'limegreen', size=1.4, alpha=0.6) +
-          scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-          scale_y_continuous(limits = acc_scale$lim, breaks = acc_scale$breaks) +
-          ggtitle(dec_names[confVar]) +
-          ylab("Accuracy") + xlab("Target contrast") + theme_custom())
-  if (save_plots) {ggsave(file=sprintf(paste0("%sAccByContrast_",as.character(confVar),".png"),PlotDir), 
-                          dpi = 300, units=c("cm"), height =20, width = 20)}
-
-  # ggplot(data_acc_tar_sum, aes(x = get(tar), y = get(acc))) +
-  #   geom_ribbon(aes(ymin = get(acc)-se, ymax = get(acc)+se), alpha = .5,
-  #               fill = "darkseagreen3", color = "transparent") +
-  #   geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
-  #   labs(x = "Target contrast", y = "Accuracy")
-  
-  print(ggplot(data_conf_tar_sum) +
-          geom_bar(aes(x=as.factor(get(tar)), y=get(conf)), stat="identity", fill="grey", alpha=0.7) +
-          geom_errorbar(aes(x=as.factor(get(tar)), ymin=get(conf)-se, ymax=get(conf)+se), width=0.2, colour="black", alpha=0.9, size=1) +
-          scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-          scale_y_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
-          ggtitle(dec_names[confVar]) +
-          ylab("Confidence") + xlab("Target contrast") + theme_custom())
-  
-  # ggplot(data_conf_tar_sum, aes(x = get(tar), y = get(conf))) +
-  #   geom_ribbon(aes(ymin = get(conf)-se, ymax = get(conf)+se), alpha = .5,
-  #               fill = "darkseagreen3", color = "transparent") +
-  #   geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
-  #   labs(x = "Target contrast", y = "Accuracy")
-
-  print(ggplot(data_confacc_sum) +
-          geom_bar(aes(x=as.factor(get(tar)), y=confaccR), stat="identity", fill="grey", alpha=0.7) +
-          #geom_errorbar(aes(x=as.factor(get(tar)), ymin=confaccR-confaccSE, ymax=confaccR+confaccSE), width=0.2, colour="black", alpha=0.9, size=1) +
-          scale_x_discrete(breaks = target_scale$breaks, labels = target_scale$labels) +
-          #scale_y_continuous(limits = c(-0.5,9.5), breaks = seq(-0.5,9.5, by=1)) +
-          scale_y_continuous(limits = c(0,6), breaks = seq(0,6, by=1)) +
-          ggtitle(dec_names[confVar]) +
-          ylab("Confidence / Accuracy") + xlab("Target contrast") + theme_custom())
- 
-  # ggplot(data_confacc_sum, aes(x = get(tar), y = confaccR)) +
-  #   geom_ribbon(aes(ymin = confaccR-confaccSE, ymax = confaccR+confaccSE), alpha = .5,
-  #               fill = "darkseagreen3", color = "transparent") +
-  #   geom_line(color = "aquamarine4", lwd = .7) + geom_point(color = "aquamarine4") +
-  #   labs(x = "Target contrast", y = "Confidence/Accuracy")
-}
-
-# Average accuracy for each decision
-# XXX CHANGE SUMMARY STATS HERE: first average across pairs XXX
-data_all_acc      = curdat[,c("accuracy1","accuracy2","Coll_acc")]
-data_all_acc_long = melt(data_all_acc)
-data_all_acc_sum  = summarySE(data_all_acc_long,measurevar="value",groupvars="variable")
-ggplot(data_all_acc_sum) +
-  geom_point( aes(x=variable, y=value), size=3, stat="identity", fill="magenta", alpha=0.7) +
-  geom_errorbar( aes(x=variable, ymin=value-se, ymax=value+se), width=0.2, colour=c("magenta","magenta","black"), alpha=0.9, size=1) +
-  geom_hline(yintercept=0.5, linetype='dashed', col = 'limegreen', size=1.4, alpha=0.6) +
-  scale_x_discrete(labels = c("1st","2nd","Collective")) +
-  scale_y_continuous(limits = c(0.5,1), breaks = seq(0.5,1, by=0.1)) +
-  ggtitle("Accuracy by decision") +
-  ylab("Accuracy") + xlab("Decision") + theme_custom()
-if (save_plots) {ggsave(file=sprintf("%sAccPerDec.png",PlotDir), 
-                        dpi = 300, units=c("cm"), height =20, width = 20)}
-
-
-# 3. Left-right response bias (should we also plot this as function of confidence?)
+# 3. LEFT-RIGHT RESPONSE BIAS? (plot this as function of confidence?)
+PlotDirLR = paste0(PlotDir,"TargetChoice/") # save plots in separate folder
 # factorize and name levels
 curdat$decision1=as.factor(curdat$decision1)
 levels(curdat$decision1)= c("left","right")
@@ -673,9 +606,7 @@ names(all_dec)[names(all_dec)=='decision2']     <- 'Target choice 2nd decision'
 names(all_dec)[names(all_dec)=='Coll_decision'] <- 'Target choice collective decision'
 all_dec$targetContrast = as.factor(all_dec$targetContrast)
 
-PlotDirLR = paste0(PlotDir,"TargetChoice/")
-
-# plot target choice (left/right) split by target contrast
+# plot target choice count (left/right) split by target contrast
 for(dec in (seq(5,ncol(all_dec)-1))) {
   var_dec = all_dec[,dec] # dec=decision1,decision2,Coll_decision
   
@@ -683,7 +614,6 @@ for(dec in (seq(5,ncol(all_dec)-1))) {
           scale_fill_manual(values=con_colors)+ 
           stat_count(geom = "bar", position="dodge2") +
           #scale_y_continuous(limits = count_scale_conftar$lim, breaks = count_scale_conftar$breaks) +
-          #scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
           ggtitle(colnames(all_dec)[dec]) +
           ylab("Count") + xlab("Decision") + theme_custom())
   if (save_plots) {ggsave(file=sprintf(paste0("%sLRChoice_",as.character(dec-4),".png"),PlotDirLR), 
@@ -699,7 +629,6 @@ for (p in unique(all_dec$Pair)) { # p = pair
             scale_fill_manual(values=con_colors)+ 
             stat_count(geom = "bar", position="dodge2") +
             #scale_y_continuous(limits = count_scale_conftar$lim, breaks = count_scale_conftar$breaks) +
-            #scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
             ggtitle(paste(colnames(all_dec)[dec], "Pair", as.character(p))) +
             ylab("Count") + xlab("Decision") + theme_custom())
     if (save_plots) {ggsave(file=sprintf(paste0("%sLRChoice_",as.character(p),"_",as.character(dec-4),".png"), PlotDirLR), 
@@ -720,7 +649,6 @@ for (p in unique(all_dec$Pair)) { # p = pair
             scale_fill_manual(values=con_colors)+ 
             stat_count(geom = "bar", position="dodge2") +
             #scale_y_continuous(limits = count_scale_conftar$lim, breaks = count_scale_conftar$breaks) +
-            #scale_x_continuous(breaks = conf_scale$breaks, labels = conf_scale$breaks) +
             ggtitle(paste("Pair", as.character(p), "Agent", agent)) +
             ylab("Count") + xlab("Decision") + theme_custom())
     # save the plot
