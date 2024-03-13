@@ -24,11 +24,13 @@ subselect = 0;
 % Which benefit to compute and plot? (1 or 2)
 % 1=individual benefit (does the individual participant benefit from interaction?)
 % 2=collective benefit (is collective better than better individual? Bahrami 2010)
-benefitType = 1; 
+benefitType = 2; 
 if benefitType == 1
     ben_lab = '_indiBen';
 elseif benefitType == 2
     ben_lab = '_collBen';
+elseif benefitType == 3 % FINALIZE THIS VERSION!!!
+    ben_lab = '_allBen';
 end
 %--------------------------------------------------------------------------
 
@@ -82,17 +84,22 @@ varTypes = ["double","string","string"]; varNames = ["Pair","maxAgent","minAgent
 minmaxTable = table('Size',sz,'VariableTypes',varTypes,'VariableNames',varNames);
 
 % Window analysis (length: default.w_lgt)
-default.step        = 8;
-default.w_lgt       = 80;
-default.w           = zeros(default.w_lgt/default.step,default.w_lgt);
+% Bahrami: step=7, length=80, number=26; total trial num=256
+% here:    step=5, length=50, number=23; total trial num=160
+default.step        = 5;%5;  % 160/4=40;   Bahrami: 256/7=36.6
+default.w_lgt       = 50;%50; % 160/50=3.2; Bahrami: 256/80=3.2
 default.slope_wnd   = [];
 default.slope_wcoll = [];
+window_nums = 1:default.step:(160-(default.w_lgt-1));
+%default.w           = zeros(default.w_lgt/default.step,default.w_lgt);
 
 % Specify colors and markers for plots
 % for PAIR plots
 color_B    = [0.1176 0.2353 0.7451]; color_Y = [0.9412 0.7843 0.1569];
-color_coll = [0.0667 0.4118 0.1569];
-color_min  = [0 0.4470 0.7410]; color_max = [0.6350 0.0780 0.1840];
+color_coll = [0 0 0];%black [0.0667 0.4118 0.1569]; %dark green
+% color_min  = [0 0.4470 0.7410]; color_max = [0.6350 0.0780 0.1840];
+% now max=light green, min=purple
+color_min  = [0.4941 0.1843 0.5569]; color_max = [0.4667 0.6745 0.1882];
 plotSym    = {'o' 's' 'diamond' ...             % B,Y,Coll
               'o' 's' 'o' 's'};                 % min,max,min,max      
 color      = [color_B; color_Y; color_coll; ... % blue, yellow, dark green
@@ -109,7 +116,10 @@ if benefitType     == 2 % min, max, Coll (original Bahrami plots)
     plotSymAve     = {'o' 's' 'diamond'};             % min,max,Coll
 elseif benefitType == 1 % individual benefit: min (blue) vs. max (red) agent
     colorAve       = [color_min; color_max; color_min; color_max]; % mi,ma,mi,ma                           
-    plotSymAve     = {'o' 's' 'o' 's'};                            % mi,ma,mi,ma  
+    plotSymAve     = {'o' 's' 'o' 's'};   
+elseif benefitType == 3 
+    colorAve       = [color_min; color_max; [0 0 0]; color_min; color_max];
+    plotSymAve     = {'o' 's' 'o' 's'};   % mi,ma,mi,ma
 end
 
 %--------------------------------------------------------------------------
@@ -515,14 +525,29 @@ for p = 1:length(ptc) % start pair loop (p=current pair; ptc=cell array with all
         ws=figure('Name',['S' ptc{p} '_wnd']);
         set(ws, 'WindowStyle', 'Docked');
         % coll_prtc:
-        % Each row is a pair. Columns are XXX
+        % Each row is a pair. Columns are accuracy (0,1) and contrast level
         coll_prtc = [coll_fs_v C2_C1_v];
         % -> GO INTO FUNCTION PLOT_PSY to fit and plot psych. curves
         aveFlag=0;
-        slope_wcoll(p,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full,coll_calc,benefitType,mrkColor,aveFlag);
+        slope_wcoll(p,:) = plot_psy(conSteps,coll_prtc,plotSym,color,default,full,coll_calc,...
+            benefitType,mrkColor,aveFlag);
         % -----------------------------------------------------------------
+        % plot collective benefit for current pair across WINDOWS
         slope_wcoll(p,:) = slope_wcoll(p,:)/smax;
-        plot(slope_wcoll(p,:),['-' plotSym{3}],'Color',color(3,:),'MarkerSize',8,'LineWidth',3);
+        plot(window_nums,slope_wcoll(p,:),'-s', 'Color',color(3,:),...
+            'MarkerSize',6, 'LineWidth',1,'MarkerEdgeColor', color(3,:),'MarkerFaceColor', [0.8 0.8 0.8]);
+        hold on;
+        yl = yline(1, '-','Collective benefit','LineWidth',2, 'Color',[0.8510 0.3255 0.0980], 'FontSize',18);
+        yl.LabelHorizontalAlignment = 'right';
+        hold off;
+        xlim([0 window_nums(end)+1]);
+        xticks(window_nums);
+        ylim([0.3 2.6]); yticks(0.3:0.1:2.6);
+        ax = gca; ax.FontSize = 16;
+        xlabel(['Trial number (win. size=', num2str(default.w_lgt),...
+            ', win. number=', num2str(size(slope_wcoll,2)),...
+            ', step size=', num2str(default.step),')'],'FontSize',18);
+        ylabel('sdyad/smax','FontSize',18);
         title(['Coll benefit - ','S' ptc{p},'- wnd'],'FontSize',22);
     end
 end
@@ -554,6 +579,8 @@ if benefitType == 2 % "traditional" collective benefit
     y_ave = [decMin_ave' decMax_ave' decDyad_ave']; % [min, max, Collective]
 elseif benefitType == 1
     y_ave = [dmin_coll_ave' dmax_coll_ave' dmin_1dec_ave' dmax_1dec_ave'];
+elseif benefitType == 3 % mixed: min, max, Collective, minCollective, maxCollective
+    y_ave = [decMin_ave' decMax_ave' decDyad_ave' dmin_coll_ave' dmax_coll_ave'];
 end
 
 % Prepare figure
@@ -589,47 +616,65 @@ end
 % -------------------------------------------------------------------------
 
 % -------------------------------------------------------------------------
-% AVERAGE PSYCHOMETRIC CURVES (dyad, min, max) per WINDOW
-% ----------------------------------------------------------
+% PLOT AVERAGE COLLECTIVE BENEFIT per WINDOW
+% --------------------------------------------------------------------
 % Compute collective benefit as average across pairs and for all pairs
 if not(subcon_calc) && sub_block==0 && length(ptc)>1
 
     % Average across pairs
     h4=figure(); set(h4,'WindowStyle','Docked');
-    errorbar(1:default.w_lgt/default.step,...
-             mean(slope_wcoll),-std(slope_wcoll)/sqrt(length((slope_wcoll))),+std(slope_wcoll)/sqrt(length((slope_wcoll))),...
-             'Color', color(3,:),'LineWidth',3); hold on;
+    errorbar(window_nums,mean(slope_wcoll,1,'omitnan'),...
+        -std(slope_wcoll)/sqrt(length((slope_wcoll))),...
+        +std(slope_wcoll)/sqrt(length((slope_wcoll))),...
+        '-s', 'MarkerSize',10, 'Color', color(3,:),'LineWidth',1,...
+        'MarkerEdgeColor', color(3,:), 'MarkerFaceColor', [0.8 0.8 0.8]); 
+    hold on;
     % plot a horizontal line at 1
-    line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:)); hold off
-    xlim([0 (default.w_lgt/default.step)+1]); xticks(0:1:10);
-    ylim([0.95 1.25]); yticks(0.95:0.05:1.25);
+    yl = yline(1, '-','Collective benefit','LineWidth',2, 'Color',[0.8510 0.3255 0.0980], 'FontSize',18);
+    yl.LabelHorizontalAlignment = 'right';
+    %xl = xline(80-(default.w_lgt-1), '-','2nd half','LineWidth',2, 'Color',color(3,:), 'FontSize',18);
+    hold off;
+    xlim([0 window_nums(end)+1]);
+    xticks(window_nums);
+    ylim([0.9 1.5]); yticks(0.9:0.1:1.5);
     ax = gca; ax.FontSize = 16; 
-    %axis([0 (default.w_lgt/default.step)+1 0.8 1.2]);
-    xlabel('Sliding window (80 trials each)','FontSize',20);
-    ylabel('sdyad/smax','FontSize',20);
-    title('Average values across pairs - coll. benefit','FontSize',22);
+    xlabel(['Trial number (win. size=', num2str(default.w_lgt),...
+        ', win. number=', num2str(size(slope_wcoll,2)),...
+        ', step size=', num2str(default.step),')'],'FontSize',18);
+    ylabel('sdyad/smax','FontSize',18);
+    title('Average values across pairs - collective benefit','FontSize',18);
     % Save figure
     if save_plot
         set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
-        saveas(gcf,[path_to_save,'Average_WindowCB_',lab,block_lab],'png');
+        saveas(gcf,[path_to_save,'Average_WindowCB',lab,block_lab],'png');
     end
 
     % All pairs within one figure
-    allColors = jet(16);
+    allColors = jet(15);
     h5=figure(); set(h5, 'WindowStyle', 'Docked');
     colororder(allColors(1:end,:));
-    plot(slope_wcoll',['-' plotSym{3}],'LineWidth',2, 'MarkerSize',6); hold on;
+    plot(window_nums,slope_wcoll',...
+        '-s', 'MarkerSize',6, 'LineWidth',1,'MarkerEdgeColor', color(3,:));
+    hold on;
     % plot a horizontal line at 1
-    line((1:default.w_lgt/default.step),ones(1,default.w_lgt/default.step),'LineStyle','--','Color', color(6,:),'LineWidth',1.5);
+    yl = yline(1, '-','Collective benefit','LineWidth',2, 'Color',[0.8510 0.3255 0.0980], 'FontSize',18);
+    yl.LabelHorizontalAlignment = 'right';
     hold off;
-    axis([0 (default.w_lgt/default.step)+1 0.5 2.2])
+    xlim([0 window_nums(end)+1]);
+    xticks(window_nums);
+    ylim([0.3 2.6]); yticks(0.3:0.1:2.6);
+    ax = gca; ax.FontSize = 16;
+    xlabel(['Trial number (win. size=', num2str(default.w_lgt),...
+        ', win. number=', num2str(size(slope_wcoll,2)),...
+        ', step size=', num2str(default.step),')'],'FontSize',18);
+    ylabel('sdyad/smax','FontSize',18);
     legend({'S108','S110','S111','S112','S113','S114','S115','S116',...
         'S117','S118','S120','S121','S122','S123','S124','1'},'location','bestoutside');
-    title('Coll. benefit - each pair','FontSize',22);
+    title('Collective benefit - each pair','FontSize',22);
     % Save figure
     if save_plot
         set(gcf,'PaperUnits','centimeters','PaperPosition', [0 0 x_width y_width]);
-        saveas(gcf,[path_to_save,'AllPairs_WindowCB_',lab,block_lab],'png');
+        saveas(gcf,[path_to_save,'AllPairs_WindowCB',lab,block_lab],'png');
     end
 
 end
@@ -687,8 +732,8 @@ end
 fprintf('\n');
 
 % scatter plot properties:
-mrksz=50; mrkedge=[0 0 0]; mrkfill=[1 1 1]; mrkw=1.5;
-cbcol=[0.4667 0.6745 0.1882];
+mrksz=75; mrkedge=[0 0 0]; mrkfill=[1 1 1]; mrkw=1.5;
+cbcol=[0.8510 0.3255 0.0980];%[0.4667 0.6745 0.1882];
 % Plot ratio on x-axis and collective benefit on y-axis
 xdata=cb_ratio_combo_sorted(:,2); ydata=cb_ratio_combo_sorted(:,1);
 ratio_fig=figure(); set(ratio_fig, 'WindowStyle', 'Docked');
@@ -700,7 +745,7 @@ line = lsline(gca); line.LineWidth=2; hold on;
 scatter(xdata(ydata(:,1)>=1, 1), ydata(ydata(:,1)>=1, 1),mrksz,"MarkerEdgeColor",mrkedge,...
     "MarkerFaceColor",cbcol,"LineWidth",mrkw); % color dots above 1 in green
 hold on; 
-yl = yline(1, '-','Collective benefit','LineWidth',2, 'Color',cbcol, 'FontSize',14);
+yl = yline(1, '-','Collective benefit','LineWidth',2, 'Color',cbcol, 'FontSize',18);
 yl.LabelHorizontalAlignment = 'left';
 text(0.35,1.55,['R: ' num2str(R(2,1),'%.4f')],'Color','k','FontSize',18);
 text(0.35,1.50,['p: ' num2str(P(2,1),'%.4f')],'Color','k','FontSize',18);
@@ -719,7 +764,8 @@ writetable(minmaxTable,'minmaxTable.xlsx');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % STATISTICAL TESTS
-% test whether collective slope differs from max. slope
+% test whether collective slope differs from max. slope (see Fig. 2 Bahrami
+% et al. 2012, JEP:HPP)
 [h,pval,ci,stats] = ttest(sdyad_all', smax_all', "Tail","right");
 % % use non-parametric test (Wilcoxon signed rank test):
 % [p,h,stats] = signrank(sdyad_all',smax_all');
