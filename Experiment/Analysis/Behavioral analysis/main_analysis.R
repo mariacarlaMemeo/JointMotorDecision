@@ -14,17 +14,21 @@ rm(list = ls())
 graphics.off()
 
 # Save all plots?
-save_plots      = 1
+save_plots      = 0
 # Write Excel file with all data and info file?
 save_data_final = 0
 
-# Import libraries and load packages
+# if(!require(devtools)) install.packages("devtools")
+# devtools::install_github("kassambara/ggpubr")
+# library("ggpubr")
+
+# Define necessary packages
 pckgs = c("data.table","lattice","lme4", "nlme","emmeans","doBy","effsize","ez",
           "MuMIn","BayesFactor","permuco","RVAideMemoire",
           "RColorBrewer","stringr","knitr","multcomp","ggplot2","ggiraph","car","dplyr",
           "plyr","lmerTest","ggrepel","sjstats","reshape2","readxl","writexl",
           "cellranger")
-# Load all of them and heck how many packages failed to load
+# Load all of them and check how many packages failed to load
 sum(lapply(pckgs, require, character.only = TRUE)==FALSE)
 
 # Set flags
